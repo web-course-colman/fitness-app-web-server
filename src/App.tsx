@@ -14,7 +14,10 @@ const App = () => (
             <Sonner />
             <BrowserRouter>
                 <Routes>
-
+                    <Route path="/profile" element={
+                        // TODO
+                        <div></div>
+                    } />
                 </Routes>
             </BrowserRouter>
         </TooltipProvider>
