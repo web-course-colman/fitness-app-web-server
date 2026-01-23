@@ -1,13 +1,9 @@
-import { useState, ReactNode } from "react";
+import { useState } from "react";
 import { Box, AppBar, Toolbar, IconButton, useTheme, useMediaQuery } from "@mui/material";
 import { Menu as MenuIcon } from "@mui/icons-material";
 import NavigationSidebar, { DRAWER_WIDTH } from "./NavigationSidebar";
 
-interface LayoutProps {
-    children: ReactNode;
-}
-
-const Layout = ({ children }: LayoutProps) => {
+const Layout = () => {
     const [mobileOpen, setMobileOpen] = useState(false);
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down("md"));
@@ -56,7 +52,7 @@ const Layout = ({ children }: LayoutProps) => {
                 }}
             >
                 {isMobile && <Toolbar />}
-                <Box sx={{ p: { xs: 2, sm: 3 } }}>{children}</Box>
+                {/* <Box sx={{ p: { xs: 2, sm: 3 } }}>{children}</Box> */}
             </Box>
         </Box>
     );
