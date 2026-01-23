@@ -1,73 +1,86 @@
-# Welcome to your Lovable project
+# Fitness App
 
-## Project info
+A full-stack web application for fitness tracking, featuring a modern React frontend and a robust NestJS backend.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+## Project Structure
 
-## How can I edit this code?
+- `/src`: React frontend (Vite, Tailwind CSS, shadcn/ui, Material UI)
+- `/server`: NestJS backend
 
-There are several ways of editing your application.
+## Getting Started
 
-**Use Lovable**
+### Prerequisites
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+- Node.js (v18 or higher)
+- npm
 
-Changes made via Lovable will be committed automatically to this repo.
+### Installation
 
-**Use your preferred IDE**
+1. Clone the repository:
+   ```sh
+   git clone https://github.com/web-course-colman/fitness-app-web-server.git
+   cd fitness-app-web-server
+   ```
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+2. Install dependencies for both client and server:
+   ```sh
+   npm install
+   cd server
+   npm install
+   cd ..
+   ```
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+## Running the Application
 
-Follow these steps:
+You can run both the frontend and backend concurrently using the root package scripts.
 
+### Development Mode
+
+Run both client and server with auto-reload:
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone https://github.com/web-course-colman/fitness-app-web-server.git
-
-# Step 2: Navigate to the project directory.
-cd fitness-app-web-server
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+npm run dev:all
 ```
 
-**Edit a file directly in GitHub**
+- **Frontend**: http://localhost:8080 (or as specified by Vite)
+- **Backend**: http://localhost:3000
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+### Production Mode
 
-**Use GitHub Codespaces**
+Build and start the full-stack application:
+```sh
+npm start
+```
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## Available Scripts
 
-## What technologies are used for this project?
+### Root Directory
+- `npm run dev:all`: Start both client and server in development mode.
+- `npm start`: Build both apps and start the production server.
+- `npm run dev`: Start only the frontend development server.
+- `npm run server:dev`: Start only the backend development server.
+- `npm run build`: Build the frontend.
+- `npm run server:build`: Build the backend.
 
-This project is built with:
+### Server Directory
+- `npm run start:dev`: Start the NestJS server in watch mode.
+- `npm run build`: Build the NestJS application.
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## Tech Stack
 
-## How can I deploy this project?
+### Frontend
+- **Framework**: React 18
+- **Build Tool**: Vite
+- **Styling**: Tailwind CSS, shadcn/ui, Material UI (@mui/material)
+- **Icons**: Lucide React, Material UI Icons
+- **State Management/Data Fetching**: TanStack Query (React Query)
+- **Routing**: React Router DOM
+- **Forms**: React Hook Form, Zod
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+### Backend
+- **Framework**: NestJS
+- **Language**: TypeScript
 
-## Can I connect a custom domain to my Lovable project?
+## Deployment
 
-Yes, you can!
+The application is designed to be deployed as a single unit or separately. The `npm start` command in the root directory builds both parts and runs the server, which is configured to serve the static client files.
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
