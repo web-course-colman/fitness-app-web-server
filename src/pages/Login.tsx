@@ -12,12 +12,12 @@ import {
     CircularProgress,
 } from "@mui/material";
 import { Visibility, VisibilityOff, FitnessCenter } from "@mui/icons-material";
-// import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "../components/Auth/AuthProvider";
 import { toast } from "@/hooks/use-toast";
 
 const Login = () => {
     const navigate = useNavigate();
-    // const { signIn, signUp, user } = useAuth();
+    const { login, register, isAuthenticated } = useAuth();
     const [isLogin, setIsLogin] = useState(true);
     const [showPassword, setShowPassword] = useState(false);
     const [email, setEmail] = useState("");
@@ -26,10 +26,10 @@ const Login = () => {
     const [loading, setLoading] = useState(false);
 
     // Redirect if already logged in
-    // if (user) {
-    //     navigate("/feed", { replace: true });
-    //     return null;
-    // }
+    if (isAuthenticated) {
+        navigate("/feed", { replace: true });
+        return null;
+    }
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -37,20 +37,20 @@ const Login = () => {
 
         try {
             if (isLogin) {
-                // const { error } = await signIn(email, password);
-                // if (error) {
-                //     toast({
-                //         title: "Sign in failed",
-                //         description: error.message,
-                //         variant: "destructive",
-                //     });
-                // } else {
-                toast({
-                    title: "Welcome back!",
-                    description: "You have successfully signed in.",
-                });
-                navigate("/feed");
-                // }
+                const result = await login(email, password);
+                if (!result.success) {
+                    toast({
+                        title: "Sign in failed",
+                        description: result.error,
+                        variant: "destructive",
+                    });
+                } else {
+                    toast({
+                        title: "Welcome back!",
+                        description: "You have successfully signed in.",
+                    });
+                    navigate("/feed");
+                }
             } else {
                 if (!name.trim()) {
                     toast({
@@ -62,20 +62,25 @@ const Login = () => {
                     return;
                 }
 
-                // const { error } = await signUp(email, password, name);
-                // if (error) {
-                //     toast({
-                //         title: "Sign up failed",
-                //         description: error.message,
-                //         variant: "destructive",
-                //     });
-                // } else {
-                toast({
-                    title: "Account created!",
-                    description: "Welcome to FitTrack. Let's start your fitness journey!",
-                });
-                navigate("/feed");
-                // }
+                const nameParts = name.trim().split(' ');
+                const firstName = nameParts[0];
+                const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : 'User';
+
+                const result = await register(email, password, firstName, lastName);
+
+                if (!result.success) {
+                    toast({
+                        title: "Sign up failed",
+                        description: result.error,
+                        variant: "destructive",
+                    });
+                } else {
+                    toast({
+                        title: "Account created!",
+                        description: "Account created! Please sign in.",
+                    });
+                    setIsLogin(true); // Switch to login mode
+                }
             }
         } catch {
             toast({

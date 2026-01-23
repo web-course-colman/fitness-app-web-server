@@ -13,6 +13,7 @@ interface AuthContextType {
     loggedUser: User | null;
     isLoading: boolean;
     login: (username: string, password: string) => Promise<LoginResult>;
+    register: (username: string, password: string, name: string, lastName: string) => Promise<LoginResult>;
     logout: () => void;
 }
 
@@ -70,6 +71,41 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
     }, []);
 
+    const register = useCallback(async (username: string, password: string, name: string, lastName: string) => {
+        if (!username || !password || !name || !lastName) {
+            return { success: false, error: 'All fields are required' };
+        }
+
+        try {
+            setIsLoading(true);
+
+            await api.post('/api/auth/signin', {
+                username,
+                password,
+                name,
+                lastName
+            });
+
+            // Auto login after registration or just return success? 
+            // The prompt says "store the user on signin... and validate on login".
+            // Usually we might auto-login or ask user to login. 
+            // For now, let's return success and let UI decide.
+
+            return { success: true };
+        } catch (error) {
+            if (axios.isAxiosError(error)) {
+                console.log('error while registering', error);
+                if (error.response?.status === HttpStatusCode.Conflict) {
+                    return { success: false, error: 'Username already exists' };
+                }
+                return { success: false, error: error.response?.data?.message || 'Registration failed' };
+            }
+            return { success: false, error: 'An unexpected error occurred' };
+        } finally {
+            setIsLoading(false);
+        }
+    }, []);
+
     const logout = useCallback(() => {
         localStorage.removeItem(ACCESS_TOKEN_KEY);
         setIsAuthenticated(false);
@@ -81,6 +117,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setIsAuthenticated,
         isLoading,
         login,
+        register,
         logout,
         loggedUser
     };
