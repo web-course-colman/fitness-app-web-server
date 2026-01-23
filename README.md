@@ -42,7 +42,7 @@ npm run dev:all
 ```
 
 - **Frontend**: http://localhost:8080 (or as specified by Vite)
-- **Backend**: http://localhost:3000
+- **Backend**: http://localhost:3002
 
 ### Production Mode
 
