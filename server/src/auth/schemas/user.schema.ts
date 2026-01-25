@@ -16,6 +16,9 @@ export class User {
 
     @Prop({ required: true })
     lastName: string;
+
+    @Prop({ required: false })
+    picture?: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

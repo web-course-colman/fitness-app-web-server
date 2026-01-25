@@ -18,6 +18,7 @@ export type User = {
     name: string;
     lastName: string;
     username: string;
+    picture?: string;
     loggedInAt: number; // epoch time
 };
 
@@ -41,6 +42,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 name: data.name,
                 lastName: data.lastName,
                 username: data.username,
+                picture: data.picture,
                 loggedInAt: Date.now(),
             });
             setIsAuthenticated(true);
