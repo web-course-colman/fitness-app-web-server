@@ -46,7 +46,7 @@ export class AuthService {
 
     async login(loginDto: LoginDto): Promise<{
         access_token: string;
-        user: { name: string; lastName: string; username: string };
+        user: { name: string; lastName: string; username: string; picture?: string };
     }> {
         const { username, password } = loginDto;
 
@@ -78,7 +78,48 @@ export class AuthService {
                 name: user.name,
                 lastName: user.lastName,
                 username: user.username,
+                picture: user.picture,
             },
         };
+    }
+
+    async validateGoogleUser(details: { email: string; firstName: string; lastName: string; picture?: string }) {
+        const { email, firstName, lastName, picture } = details;
+
+        // Check if user exists
+        let user = await this.userModel.findOne({ username: email }).exec();
+
+        if (user) {
+            // Optional: Update picture if it changed?
+            if (picture && user.picture !== picture) {
+                user.picture = picture;
+                await user.save();
+            }
+            return user;
+        }
+
+        // Create new user
+        const placeholderPassword = await bcrypt.hash(Math.random().toString(36), 10);
+
+        user = new this.userModel({
+            username: email,
+            password: placeholderPassword,
+            name: firstName,
+            lastName: lastName,
+            picture,
+        });
+
+        return user.save();
+    }
+
+    generateJwt(user: UserDocument) {
+        const payload = {
+            sub: user._id,
+            username: user.username,
+            name: user.name,
+            lastName: user.lastName,
+            picture: user.picture,
+        };
+        return this.jwtService.sign(payload);
     }
 }

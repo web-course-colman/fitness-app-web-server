@@ -1,12 +1,9 @@
-import { type ReactNode, createContext, useCallback, useContext, useState } from 'react';
+import { type ReactNode, createContext, useCallback, useContext, useState, useEffect } from 'react';
 import api from '../../services/axios';
 import axios, { HttpStatusCode } from 'axios';
 import { useLocalStorage } from '../../hooks/useLocalStorage';
 
-export const ACCESS_TOKEN_KEY = 'access_token';
 export const USER_DETAILS_KEY = 'user_details';
-
-// TODO: move to cookies instead of local storage
 
 interface AuthContextType {
     isAuthenticated: boolean;
@@ -20,6 +17,8 @@ interface AuthContextType {
 export type User = {
     name: string;
     lastName: string;
+    username: string;
+    picture?: string;
     loggedInAt: number; // epoch time
 };
 
@@ -32,11 +31,36 @@ interface LoginResult {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-    const token = localStorage.getItem(ACCESS_TOKEN_KEY);
-
-    const [isAuthenticated, setIsAuthenticated] = useState(!!token);
     const [loggedUser, setLoggedUser] = useLocalStorage<User | null>(USER_DETAILS_KEY, null);
-    const [isLoading, setIsLoading] = useState(false);
+    const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+    const [isLoading, setIsLoading] = useState(true);
+
+    const checkAuthStatus = useCallback(async () => {
+        try {
+            const { data } = await api.get('/api/auth/profile');
+            setLoggedUser({
+                name: data.name,
+                lastName: data.lastName,
+                username: data.username,
+                picture: data.picture,
+                loggedInAt: Date.now(),
+            });
+            setIsAuthenticated(true);
+        } catch (error) {
+            setIsAuthenticated(false);
+            // Don't clear user immediately if just network error? 
+            // But for auth check, usually 401 means not logged in.
+            if (axios.isAxiosError(error) && error.response?.status === 401) {
+                setLoggedUser(null);
+            }
+        } finally {
+            setIsLoading(false);
+        }
+    }, [setLoggedUser]);
+
+    useEffect(() => {
+        checkAuthStatus();
+    }, [checkAuthStatus]);
 
     const login = useCallback(async (username: string, password: string) => {
         if (!username || !password) {
@@ -45,14 +69,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
         try {
             setIsLoading(true);
-
-            const response = await api.post('/api/auth/login', {
+            await api.post('/api/auth/login', {
                 username,
                 password,
             });
-            const jwt = response.data.access_token;
-            localStorage.setItem(ACCESS_TOKEN_KEY, jwt);
-            setIsAuthenticated(true);
+            await checkAuthStatus();
 
             return { success: true, username };
         } catch (error) {
@@ -69,7 +90,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         } finally {
             setIsLoading(false);
         }
-    }, []);
+    }, [checkAuthStatus]);
 
     const register = useCallback(async (username: string, password: string, name: string, lastName: string) => {
         if (!username || !password || !name || !lastName) {
@@ -86,11 +107,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 lastName
             });
 
-            // Auto login after registration or just return success? 
-            // The prompt says "store the user on signin... and validate on login".
-            // Usually we might auto-login or ask user to login. 
-            // For now, let's return success and let UI decide.
-
             return { success: true };
         } catch (error) {
             if (axios.isAxiosError(error)) {
@@ -106,10 +122,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
     }, []);
 
-    const logout = useCallback(() => {
-        localStorage.removeItem(ACCESS_TOKEN_KEY);
+    const logout = useCallback(async () => {
+        try {
+            await api.post('/api/auth/logout');
+        } catch (error) {
+            console.error('Logout error', error);
+        }
         setIsAuthenticated(false);
         setLoggedUser(null);
+        // Optional: window.location.href = '/login'; 
     }, [setLoggedUser]);
 
     const authState = {
