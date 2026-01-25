@@ -1,13 +1,18 @@
+import { useAuth } from "@/components/Auth/AuthProvider";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 const Index = () => {
     const navigate = useNavigate();
+    const { isAuthenticated } = useAuth();
 
     useEffect(() => {
-        // Redirect to login page
-        navigate("/login");
-    }, [navigate]);
+        if (isAuthenticated) {
+            navigate("/feed");
+        } else {
+            navigate("/login");
+        }
+    }, [navigate, isAuthenticated]);
 
     return null;
 };
