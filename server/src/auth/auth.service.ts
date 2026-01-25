@@ -81,4 +81,37 @@ export class AuthService {
             },
         };
     }
+
+    async validateGoogleUser(details: { email: string; firstName: string; lastName: string }) {
+        const { email, firstName, lastName } = details;
+
+        // Check if user exists
+        let user = await this.userModel.findOne({ username: email }).exec();
+
+        if (user) {
+            return user;
+        }
+
+        // Create new user
+        const placeholderPassword = await bcrypt.hash(Math.random().toString(36), 10);
+
+        user = new this.userModel({
+            username: email,
+            password: placeholderPassword,
+            name: firstName,
+            lastName: lastName,
+        });
+
+        return user.save();
+    }
+
+    generateJwt(user: UserDocument) {
+        const payload = {
+            sub: user._id,
+            username: user.username,
+            name: user.name,
+            lastName: user.lastName,
+        };
+        return this.jwtService.sign(payload);
+    }
 }

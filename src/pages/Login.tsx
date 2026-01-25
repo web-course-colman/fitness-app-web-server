@@ -11,7 +11,7 @@ import {
     InputAdornment,
     CircularProgress,
 } from "@mui/material";
-import { Visibility, VisibilityOff, FitnessCenter } from "@mui/icons-material";
+import { Visibility, VisibilityOff, FitnessCenter, Google } from "@mui/icons-material";
 import { useAuth } from "../components/Auth/AuthProvider";
 import { toast } from "@/hooks/use-toast";
 
@@ -208,6 +208,17 @@ const Login = () => {
                                     : isLogin
                                         ? "Sign In"
                                         : "Create Account"}
+                            </Button>
+
+                            <Button
+                                variant="outlined"
+                                fullWidth
+                                onClick={() => window.location.href = 'http://localhost:3002/api/auth/google'}
+                                startIcon={<Google />}
+                                sx={{ mt: 2 }}
+                                disabled={loading}
+                            >
+                                Sign in with Google
                             </Button>
                         </Box>
 
