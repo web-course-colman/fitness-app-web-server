@@ -60,7 +60,7 @@ export const useStyles = makeStyles((theme) => ({
     },
     photoSection: {
         width: "100%",
-        height: 100,
+        minHeight: 100,
         border: "1px solid #e2e8f0",
         borderRadius: "4px",
         display: "flex",
@@ -70,8 +70,37 @@ export const useStyles = makeStyles((theme) => ({
         gap: theme.spacing(1),
         cursor: "pointer",
         backgroundColor: "#f8fafc",
+        padding: theme.spacing(2),
         "&:hover": {
             backgroundColor: "#f1f5f9",
+        },
+    },
+    previewGrid: {
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))",
+        gap: theme.spacing(2),
+        width: "100%",
+    },
+    previewItem: {
+        position: "relative",
+        aspectRatio: "1/1",
+        borderRadius: "8px",
+        overflow: "hidden",
+        border: "1px solid #e2e8f0",
+    },
+    previewImage: {
+        width: "100%",
+        height: "100%",
+        objectFit: "cover",
+    },
+    removeBadge: {
+        position: "absolute",
+        top: 4,
+        right: 4,
+        backgroundColor: "rgba(0,0,0,0.6)",
+        color: "#fff",
+        "&:hover": {
+            backgroundColor: "rgba(0,0,0,0.8)",
         },
     },
     workoutDetailsBox: {

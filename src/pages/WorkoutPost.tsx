@@ -4,21 +4,18 @@ import {
     Typography,
     TextField,
     Button,
-    IconButton,
-    Select,
-    MenuItem,
-    FormControl
+    IconButton
 } from "@mui/material";
 import {
     ArrowBack,
-    Send,
-    Image as ImageIcon,
-    Close as CloseIcon
+    Send
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import { useStyles } from "./WorkoutPost.styles";
 import { useCreatePost } from "../hooks/usePosts";
 import { useToast } from "../hooks/use-toast";
+import PhotoUploadArea from "@/components/Workouts/PhotoUploadArea";
+import WorkoutDetailsSection from "@/components/Workouts/WorkoutDetailsSection";
 
 const WorkoutPost = () => {
     const styles = useStyles();
@@ -32,32 +29,32 @@ const WorkoutPost = () => {
     const [workoutType, setWorkoutType] = useState("");
     const [duration, setDuration] = useState("");
     const [calories, setCalories] = useState("");
-    const [selectedImage, setSelectedImage] = useState<File | null>(null);
-    const [imagePreview, setImagePreview] = useState<string | null>(null);
+    const [imagePreviews, setImagePreviews] = useState<string[]>([]);
 
     const handlePhotoClick = () => {
         fileInputRef.current?.click();
     };
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        if (file && file.type.startsWith("image/")) {
-            setSelectedImage(file);
+        const files = Array.from(event.target.files || []);
+        const validFiles = files.filter(file => file.type.startsWith("image/"));
+
+        validFiles.forEach(file => {
             const reader = new FileReader();
             reader.onloadend = () => {
-                setImagePreview(reader.result as string);
+                setImagePreviews(prev => [...prev, reader.result as string]);
             };
             reader.readAsDataURL(file);
-        }
-    };
+        });
 
-    const handleRemovePhoto = (e: React.MouseEvent) => {
-        e.stopPropagation();
-        setSelectedImage(null);
-        setImagePreview(null);
         if (fileInputRef.current) {
             fileInputRef.current.value = "";
         }
+    };
+
+    const handleRemovePhoto = (index: number, e: React.MouseEvent) => {
+        e.stopPropagation();
+        setImagePreviews(prev => prev.filter((_, i) => i !== index));
     };
 
     const handleShare = async () => {
@@ -73,7 +70,7 @@ const WorkoutPost = () => {
         const postData = {
             title,
             description,
-            pictures: imagePreview ? [imagePreview] : [],
+            pictures: imagePreviews,
             workoutDetails: {
                 type: workoutType || undefined,
                 duration: duration ? parseInt(duration) : undefined,
@@ -99,24 +96,12 @@ const WorkoutPost = () => {
         });
     };
 
-    const workoutTypes = [
-        "Running",
-        "Cycling",
-        "Swimming",
-        "Weightlifting",
-        "Yoga",
-        "Pilates",
-        "HIIT",
-        "Walking",
-        "Other"
-    ];
-
     return (
         <Box sx={styles.container}>
-            {/* Hidden File Input */}
             <input
                 type="file"
                 accept="image/*"
+                multiple
                 style={{ display: "none" }}
                 ref={fileInputRef}
                 onChange={handleFileChange}
@@ -143,7 +128,7 @@ const WorkoutPost = () => {
                 </Button>
             </Box>
 
-            {/* Title */}
+            {/* Content Inputs */}
             <Box sx={styles.inputSection}>
                 <Typography sx={styles.label}>Title</Typography>
                 <TextField
@@ -156,7 +141,6 @@ const WorkoutPost = () => {
                 />
             </Box>
 
-            {/* Description */}
             <Box sx={styles.inputSection}>
                 <Typography sx={styles.label}>Description (optional)</Typography>
                 <TextField
@@ -171,112 +155,20 @@ const WorkoutPost = () => {
                 />
             </Box>
 
-            {/* Add Photo / Preview Section */}
-            <Box
-                sx={{
-                    ...styles.photoSection,
-                    height: imagePreview ? "auto" : 100,
-                    padding: imagePreview ? 1 : 0,
-                    position: "relative"
-                }}
-                onClick={handlePhotoClick}
-            >
-                {imagePreview ? (
-                    <>
-                        <Box
-                            component="img"
-                            src={imagePreview}
-                            alt="Workout preview"
-                            sx={{
-                                width: "100%",
-                                maxHeight: 400,
-                                objectFit: "contain",
-                                borderRadius: "4px"
-                            }}
-                        />
-                        <IconButton
-                            sx={{
-                                position: "absolute",
-                                top: 16,
-                                right: 16,
-                                backgroundColor: "rgba(0,0,0,0.5)",
-                                color: "white",
-                                "&:hover": {
-                                    backgroundColor: "rgba(0,0,0,0.7)",
-                                }
-                            }}
-                            size="small"
-                            onClick={handleRemovePhoto}
-                        >
-                            <CloseIcon fontSize="small" />
-                        </IconButton>
-                    </>
-                ) : (
-                    <>
-                        <ImageIcon sx={{ color: "#64748b", fontSize: 32 }} />
-                        <Typography variant="body2" sx={{ color: "#64748b", fontWeight: 500 }}>
-                            Add Photo
-                        </Typography>
-                    </>
-                )}
-            </Box>
+            <PhotoUploadArea
+                imagePreviews={imagePreviews}
+                onPhotoClick={handlePhotoClick}
+                onRemovePhoto={handleRemovePhoto}
+            />
 
-            {/* Workout Details */}
-            <Box sx={styles.workoutDetailsBox}>
-                <Typography variant="h6" sx={styles.detailsTitle}>
-                    Workout Details (Optional)
-                </Typography>
-
-                <Box sx={styles.rowItem}>
-                    <Typography sx={styles.label}>Workout Type</Typography>
-                    <FormControl fullWidth sx={styles.textField}>
-                        <Select
-                            value={workoutType}
-                            onChange={(e) => setWorkoutType(e.target.value)}
-                            displayEmpty
-                            renderValue={(selected) => {
-                                if (!selected) {
-                                    return <span style={{ color: "#94a3b8" }}>Select workout type</span>;
-                                }
-                                return selected as string;
-                            }}
-                        >
-                            {workoutTypes.map((type) => (
-                                <MenuItem key={type} value={type}>
-                                    {type}
-                                </MenuItem>
-                            ))}
-                        </Select>
-                    </FormControl>
-                </Box>
-
-                <Box sx={styles.row}>
-                    <Box sx={styles.rowItem}>
-                        <Typography sx={styles.label}>Duration (min)</Typography>
-                        <TextField
-                            fullWidth
-                            placeholder="45"
-                            type="number"
-                            variant="outlined"
-                            sx={styles.textField}
-                            value={duration}
-                            onChange={(e) => setDuration(e.target.value)}
-                        />
-                    </Box>
-                    <Box sx={styles.rowItem}>
-                        <Typography sx={styles.label}>Calories Burned</Typography>
-                        <TextField
-                            fullWidth
-                            placeholder="350"
-                            type="number"
-                            variant="outlined"
-                            sx={styles.textField}
-                            value={calories}
-                            onChange={(e) => setCalories(e.target.value)}
-                        />
-                    </Box>
-                </Box>
-            </Box>
+            <WorkoutDetailsSection
+                workoutType={workoutType}
+                duration={duration}
+                calories={calories}
+                onWorkoutTypeChange={setWorkoutType}
+                onDurationChange={setDuration}
+                onCaloriesChange={setCalories}
+            />
         </Box>
     );
 };
