@@ -16,6 +16,8 @@ import Feed from "@/pages/Feed";
 import Profile from "@/pages/Profile";
 import NotFound from "@/pages/NotFound";
 
+import WorkoutPost from "@/pages/WorkoutPost";
+
 const queryClient = new QueryClient();
 
 const theme = createTheme({
@@ -46,10 +48,7 @@ const App = () => (
                                 <Route element={<Layout />}>
                                     <Route path="/feed" element={<Feed />} />
                                     <Route path="/profile" element={<Profile />} />
-                                    <Route path="/post" element={
-                                        // TODO
-                                        <div></div>
-                                    } />
+                                    <Route path="/workouts" element={<WorkoutPost />} />
                                 </Route>
                             </Route>
                             <Route path="*" element={<NotFound />} />
