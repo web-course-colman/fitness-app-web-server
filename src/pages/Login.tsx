@@ -17,7 +17,7 @@ import { toast } from "@/hooks/use-toast";
 
 const Login = () => {
     const navigate = useNavigate();
-    const { login, register, isAuthenticated } = useAuth();
+    const { login, register, isAuthenticated, isLoading } = useAuth();
     const [isLogin, setIsLogin] = useState(true);
     const [showPassword, setShowPassword] = useState(false);
     const [email, setEmail] = useState("");
@@ -26,6 +26,21 @@ const Login = () => {
     const [loading, setLoading] = useState(false);
 
     // Redirect if already logged in
+    if (isLoading) {
+        return (
+            <Box
+                sx={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    height: '100vh',
+                }}
+            >
+                <CircularProgress />
+            </Box>
+        );
+    }
+
     if (isAuthenticated) {
         navigate("/feed", { replace: true });
         return null;

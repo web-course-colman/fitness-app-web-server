@@ -14,8 +14,10 @@ api.interceptors.response.use(
                 await axios.get('/api/auth/refresh', { withCredentials: true });
                 return api(originalRequest);
             } catch (refreshError) {
-                // If refresh fails, we can redirect to login
-                window.location.href = '/login';
+                // Only redirect if not already on login page to avoid infinite loops
+                if (window.location.pathname !== '/login') {
+                    window.location.href = '/login';
+                }
                 return Promise.reject(refreshError);
             }
         }
