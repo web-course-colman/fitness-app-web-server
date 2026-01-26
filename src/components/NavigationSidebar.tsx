@@ -23,9 +23,12 @@ import {
     Settings,
     Menu as MenuIcon,
     Close,
+    ChevronLeft,
+    ChevronRight,
 } from "@mui/icons-material";
 
 const DRAWER_WIDTH = 280;
+const COLLAPSED_WIDTH = 80;
 
 interface NavigationItem {
     label: string;
@@ -44,9 +47,11 @@ const navigationItems: NavigationItem[] = [
 interface NavigationSidebarProps {
     mobileOpen: boolean;
     onMobileClose: () => void;
+    isCollapsed: boolean;
+    onToggleCollapse: () => void;
 }
 
-const NavigationSidebar = ({ mobileOpen, onMobileClose }: NavigationSidebarProps) => {
+const NavigationSidebar = ({ mobileOpen, onMobileClose, isCollapsed, onToggleCollapse }: NavigationSidebarProps) => {
     const navigate = useNavigate();
     const location = useLocation();
     const theme = useTheme();
@@ -65,20 +70,33 @@ const NavigationSidebar = ({ mobileOpen, onMobileClose }: NavigationSidebarProps
                 sx={{
                     display: "flex",
                     alignItems: "center",
-                    justifyContent: "space-between",
-                    px: 2,
+                    justifyContent: isCollapsed ? "center" : "space-between",
+                    px: isCollapsed ? 1 : 2,
                     minHeight: "64px !important",
                 }}
             >
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                     <FitnessCenter sx={{ color: "primary.main", fontSize: 28 }} />
-                    <Typography variant="h6" component="div" fontWeight="bold" noWrap>
-                        FitTrack
-                    </Typography>
+                    {!isCollapsed && (
+                        <Typography variant="h6" component="div" fontWeight="bold" noWrap>
+                            FitTrack
+                        </Typography>
+                    )}
                 </Box>
-                {isMobile && (
+                {isMobile ? (
                     <IconButton onClick={onMobileClose} edge="end">
                         <Close />
+                    </IconButton>
+                ) : (
+                    <IconButton
+                        onClick={onToggleCollapse}
+                        size="small"
+                        sx={{
+                            display: { xs: "none", md: "inline-flex" },
+                            position: isCollapsed ? "relative" : "static",
+                        }}
+                    >
+                        {isCollapsed ? <ChevronRight /> : <ChevronLeft />}
                     </IconButton>
                 )}
             </Toolbar>
@@ -111,17 +129,20 @@ const NavigationSidebar = ({ mobileOpen, onMobileClose }: NavigationSidebarProps
                                 <ListItemIcon
                                     sx={{
                                         color: isActive ? "primary.contrastText" : "inherit",
-                                        minWidth: 40,
+                                        minWidth: isCollapsed ? 0 : 40,
+                                        justifyContent: "center",
                                     }}
                                 >
                                     {item.icon}
                                 </ListItemIcon>
-                                <ListItemText
-                                    primary={item.label}
-                                    primaryTypographyProps={{
-                                        fontWeight: isActive ? 600 : 400,
-                                    }}
-                                />
+                                {!isCollapsed && (
+                                    <ListItemText
+                                        primary={item.label}
+                                        primaryTypographyProps={{
+                                            fontWeight: isActive ? 600 : 400,
+                                        }}
+                                    />
+                                )}
                             </ListItemButton>
                         </ListItem>
                     );
@@ -157,7 +178,12 @@ const NavigationSidebar = ({ mobileOpen, onMobileClose }: NavigationSidebarProps
                     display: { xs: "none", md: "block" },
                     "& .MuiDrawer-paper": {
                         boxSizing: "border-box",
-                        width: DRAWER_WIDTH,
+                        width: isCollapsed ? COLLAPSED_WIDTH : DRAWER_WIDTH,
+                        transition: theme.transitions.create("width", {
+                            easing: theme.transitions.easing.sharp,
+                            duration: theme.transitions.duration.enteringScreen,
+                        }),
+                        overflowX: "hidden",
                     },
                 }}
                 open
@@ -169,4 +195,4 @@ const NavigationSidebar = ({ mobileOpen, onMobileClose }: NavigationSidebarProps
 };
 
 export default NavigationSidebar;
-export { DRAWER_WIDTH };
+export { DRAWER_WIDTH, COLLAPSED_WIDTH };
