@@ -17,7 +17,7 @@ import { toast } from "@/hooks/use-toast";
 
 const Login = () => {
     const navigate = useNavigate();
-    const { login, register, isAuthenticated } = useAuth();
+    const { login, register, isAuthenticated, isLoading } = useAuth();
     const [isLogin, setIsLogin] = useState(true);
     const [showPassword, setShowPassword] = useState(false);
     const [email, setEmail] = useState("");
