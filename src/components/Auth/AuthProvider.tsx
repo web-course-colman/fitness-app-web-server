@@ -1,4 +1,5 @@
 import { type ReactNode, createContext, useCallback, useContext, useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../../services/axios';
 import axios, { HttpStatusCode } from 'axios';
 import { useLocalStorage } from '../../hooks/useLocalStorage';
@@ -42,6 +43,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const [loggedUser, setLoggedUser] = useLocalStorage<User | null>(USER_DETAILS_KEY, null);
     const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
     const [isLoading, setIsLoading] = useState(true);
+    const navigate = useNavigate();
 
     const checkAuthStatus = useCallback(async () => {
         try {
@@ -140,8 +142,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
         setIsAuthenticated(false);
         setLoggedUser(null);
-        // Optional: window.location.href = '/login'; 
-    }, [setLoggedUser]);
+        navigate('/login', { replace: true });
+    }, [setLoggedUser, navigate]);
 
     const authState = {
         isAuthenticated,

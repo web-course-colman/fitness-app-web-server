@@ -35,13 +35,13 @@ const theme = createTheme({
 
 const App = () => (
     <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-            <ThemeProvider theme={theme}>
-                <CssBaseline />
-                <TooltipProvider>
-                    <Toaster />
-                    <Sonner />
-                    <BrowserRouter>
+        <ThemeProvider theme={theme}>
+            <CssBaseline />
+            <TooltipProvider>
+                <Toaster />
+                <Sonner />
+                <BrowserRouter>
+                    <AuthProvider>
                         <Routes>
                             <Route path="/" element={<Index />} />
                             <Route path="/login" element={<Login />} />
@@ -55,10 +55,10 @@ const App = () => (
                             </Route>
                             <Route path="*" element={<NotFound />} />
                         </Routes>
-                    </BrowserRouter>
-                </TooltipProvider>
-            </ThemeProvider>
-        </AuthProvider>
+                    </AuthProvider>
+                </BrowserRouter>
+            </TooltipProvider>
+        </ThemeProvider>
     </QueryClientProvider>
 );
 
