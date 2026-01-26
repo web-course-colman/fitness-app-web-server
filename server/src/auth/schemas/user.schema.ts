@@ -22,6 +22,27 @@ export class User {
 
     @Prop({ required: false })
     refreshToken?: string;
+
+    @Prop({
+        type: {
+            pushNotifications: { type: Boolean, default: true },
+            darkMode: { type: Boolean, default: false },
+            units: { type: String, default: 'metric' },
+            weeklyGoal: { type: Number, default: 3 },
+        },
+        default: {
+            pushNotifications: true,
+            darkMode: false,
+            units: 'metric',
+            weeklyGoal: 3,
+        },
+    })
+    preferences: {
+        pushNotifications: boolean;
+        darkMode: boolean;
+        units: string;
+        weeklyGoal: number;
+    };
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

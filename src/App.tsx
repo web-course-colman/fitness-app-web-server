@@ -1,6 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { ThemeProvider, createTheme } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 
 import Layout from "@/components/Layout";
@@ -10,37 +9,26 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 
 import { ProtectedRoute } from "@/components/Auth/ProtectedRoute";
 import { AuthProvider } from "@/components/Auth/AuthProvider";
+import AppThemeProvider from "@/components/Theme/AppThemeProvider";
 import Index from "@/pages/index";
 import Login from "@/pages/Login";
 import Feed from "@/pages/Feed";
 import Profile from "@/pages/Profile";
+import Preferences from "@/pages/Preferences";
 import NotFound from "@/pages/NotFound";
 
 import WorkoutPost from "@/pages/WorkoutPost";
 
 const queryClient = new QueryClient();
 
-const theme = createTheme({
-    palette: {
-        mode: "light",
-        primary: {
-            main: "#1976d2",
-        },
-        secondary: {
-            main: "#dc004e",
-        },
-    },
-});
-
 const App = () => (
     <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-            <ThemeProvider theme={theme}>
-                <CssBaseline />
-                <TooltipProvider>
-                    <Toaster />
-                    <Sonner />
-                    <BrowserRouter>
+        <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+                <AuthProvider>
+                    <AppThemeProvider>
                         <Routes>
                             <Route path="/" element={<Index />} />
                             <Route path="/login" element={<Login />} />
@@ -49,14 +37,15 @@ const App = () => (
                                     <Route path="/feed" element={<Feed />} />
                                     <Route path="/profile" element={<Profile />} />
                                     <Route path="/workouts" element={<WorkoutPost />} />
+                                    <Route path="/preferences" element={<Preferences />} />
                                 </Route>
                             </Route>
                             <Route path="*" element={<NotFound />} />
                         </Routes>
-                    </BrowserRouter>
-                </TooltipProvider>
-            </ThemeProvider>
-        </AuthProvider>
+                    </AppThemeProvider>
+                </AuthProvider>
+            </BrowserRouter>
+        </TooltipProvider>
     </QueryClientProvider>
 );
 

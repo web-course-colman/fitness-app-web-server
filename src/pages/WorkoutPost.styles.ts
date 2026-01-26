@@ -42,16 +42,16 @@ export const useStyles = makeStyles((theme) => ({
     label: {
         fontWeight: 600,
         fontSize: "0.9rem",
-        color: "#2c3e50",
+        color: theme.palette.text.primary,
     },
     textField: {
         "& .MuiOutlinedInput-root": {
-            backgroundColor: "#f8fafc",
+            backgroundColor: theme.palette.mode === "dark" ? "#2c2c2c" : "#f8fafc",
             "& fieldset": {
-                borderColor: "#e2e8f0",
+                borderColor: theme.palette.mode === "dark" ? "rgba(255, 255, 255, 0.23)" : "#e2e8f0",
             },
             "&:hover fieldset": {
-                borderColor: "#cbd5e1",
+                borderColor: theme.palette.mode === "dark" ? "rgba(255, 255, 255, 0.87)" : "#cbd5e1",
             },
             "&.Mui-focused fieldset": {
                 borderColor: theme.palette.primary.main,
@@ -61,7 +61,7 @@ export const useStyles = makeStyles((theme) => ({
     photoSection: {
         width: "100%",
         minHeight: 100,
-        border: "1px solid #e2e8f0",
+        border: `1px solid ${theme.palette.divider}`,
         borderRadius: "4px",
         display: "flex",
         alignItems: "center",
@@ -69,10 +69,10 @@ export const useStyles = makeStyles((theme) => ({
         flexDirection: "column",
         gap: theme.spacing(1),
         cursor: "pointer",
-        backgroundColor: "#f8fafc",
+        backgroundColor: theme.palette.mode === "dark" ? "#1e1e1e" : "#f8fafc",
         padding: theme.spacing(2),
         "&:hover": {
-            backgroundColor: "#f1f5f9",
+            backgroundColor: theme.palette.mode === "dark" ? "#2c2c2c" : "#f1f5f9",
         },
     },
     previewGrid: {
@@ -105,7 +105,7 @@ export const useStyles = makeStyles((theme) => ({
     },
     workoutDetailsBox: {
         padding: theme.spacing(3),
-        border: "1px solid #e2e8f0",
+        border: `1px solid ${theme.palette.divider}`,
         borderRadius: "4px",
         display: "flex",
         flexDirection: "column",

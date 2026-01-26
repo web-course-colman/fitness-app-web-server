@@ -1,4 +1,5 @@
 import { type ReactNode, createContext, useCallback, useContext, useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../../services/axios';
 import axios, { HttpStatusCode } from 'axios';
 import { useLocalStorage } from '../../hooks/useLocalStorage';
@@ -12,6 +13,7 @@ interface AuthContextType {
     login: (username: string, password: string) => Promise<LoginResult>;
     register: (username: string, password: string, name: string, lastName: string) => Promise<LoginResult>;
     logout: () => void;
+    refreshProfile: () => Promise<void>;
 }
 
 export type User = {
@@ -20,6 +22,12 @@ export type User = {
     lastName: string;
     username: string;
     picture?: string;
+    preferences: {
+        pushNotifications: boolean;
+        darkMode: boolean;
+        units: string;
+        weeklyGoal: number;
+    };
     loggedInAt: number; // epoch time
 };
 
@@ -35,16 +43,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const [loggedUser, setLoggedUser] = useLocalStorage<User | null>(USER_DETAILS_KEY, null);
     const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
     const [isLoading, setIsLoading] = useState(true);
+    const navigate = useNavigate();
 
     const checkAuthStatus = useCallback(async () => {
         try {
             const { data } = await api.get('/api/auth/profile');
             setLoggedUser({
-                userId: data.userId,
+                userId: data._id || data.userId,
                 name: data.name,
                 lastName: data.lastName,
                 username: data.username,
                 picture: data.picture,
+                preferences: data.preferences,
                 loggedInAt: Date.now(),
             });
             setIsAuthenticated(true);
@@ -132,8 +142,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
         setIsAuthenticated(false);
         setLoggedUser(null);
-        // Optional: window.location.href = '/login'; 
-    }, [setLoggedUser]);
+        navigate('/login', { replace: true });
+    }, [setLoggedUser, navigate]);
 
     const authState = {
         isAuthenticated,
@@ -142,6 +152,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         login,
         register,
         logout,
+        refreshProfile: checkAuthStatus,
         loggedUser
     };
 
