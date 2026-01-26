@@ -15,6 +15,7 @@ interface AuthContextType {
 }
 
 export type User = {
+    userId: string;
     name: string;
     lastName: string;
     username: string;
@@ -39,6 +40,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         try {
             const { data } = await api.get('/api/auth/profile');
             setLoggedUser({
+                userId: data.userId,
                 name: data.name,
                 lastName: data.lastName,
                 username: data.username,

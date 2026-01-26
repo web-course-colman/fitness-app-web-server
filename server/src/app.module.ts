@@ -4,6 +4,7 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { MongooseModule } from '@nestjs/mongoose';
 import { join } from 'path';
 import { AuthModule } from './auth/auth.module';
+import { PostsModule } from './posts/posts.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { AuthModule } from './auth/auth.module';
       rootPath: join(__dirname, '..', '..', 'dist'),
     }),
     AuthModule,
+    PostsModule,
   ],
 })
 export class AppModule { }

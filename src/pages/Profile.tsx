@@ -9,23 +9,26 @@ import { useStyles } from "./Profile.styles";
 import ProfileHeader from "../components/Profile/ProfileHeader";
 import StatsCard from "../components/Profile/StatsCard";
 import AchievementsList from "../components/Profile/AchievementsList";
+import { useAuth } from "../components/Auth/AuthProvider";
+import { useUserPosts } from "../hooks/usePosts";
 
 const Profile = () => {
     const classes = useStyles();
+    const { loggedUser } = useAuth();
+    const { data: posts } = useUserPosts();
 
-    // Mock data based on the uploaded image
     const user = {
-        name: "guy",
-        handle: "@user",
-        bio: "Fitness enthusiast | Building strength \uD83D\uDCAA",
-        avatarUrl: "", // Empty to show initials 'G'
-        initials: "G"
+        name: `${loggedUser?.name || ""} ${loggedUser?.lastName || ""}`.trim() || "User",
+        handle: `@${loggedUser?.username || "user"}`,
+        bio: "Fitness enthusiast | Building strength 💪",
+        avatarUrl: loggedUser?.picture || "",
+        initials: loggedUser?.name ? loggedUser.name.charAt(0).toUpperCase() : "U"
     };
 
     const stats = [
         { label: "Workouts", value: 0, icon: <WorkoutIcon /> },
         { label: "Streak", value: "0 days", icon: <FireIcon /> },
-        { label: "Posts", value: 0, icon: <PostIcon /> },
+        { label: "Posts", value: posts?.length || 0, icon: <PostIcon /> },
     ];
 
     const achievements = [
@@ -69,5 +72,6 @@ const Profile = () => {
         </Box>
     );
 };
+
 
 export default Profile;
