@@ -142,3 +142,4 @@ vite.config.ts.timestamp-*
 server/dummy-data.json
 server/seed.js
 
+.agent/*

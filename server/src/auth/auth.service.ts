@@ -47,7 +47,7 @@ export class AuthService {
     async login(loginDto: LoginDto): Promise<{
         access_token: string;
         refresh_token: string;
-        user: { name: string; lastName: string; username: string; picture?: string };
+        user: { name: string; lastName: string; username: string; picture?: string; preferences: any };
     }> {
         const { username, password } = loginDto;
 
@@ -73,6 +73,7 @@ export class AuthService {
                 lastName: user.lastName,
                 username: user.username,
                 picture: user.picture,
+                preferences: user.preferences,
             },
         };
     }
@@ -167,5 +168,17 @@ export class AuthService {
             picture: user.picture,
         };
         return this.jwtService.sign(payload);
+    }
+
+    async updatePreferences(userId: string, preferences: any) {
+        return this.userModel.findByIdAndUpdate(
+            userId,
+            { $set: { preferences } },
+            { new: true },
+        ).exec();
+    }
+
+    async getUserById(userId: string) {
+        return this.userModel.findById(userId).exec();
     }
 }

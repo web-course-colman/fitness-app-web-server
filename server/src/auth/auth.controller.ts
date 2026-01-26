@@ -4,6 +4,7 @@ import type { Response, Request } from 'express';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { SigninDto } from './dto/signin.dto';
+import { UpdatePreferencesDto } from './dto/update-preferences.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -61,8 +62,9 @@ export class AuthController {
 
     @Get('profile')
     @UseGuards(AuthGuard('jwt'))
-    getProfile(@Req() req: Request) {
-        return req.user;
+    async getProfile(@Req() req: any) {
+        const user = await this.authService.getUserById(req.user.userId);
+        return user;
     }
 
     @Get('refresh')
@@ -94,5 +96,12 @@ export class AuthController {
         response.clearCookie('Authentication');
         response.clearCookie('Refresh');
         return { message: 'Logged out' };
+    }
+
+    @Post('preferences')
+    @UseGuards(AuthGuard('jwt'))
+    async updatePreferences(@Req() req, @Body() updatePreferencesDto: UpdatePreferencesDto) {
+        const userId = req.user.userId;
+        return this.authService.updatePreferences(userId, updatePreferencesDto);
     }
 }
