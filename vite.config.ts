@@ -7,6 +7,12 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 8080,
+    proxy: {
+      "/api": {
+        target: "http://localhost:3002",
+        changeOrigin: true,
+      },
+    },
   },
   plugins: react(),
   resolve: {
@@ -15,3 +21,4 @@ export default defineConfig(({ mode }) => ({
     },
   },
 }));
+
