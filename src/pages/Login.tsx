@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
     Box,
@@ -26,23 +26,13 @@ const Login = () => {
     const [loading, setLoading] = useState(false);
 
     // Redirect if already logged in
-    if (isLoading) {
-        return (
-            <Box
-                sx={{
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    height: '100vh',
-                }}
-            >
-                <CircularProgress />
-            </Box>
-        );
-    }
+    useEffect(() => {
+        if (isAuthenticated) {
+            navigate("/feed", { replace: true });
+        }
+    }, [isAuthenticated, navigate]);
 
     if (isAuthenticated) {
-        navigate("/feed", { replace: true });
         return null;
     }
 

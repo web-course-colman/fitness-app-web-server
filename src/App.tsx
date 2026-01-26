@@ -13,6 +13,7 @@ import { AuthProvider } from "@/components/Auth/AuthProvider";
 import Index from "@/pages/index";
 import Login from "@/pages/Login";
 import Feed from "@/pages/Feed";
+import Profile from "@/pages/Profile";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -43,9 +44,8 @@ const App = () => (
                             <Route path="/login" element={<Login />} />
                             <Route element={<ProtectedRoute />}>
                                 <Route element={<Layout />}>
-                                    <Route path="/feed" element={
-                                        <Feed />
-                                    } />
+                                    <Route path="/feed" element={<Feed />} />
+                                    <Route path="/profile" element={<Profile />} />
                                 </Route>
                             </Route>
                             <Route path="*" element={<NotFound />} />

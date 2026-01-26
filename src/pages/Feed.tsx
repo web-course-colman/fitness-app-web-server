@@ -17,7 +17,13 @@ const Feed = () => {
 
     const getInitials = (name: string | null) => {
         if (!name) return "U";
-        return name.split(" ").map(n => n[0]).join("").toUpperCase();
+        return name.split(" ").filter(Boolean).map(n => n[0]).join("").toUpperCase();
+    };
+
+    const formatDate = (dateString: string) => {
+        const date = new Date(dateString);
+        if (isNaN(date.getTime())) return "Unknown date";
+        return formatDistanceToNow(date, { addSuffix: true });
     };
 
     return (
@@ -43,24 +49,24 @@ const Feed = () => {
                     </Box>
                 ) : (
                     posts?.map((post) => (
-                        <Card key={post.id} elevation={1}>
+                        <Card key={post._id} elevation={1}>
                             <CardHeader
                                 avatar={
                                     <Avatar
-                                        src={post.profiles?.avatar_url || undefined}
+                                        src={post.author?.picture || undefined}
                                         sx={{ bgcolor: "primary.main" }}
                                     >
-                                        {getInitials(post.profiles?.full_name || null)}
+                                        {getInitials(post.author ? `${post.author.name} ${post.author.lastName}` : null)}
                                     </Avatar>
                                 }
                                 title={
                                     <Typography variant="subtitle1" fontWeight="semibold">
-                                        {post.profiles?.full_name || "Anonymous"}
+                                        {post.author ? `${post.author.name} ${post.author.lastName}` : "Anonymous"}
                                     </Typography>
                                 }
                                 subheader={
                                     <Typography variant="caption" color="text.secondary">
-                                        {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
+                                        {formatDate(post.createdAt)}
                                     </Typography>
                                 }
                                 sx={{ pb: 1 }}
@@ -70,13 +76,13 @@ const Feed = () => {
                                     <Typography variant="subtitle2" fontWeight="medium">
                                         {post.title}
                                     </Typography>
-                                    {post.content && (
+                                    {post.description && (
                                         <Typography variant="body2" color="text.primary">
-                                            {post.content}
+                                            {post.description}
                                         </Typography>
                                     )}
 
-                                    {post.workout_type && (
+                                    {post.workoutDetails?.type && (
                                         <Box
                                             sx={{
                                                 bgcolor: "action.hover",
@@ -84,19 +90,19 @@ const Feed = () => {
                                                 borderRadius: 1,
                                             }}
                                         >
-                                            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: post.calories_burned ? 0.5 : 0 }}>
+                                            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: post.workoutDetails.calories ? 0.5 : 0 }}>
                                                 <Typography variant="body2" fontWeight="medium">
-                                                    {post.workout_type}
+                                                    {post.workoutDetails.type}
                                                 </Typography>
-                                                {post.duration_minutes && (
+                                                {post.workoutDetails.duration && (
                                                     <Typography variant="caption" color="text.secondary">
-                                                        {post.duration_minutes} min
+                                                        {post.workoutDetails.duration} min
                                                     </Typography>
                                                 )}
                                             </Box>
-                                            {post.calories_burned && (
+                                            {post.workoutDetails.calories && (
                                                 <Typography variant="caption" color="text.secondary">
-                                                    🔥 {post.calories_burned} calories burned
+                                                    🔥 {post.workoutDetails.calories} calories burned
                                                 </Typography>
                                             )}
                                         </Box>
@@ -119,7 +125,7 @@ const Feed = () => {
                                                 startIcon={<Favorite />}
                                                 sx={{ textTransform: "none" }}
                                             >
-                                                {post.likes_count}
+                                                0
                                             </Button>
                                             <Button
                                                 variant="text"

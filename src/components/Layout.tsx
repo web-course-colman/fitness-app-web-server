@@ -1,17 +1,25 @@
 import { useState } from "react";
 import { Avatar, Box, AppBar, Toolbar, IconButton, useTheme, useMediaQuery, Typography } from "@mui/material";
+import { Outlet } from "react-router-dom";
 import { Menu as MenuIcon } from "@mui/icons-material";
-import NavigationSidebar, { DRAWER_WIDTH } from "./NavigationSidebar";
+import NavigationSidebar, { DRAWER_WIDTH, COLLAPSED_WIDTH } from "./NavigationSidebar";
 import { useAuth } from "./Auth/AuthProvider";
 
 const Layout = () => {
     const [mobileOpen, setMobileOpen] = useState(false);
+    const [isCollapsed, setIsCollapsed] = useState(false);
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down("md"));
     const { loggedUser } = useAuth();
 
+    const currentDrawerWidth = isCollapsed ? COLLAPSED_WIDTH : DRAWER_WIDTH;
+
     const handleDrawerToggle = () => {
         setMobileOpen(!mobileOpen);
+    };
+
+    const handleToggleCollapse = () => {
+        setIsCollapsed(!isCollapsed);
     };
 
     const getInitials = (name: string, lastName: string) => {
@@ -23,8 +31,12 @@ const Layout = () => {
             <AppBar
                 position="fixed"
                 sx={{
-                    width: { md: `calc(100% - ${DRAWER_WIDTH}px)` },
-                    ml: { md: `${DRAWER_WIDTH}px` },
+                    width: { md: `calc(100% - ${currentDrawerWidth}px)` },
+                    ml: { md: `${currentDrawerWidth}px` },
+                    transition: theme.transitions.create(["width", "margin"], {
+                        easing: theme.transitions.easing.sharp,
+                        duration: theme.transitions.duration.enteringScreen,
+                    }),
                 }}
             >
                 <Toolbar sx={{ justifyContent: "space-between" }}>
@@ -63,20 +75,32 @@ const Layout = () => {
             </AppBar>
 
             {/* Navigation Sidebar */}
-            <NavigationSidebar mobileOpen={mobileOpen} onMobileClose={handleDrawerToggle} />
+            <NavigationSidebar
+                mobileOpen={mobileOpen}
+                onMobileClose={handleDrawerToggle}
+                isCollapsed={isCollapsed}
+                onToggleCollapse={handleToggleCollapse}
+            />
 
             {/* Main content */}
             <Box
                 component="main"
                 sx={{
                     flexGrow: 1,
-                    width: { md: `calc(100% - ${DRAWER_WIDTH}px)` },
+                    width: { md: `calc(100% - ${currentDrawerWidth}px)` },
+                    ml: { md: `${currentDrawerWidth}px` },
                     minHeight: "100vh",
                     bgcolor: "background.default",
+                    transition: theme.transitions.create(["width", "margin"], {
+                        easing: theme.transitions.easing.sharp,
+                        duration: theme.transitions.duration.enteringScreen,
+                    }),
                 }}
             >
                 <Toolbar /> {/* Spacer for fixed AppBar */}
-                {/* <Box sx={{ p: { xs: 2, sm: 3 } }}>{children}</Box> */}
+                <Box sx={{ p: { xs: 2, sm: 3 } }}>
+                    <Outlet />
+                </Box>
             </Box>
         </Box>
     );

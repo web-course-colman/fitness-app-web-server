@@ -1,52 +1,45 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import api from "../services/axios";
+import { useAuth } from "../components/Auth/AuthProvider";
 
 export interface Post {
-  id: string;
-  user_id: string;
-  title: string;
-  content: string | null;
-  workout_type: string | null;
-  duration_minutes: number | null;
-  calories_burned: number | null;
-  image_url: string | null;
-  likes_count: number;
-  created_at: string;
-  updated_at: string;
-  profiles?: {
-    full_name: string | null;
-    username: string | null;
-    avatar_url: string | null;
+  _id: string;
+  author: {
+    _id: string;
+    name: string;
+    lastName: string;
+    username: string;
+    picture?: string;
   };
+  title: string;
+  description?: string;
+  workoutDetails?: {
+    type?: string;
+    duration?: number;
+    calories?: number;
+  };
+  pictures?: string[];
+  createdAt: string;
+  updatedAt: string;
 }
 
 export function usePosts() {
   return useQuery<Post[]>({
     queryKey: ["posts"],
     queryFn: async () => {
-      // Get posts first
-      // TODO: Implement actual API call
-      
-      // Get profiles for each unique user_id
-      return [];
+      const { data } = await api.get("/api/posts");
+      return data;
     },
   });
 }
 
 export function useCreatePost() {
   const queryClient = useQueryClient();
-//   const { user } = useAuth();
 
   return useMutation({
-    mutationFn: async (post: {
-      title: string;
-      content?: string;
-      workout_type?: string;
-      duration_minutes?: number;
-      calories_burned?: number;
-    }) => {
-    //   if (!user) throw new Error("Not authenticated");
-      
-    //  insert new post
+    mutationFn: async (post: Partial<Post>) => {
+      const { data } = await api.post("/api/posts", post);
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["posts"] });
@@ -55,16 +48,16 @@ export function useCreatePost() {
 }
 
 export function useUserPosts() {
-//   const { user } = useAuth();
+  const { loggedUser } = useAuth();
 
-  return useQuery({
-    queryKey: ["posts", "user", /*user?.id*/],
+  return useQuery<Post[]>({
+    queryKey: ["posts", "user", loggedUser?.userId],
     queryFn: async () => {
-    //   if (!user) return [];
-      
-      // get all user posts
-
+      if (!loggedUser?.userId) return [];
+      const { data } = await api.get(`/api/posts/author/${loggedUser.userId}`);
+      return data;
     },
-    // enabled: !!user,
+    enabled: !!loggedUser?.userId,
   });
 }
+
