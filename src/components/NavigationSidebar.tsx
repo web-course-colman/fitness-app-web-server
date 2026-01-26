@@ -41,7 +41,7 @@ const navigationItems: NavigationItem[] = [
     { label: "Workouts", path: "/workouts", icon: <FitnessCenter /> },
     { label: "Progress", path: "/progress", icon: <TrendingUp /> },
     { label: "Profile", path: "/profile", icon: <Person /> },
-    { label: "Settings", path: "/settings", icon: <Settings /> },
+    { label: "Settings", path: "/preferences", icon: <Settings /> },
 ];
 
 interface NavigationSidebarProps {

@@ -14,6 +14,7 @@ import Index from "@/pages/index";
 import Login from "@/pages/Login";
 import Feed from "@/pages/Feed";
 import Profile from "@/pages/Profile";
+import Preferences from "@/pages/Preferences";
 import NotFound from "@/pages/NotFound";
 
 import WorkoutPost from "@/pages/WorkoutPost";
@@ -49,10 +50,7 @@ const App = () => (
                                     <Route path="/feed" element={<Feed />} />
                                     <Route path="/profile" element={<Profile />} />
                                     <Route path="/workouts" element={<WorkoutPost />} />
-                                    <Route path="/preferences" element={
-                                        // TODO
-                                        <div></div>
-                                    } />
+                                    <Route path="/preferences" element={<Preferences />} />
                                 </Route>
                             </Route>
                             <Route path="*" element={<NotFound />} />

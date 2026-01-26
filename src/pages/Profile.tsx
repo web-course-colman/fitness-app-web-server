@@ -44,9 +44,6 @@ const Profile = () => {
                 <Typography variant="h4" fontWeight="bold">
                     Profile
                 </Typography>
-                <IconButton>
-                    <SettingsIcon />
-                </IconButton>
             </Box>
 
             <ProfileHeader
