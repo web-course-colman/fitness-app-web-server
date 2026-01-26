@@ -19,6 +19,9 @@ export class User {
 
     @Prop({ required: false })
     picture?: string;
+
+    @Prop({ required: false })
+    refreshToken?: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

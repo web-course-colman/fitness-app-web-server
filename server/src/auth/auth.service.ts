@@ -46,6 +46,7 @@ export class AuthService {
 
     async login(loginDto: LoginDto): Promise<{
         access_token: string;
+        refresh_token: string;
         user: { name: string; lastName: string; username: string; picture?: string };
     }> {
         const { username, password } = loginDto;
@@ -62,18 +63,11 @@ export class AuthService {
             throw new UnauthorizedException('Invalid credentials');
         }
 
-        // Generate JWT token
-        const payload = {
-            sub: user._id,
-            username: user.username,
-            name: user.name,
-            lastName: user.lastName,
-        };
-
-        const access_token = this.jwtService.sign(payload);
+        const tokens = await this.getTokens(user);
+        await this.updateRefreshToken(user._id.toString(), tokens.refresh_token);
 
         return {
-            access_token,
+            ...tokens,
             user: {
                 name: user.name,
                 lastName: user.lastName,
@@ -101,7 +95,7 @@ export class AuthService {
         // Create new user
         const placeholderPassword = await bcrypt.hash(Math.random().toString(36), 10);
 
-        user = new this.userModel({
+        const newUser = new this.userModel({
             username: email,
             password: placeholderPassword,
             name: firstName,
@@ -109,7 +103,59 @@ export class AuthService {
             picture,
         });
 
-        return user.save();
+        const savedUser = await newUser.save();
+        return savedUser;
+    }
+
+    async getTokens(user: UserDocument) {
+        const payload = {
+            sub: user._id,
+            username: user.username,
+            name: user.name,
+            lastName: user.lastName,
+            picture: user.picture,
+        };
+
+        const [at, rt] = await Promise.all([
+            this.jwtService.signAsync(payload, {
+                expiresIn: '15m',
+            }),
+            this.jwtService.signAsync(payload, {
+                expiresIn: '7d',
+            }),
+        ]);
+
+        return {
+            access_token: at,
+            refresh_token: rt,
+        };
+    }
+
+    async refreshTokens(userId: string, refreshToken: string) {
+        const user = await this.userModel.findById(userId).exec();
+        if (!user || !user.refreshToken) {
+            throw new UnauthorizedException('Access Denied');
+        }
+
+        const refreshTokenMatches = await bcrypt.compare(refreshToken, user.refreshToken);
+        if (!refreshTokenMatches) {
+            throw new UnauthorizedException('Access Denied');
+        }
+
+        const tokens = await this.getTokens(user);
+        await this.updateRefreshToken(user._id.toString(), tokens.refresh_token);
+        return tokens;
+    }
+
+    async updateRefreshToken(userId: string, refreshToken: string) {
+        const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
+        await this.userModel.findByIdAndUpdate(userId, {
+            refreshToken: hashedRefreshToken,
+        });
+    }
+
+    decodeToken(token: string) {
+        return this.jwtService.decode(token);
     }
 
     generateJwt(user: UserDocument) {
