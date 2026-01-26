@@ -53,6 +53,7 @@ const Layout = () => {
                                 src={loggedUser.picture}
                                 alt={`${loggedUser.name} ${loggedUser.lastName}`}
                                 sx={{ bgcolor: theme.palette.secondary.main }}
+                                imgProps={{ referrerPolicy: "no-referrer" }}
                             >
                                 {getInitials(loggedUser.name, loggedUser.lastName)}
                             </Avatar>
