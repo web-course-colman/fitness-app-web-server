@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "../services/axios";
-import { useAuth } from "../components/Auth/AuthProvider";
+import { useAuth, User } from "../components/Auth/AuthProvider";
 
 export interface Post {
   _id: string;
@@ -19,6 +19,8 @@ export interface Post {
     calories?: number;
   };
   pictures?: string[];
+  likes: { username: string; picture?: string }[];
+  likeNumber: number;
   createdAt: string;
   updatedAt: string;
 }

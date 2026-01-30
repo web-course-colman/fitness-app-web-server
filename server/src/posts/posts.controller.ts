@@ -1,7 +1,9 @@
-import { Controller, Get, Post, Body, UseGuards, Request, Param, NotFoundException } from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards, Request, Param, NotFoundException, Put } from '@nestjs/common';
 import { PostsService } from './posts.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { AuthGuard } from '@nestjs/passport';
+import { User } from 'src/auth/schemas/user.schema';
+import { Types } from 'mongoose';
 
 @Controller('posts')
 export class PostsController {
@@ -30,5 +32,16 @@ export class PostsController {
             throw new NotFoundException(`Post with ID ${id} not found`);
         }
         return post;
+    }
+
+    @UseGuards(AuthGuard('jwt'))
+    @Put('like')
+    async likeOrUnlikePost(@Body() postId: string, @Request() req) {
+        try {
+            const res = await this.postsService.likePost(postId, req.user.userId);
+            return res
+        } catch (err) {
+            return err;
+        }
     }
 }

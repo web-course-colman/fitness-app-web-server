@@ -7,12 +7,15 @@ import {
     Box,
     Button,
 } from "@mui/material";
-import { Favorite, ChatBubbleOutline, Share as ShareIcon } from "@mui/icons-material";
+import { Favorite, ChatBubbleOutline, Share as ShareIcon, FavoriteBorder } from "@mui/icons-material";
 import { formatDistanceToNow } from "date-fns";
 import { useStyles } from "../../pages/Feed.styles";
 import { Post } from "@/hooks/usePosts";
 import PostImages from "./PostImages";
 import PostWorkoutDetails from "./PostWorkoutDetails";
+import { useCallback, useEffect, useState } from "react";
+import api from "@/services/axios";
+import { useAuth } from "../Auth/AuthProvider";
 
 interface PostCardProps {
     post: Post;
@@ -20,6 +23,24 @@ interface PostCardProps {
 
 const PostCard = ({ post }: PostCardProps) => {
     const classes = useStyles();
+    const { loggedUser } = useAuth()
+    const [postLikes, setPostLikes] = useState<number>(post.likeNumber);
+    const [isLikedByUser, setIsLiked] = useState<boolean>(!!post.likes?.find(like => like.username === loggedUser.username));
+
+    const handleLikePost = useCallback(async () => {
+        try {
+            const res = await api.put('/api/posts/like', { _id: post._id })
+            if (res) {
+                setIsLiked(prev => {
+                    const nextLiked = !prev;
+                    setPostLikes(count => nextLiked ? count + 1 : count - 1);
+                    return nextLiked;
+                });
+            }
+        } catch (error) {
+            console.error('Failed to like post:', error);
+        }
+    }, [post._id]);
 
     const getInitials = (name: string | null) => {
         if (!name) return "U";
@@ -78,12 +99,12 @@ const PostCard = ({ post }: PostCardProps) => {
                     <Box sx={classes.actionsContainer}>
                         <Box sx={classes.actionButtons}>
                             <Button
-                                variant="text"
                                 size="small"
-                                startIcon={<Favorite />}
+                                startIcon={isLikedByUser ? <Favorite /> : <FavoriteBorder />}
                                 sx={classes.actionButton}
+                                onClick={handleLikePost}
                             >
-                                0
+                                {postLikes}
                             </Button>
                             <Button
                                 variant="text"
