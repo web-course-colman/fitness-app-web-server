@@ -1,4 +1,4 @@
-import { Box, Card, Avatar, Typography, Button, Tooltip } from "@mui/material";
+import { Box, Card, Avatar, Typography, Button, Tooltip, Divider } from "@mui/material";
 import { Edit as EditIcon, EmojiEvents as TrophyIcon } from "@mui/icons-material";
 import { useStyles } from "../../pages/Profile.styles";
 
@@ -28,46 +28,50 @@ const ProfileHeader = ({ name, handle, bio, avatarUrl, initials, stats, achievem
     const classes = useStyles();
 
     return (
-        <Card sx={classes.profileCard}>
+        <Box sx={classes.profileCard}>
             <Box sx={classes.userInfo}>
-                <Avatar src={avatarUrl} sx={classes.avatar}>
-                    {initials}
-                </Avatar>
-                <Box sx={classes.details}>
-                    <Typography variant="h5" sx={classes.userName}>
-                        {name}
-                    </Typography>
-                    <Typography variant="body1" sx={classes.userHandle}>
-                        {handle}
-                    </Typography>
-                    <Typography variant="body2" sx={classes.bio}>
-                        {bio}
-                    </Typography>
+                <Box sx={classes.userInfo}>
+                    <Avatar src={avatarUrl} sx={classes.avatar}>
+                        {initials}
+                    </Avatar>
+                    <Box sx={classes.details}>
+                        <Typography variant="h5" sx={classes.userName}>
+                            {name}
+                        </Typography>
+                        <Typography variant="body1" sx={classes.userHandle}>
+                            {handle}
+                        </Typography>
+                        <Typography variant="body2" sx={classes.bio}>
+                            {bio}
+                        </Typography>
 
-                    <Box sx={classes.minimizedAchievementsRow}>
-                        {achievements.map((achievement) => (
-                            <Tooltip key={achievement.id} title={`${achievement.name}: ${achievement.description}`}>
-                                <Avatar sx={classes.minimizedAchievementIcon}>
-                                    <TrophyIcon sx={{ fontSize: '1.2rem' }} />
-                                </Avatar>
-                            </Tooltip>
-                        ))}
+                        <Box sx={classes.minimizedAchievementsRow}>
+                            {achievements.map((achievement) => (
+                                <Tooltip key={achievement.id} title={`${achievement.name}: ${achievement.description}`}>
+                                    <Avatar sx={classes.minimizedAchievementIcon}>
+                                        <TrophyIcon sx={{ fontSize: '1.2rem' }} />
+                                    </Avatar>
+                                </Tooltip>
+                            ))}
+                        </Box>
                     </Box>
+                </Box>
+                <Box sx={classes.minimizedStatsRow}>
+                    {stats.map((stat, index) => (
+                        <>
+                            <Box key={index} sx={classes.minimizedStatItem}>
+                                <Typography sx={classes.minimizedStatValue}>
+                                    {stat.value}
+                                </Typography>
+                                <Typography sx={classes.minimizedStatLabel}>
+                                    {stat.label}
+                                </Typography>
+                            </Box>
+                        </>
+                    ))}
                 </Box>
             </Box>
 
-            <Box sx={classes.minimizedStatsRow}>
-                {stats.map((stat, index) => (
-                    <Box key={index} sx={classes.minimizedStatItem}>
-                        <Typography sx={classes.minimizedStatValue}>
-                            {stat.value}
-                        </Typography>
-                        <Typography sx={classes.minimizedStatLabel}>
-                            {stat.label}
-                        </Typography>
-                    </Box>
-                ))}
-            </Box>
 
             <Button
                 variant="outlined"
@@ -77,7 +81,7 @@ const ProfileHeader = ({ name, handle, bio, avatarUrl, initials, stats, achievem
             >
                 Edit Profile
             </Button>
-        </Card>
+        </Box>
     );
 };
 

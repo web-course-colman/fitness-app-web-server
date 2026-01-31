@@ -2,12 +2,11 @@ import { makeStyles } from "@/hooks/makeStyles";
 
 export const useStyles = makeStyles((theme) => ({
     container: {
-        padding: theme.spacing(3),
+        padding: theme.spacing(2),
         maxWidth: 1200,
         margin: "0 auto",
         display: "flex",
         flexDirection: "column",
-        gap: theme.spacing(4),
     },
     headerContainer: {
         display: "flex",
@@ -23,6 +22,7 @@ export const useStyles = makeStyles((theme) => ({
     },
     userInfo: {
         display: "flex",
+        justifyContent: "space-between",
         gap: theme.spacing(3),
         alignItems: "center",
     },
@@ -49,8 +49,7 @@ export const useStyles = makeStyles((theme) => ({
         display: "flex",
         gap: theme.spacing(3),
         marginTop: theme.spacing(2),
-        borderTop: `1px solid ${theme.palette.divider}`,
-        paddingTop: theme.spacing(2),
+        padding: theme.spacing(4),
     },
     minimizedStatItem: {
         display: "flex",
@@ -152,7 +151,7 @@ export const useStyles = makeStyles((theme) => ({
     postsSection: {
         display: "flex",
         flexDirection: "column",
-        gap: theme.spacing(2),
+        gap: theme.spacing(1),
     },
     postsTitle: {
         fontSize: "1.25rem",
@@ -162,5 +161,6 @@ export const useStyles = makeStyles((theme) => ({
         display: "flex",
         flexDirection: "column",
         gap: theme.spacing(2),
+        padding: theme.spacing(1, 5),
     },
 }));

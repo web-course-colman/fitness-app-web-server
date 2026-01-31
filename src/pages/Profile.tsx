@@ -25,9 +25,8 @@ const Profile = () => {
     };
 
     const stats = [
-        { label: "Workouts", value: 0, icon: <WorkoutIcon /> },
         { label: "Streak", value: "0 days", icon: <FireIcon /> },
-        { label: "Posts", value: isLoading ? "..." : (posts?.length || 0), icon: <PostIcon /> },
+        { label: "Workouts", value: isLoading ? "..." : (posts?.length || 0), icon: <WorkoutIcon /> },
     ];
 
     const achievements = [
@@ -51,7 +50,7 @@ const Profile = () => {
 
             <Box sx={classes.postsSection}>
                 <Typography sx={classes.postsTitle}>
-                    Your Posts
+                    Your Workouts
                 </Typography>
                 <Box sx={classes.postsGrid}>
                     {isLoading ? (
