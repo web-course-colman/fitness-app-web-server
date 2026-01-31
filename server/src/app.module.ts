@@ -10,6 +10,7 @@ import { WorkoutSummariesModule } from './workout-summaries/workout-summaries.mo
 import { UserProfilesModule } from './user-profiles/user-profiles.module';
 import { EmbeddingsModule } from './embeddings/embeddings.module';
 import { AiWorkerModule } from './ai-worker/ai-worker.module';
+import { CoachModule } from './coach/coach.module';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { AiWorkerModule } from './ai-worker/ai-worker.module';
     UserProfilesModule,
     EmbeddingsModule,
     AiWorkerModule,
+    CoachModule,
   ],
 })
 export class AppModule { }
