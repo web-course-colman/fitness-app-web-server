@@ -1,3 +1,5 @@
+import { User } from "src/auth/schemas/user.schema";
+
 export class CreatePostDto {
     title: string;
     description?: string;
@@ -7,4 +9,6 @@ export class CreatePostDto {
         duration?: number;
         calories?: number;
     };
+    likes: User[];
+    likesNumber: number;
 }

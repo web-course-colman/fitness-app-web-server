@@ -17,6 +17,16 @@ class WorkoutDetails {
 
 const WorkoutDetailsSchema = SchemaFactory.createForClass(WorkoutDetails);
 
+class Like {
+    @Prop({ required: true })
+    username: string;
+
+    @Prop({ required: false })
+    picture?: string;
+}
+
+const LikeSchema = SchemaFactory.createForClass(Like);
+
 @Schema({ timestamps: true })
 class Comment {
     @Prop({ required: true })
@@ -39,6 +49,12 @@ export class Post {
 
     @Prop({ type: [String], required: false })
     pictures?: string[];
+
+    @Prop({ type: [LikeSchema], required: false, default: [] })
+    likes: Like[];
+
+    @Prop({ type: Number, required: false, default: 0 })
+    likeNumber: number;
 
     @Prop({ type: WorkoutDetailsSchema, required: false })
     workoutDetails?: WorkoutDetails;
