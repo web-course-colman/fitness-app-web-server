@@ -37,6 +37,17 @@ const Layout = () => {
         return `${name?.charAt(0) || ''}${lastName?.charAt(0) || ''}`.toUpperCase();
     };
 
+    const getPageTitle = (pathname: string) => {
+        const titles: Record<string, string> = {
+            "/feed": "Feed",
+            "/workouts": "New Workout",
+            "/progress": "Progress",
+            "/profile": "Profile",
+            "/preferences": "Settings",
+        };
+        return titles[pathname] || "FitTrack";
+    };
+
     return (
         <Box sx={{ display: "flex", minHeight: "100vh" }}>
             <AppBar
@@ -61,9 +72,8 @@ const Layout = () => {
                         >
                             <MenuIcon />
                         </IconButton>
-                        <Typography variant="h6" noWrap component="div">
-                            {/* Page Title can go here, or keep it simple */}
-                            FitTrack
+                        <Typography variant="h6" noWrap component="div" sx={{ fontWeight: 600 }}>
+                            {getPageTitle(location.pathname)}
                         </Typography>
                     </Box>
 

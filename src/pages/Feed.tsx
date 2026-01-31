@@ -13,12 +13,6 @@ const Feed = () => {
 
     return (
         <Box sx={classes.container}>
-            {/* Page Title */}
-            <Typography variant="h4" component="h1" fontWeight="bold" gutterBottom>
-                Feed
-            </Typography>
-
-            {/* Posts */}
             <Box sx={classes.postsContainer}>
                 {isLoading ? (
                     <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
