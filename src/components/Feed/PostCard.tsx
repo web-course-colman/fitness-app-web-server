@@ -13,7 +13,7 @@ import {
 import { Favorite, ChatBubbleOutline, Share as ShareIcon, FavoriteBorder, Send } from "@mui/icons-material";
 import { formatDistanceToNow } from "date-fns";
 import { useStyles } from "../../pages/Feed.styles";
-import { Post, useAddComment } from "@/hooks/usePosts";
+import { Post, useAddComment, useLikePost } from "@/hooks/usePosts";
 import PostImages from "./PostImages";
 import PostWorkoutDetails from "./PostWorkoutDetails";
 import api from "@/services/axios";
@@ -28,27 +28,27 @@ const PostCard = ({ post }: PostCardProps) => {
     const classes = useStyles();
     const { loggedUser } = useAuth()
     const [postLikes, setPostLikes] = useState<number>(post.likeNumber);
-    const [isLikedByUser, setIsLiked] = useState<boolean>(!!post.likes?.find(like => like.username === loggedUser.username));
+    const [isLikedByUser, setIsLiked] = useState<boolean>(!!post.likes?.find(like => like.username === loggedUser?.username));
+
+    useEffect(() => {
+        setPostLikes(post.likeNumber);
+        setIsLiked(!!post.likes?.find(like => like.username === loggedUser?.username));
+    }, [post.likeNumber, post.likes, loggedUser?.username]);
 
     const [showComments, setShowComments] = useState(true);
     const [commentContent, setCommentContent] = useState("");
     const [displayCount, setDisplayCount] = useState(2);
     const addCommentMutation = useAddComment();
-  
+    const likePostMutation = useLikePost();
+
     const handleLikePost = useCallback(async () => {
+        if (likePostMutation.isPending) return;
         try {
-            const res = await api.put('/api/posts/like', { _id: post._id })
-            if (res) {
-                setIsLiked(prev => {
-                    const nextLiked = !prev;
-                    setPostLikes(count => nextLiked ? count + 1 : count - 1);
-                    return nextLiked;
-                });
-            }
+            await likePostMutation.mutateAsync(post._id);
         } catch (error) {
             console.error('Failed to like post:', error);
         }
-    }, [post._id]);
+    }, [post._id, likePostMutation]);
 
 
     const getInitials = (name: string | null) => {

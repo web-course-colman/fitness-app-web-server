@@ -17,6 +17,7 @@ class WorkoutDetails {
 
 const WorkoutDetailsSchema = SchemaFactory.createForClass(WorkoutDetails);
 
+@Schema({ _id: false })
 class Like {
     @Prop({ required: true })
     username: string;
