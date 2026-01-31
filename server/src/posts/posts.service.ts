@@ -25,7 +25,7 @@ export class PostsService {
     }
 
     async findByAuthor(authorId: string): Promise<PostDocument[]> {
-        return this.postModel.find({ author: authorId }).populate('author', '-password').populate('comments.author', '-password').sort({ createdAt: -1 }).exec();
+        return this.postModel.find({ author: new Types.ObjectId(authorId) }).populate('author', '-password').populate('comments.author', '-password').sort({ createdAt: -1 }).exec();
     }
 
     async findOne(id: string): Promise<PostDocument | null> {

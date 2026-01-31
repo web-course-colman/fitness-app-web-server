@@ -2,12 +2,11 @@ import { makeStyles } from "@/hooks/makeStyles";
 
 export const useStyles = makeStyles((theme) => ({
     container: {
-        padding: theme.spacing(3),
+        padding: theme.spacing(2),
         maxWidth: 1200,
         margin: "0 auto",
         display: "flex",
         flexDirection: "column",
-        gap: theme.spacing(4),
     },
     headerContainer: {
         display: "flex",
@@ -23,6 +22,7 @@ export const useStyles = makeStyles((theme) => ({
     },
     userInfo: {
         display: "flex",
+        justifyContent: "space-between",
         gap: theme.spacing(3),
         alignItems: "center",
     },
@@ -44,6 +44,39 @@ export const useStyles = makeStyles((theme) => ({
     },
     bio: {
         marginTop: theme.spacing(1),
+    },
+    minimizedStatsRow: {
+        display: "flex",
+        gap: theme.spacing(3),
+        marginTop: theme.spacing(2),
+        padding: theme.spacing(4),
+    },
+    minimizedStatItem: {
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+    },
+    minimizedStatValue: {
+        fontWeight: "bold",
+        fontSize: "1.1rem",
+    },
+    minimizedStatLabel: {
+        color: theme.palette.text.secondary,
+        fontSize: "0.75rem",
+        textTransform: "uppercase",
+        letterSpacing: "0.05em",
+    },
+    minimizedAchievementsRow: {
+        display: "flex",
+        gap: theme.spacing(1),
+        marginTop: theme.spacing(2),
+        flexWrap: "wrap",
+    },
+    minimizedAchievementIcon: {
+        width: 32,
+        height: 32,
+        bgcolor: theme.palette.primary.light,
+        color: theme.palette.primary.contrastText,
     },
     editButton: {
         marginTop: theme.spacing(1),
@@ -114,5 +147,20 @@ export const useStyles = makeStyles((theme) => ({
     achievementDescription: {
         color: theme.palette.text.secondary,
         fontSize: "0.875rem",
+    },
+    postsSection: {
+        display: "flex",
+        flexDirection: "column",
+        gap: theme.spacing(1),
+    },
+    postsTitle: {
+        fontSize: "1.25rem",
+        fontWeight: "bold",
+    },
+    postsGrid: {
+        display: "flex",
+        flexDirection: "column",
+        gap: theme.spacing(2),
+        padding: theme.spacing(1, 5),
     },
 }));
