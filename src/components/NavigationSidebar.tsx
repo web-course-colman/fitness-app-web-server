@@ -38,7 +38,6 @@ interface NavigationItem {
 
 const navigationItems: NavigationItem[] = [
     { label: "Feed", path: "/feed", icon: <Home /> },
-    { label: "Workouts", path: "/workouts", icon: <FitnessCenter /> },
     { label: "Progress", path: "/progress", icon: <TrendingUp /> },
     { label: "Profile", path: "/profile", icon: <Person /> },
     { label: "Settings", path: "/preferences", icon: <Settings /> },
