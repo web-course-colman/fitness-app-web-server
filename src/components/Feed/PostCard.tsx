@@ -26,7 +26,7 @@ const PostCard = ({ post }: PostCardProps) => {
     const classes = useStyles();
     const [showComments, setShowComments] = useState(false);
     const [commentContent, setCommentContent] = useState("");
-    const [displayCount, setDisplayCount] = useState(3);
+    const [displayCount, setDisplayCount] = useState(2);
     const addCommentMutation = useAddComment();
 
     const getInitials = (name: string | null) => {

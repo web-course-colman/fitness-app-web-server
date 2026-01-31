@@ -1,4 +1,5 @@
 import { makeStyles } from "@/hooks/makeStyles";
+import { Padding } from "@mui/icons-material";
 
 export const useStyles = makeStyles((theme) => ({
     container: {
@@ -95,6 +96,7 @@ export const useStyles = makeStyles((theme) => ({
         display: "flex",
         flexDirection: "column",
         gap: theme.spacing(2),
+        padding: theme.spacing(1),
     },
     commentItem: {
         display: "flex",
