@@ -64,114 +64,144 @@ const NavigationSidebar = ({ mobileOpen, onMobileClose, isCollapsed, onToggleCol
     };
 
     const drawerContent = (
-        <Box>
-            <Toolbar
-                sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: isCollapsed ? "center" : "space-between",
-                    px: isCollapsed ? 1 : 2,
-                    minHeight: "64px !important",
-                }}
-            >
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                    <FitnessCenter sx={{ color: "primary.main", fontSize: 28 }} />
-                    {!isCollapsed && (
-                        <Typography variant="h6" component="div" fontWeight="bold" noWrap>
-                            FitTrack
-                        </Typography>
+        <Box sx={{ height: "100%", display: "flex", flexDirection: "column" }}>
+            <Box sx={{ flexGrow: 1, overflowY: "auto" }}>
+                <Toolbar
+                    sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: isCollapsed ? "center" : "space-between",
+                        px: isCollapsed ? 1 : 2,
+                        minHeight: "64px !important",
+                    }}
+                >
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                        <FitnessCenter sx={{ color: "primary.main", fontSize: 28 }} />
+                        {!isCollapsed && (
+                            <Typography variant="h6" component="div" fontWeight="bold" noWrap>
+                                FitTrack
+                            </Typography>
+                        )}
+                    </Box>
+                    {isMobile && (
+                        <IconButton onClick={onMobileClose} edge="end">
+                            <Close />
+                        </IconButton>
                     )}
-                </Box>
-                {isMobile ? (
-                    <IconButton onClick={onMobileClose} edge="end">
-                        <Close />
-                    </IconButton>
-                ) : (
-                    <IconButton
-                        onClick={onToggleCollapse}
-                        size="small"
-                        sx={{
-                            display: { xs: "none", md: "inline-flex" },
-                            position: isCollapsed ? "relative" : "static",
-                        }}
-                    >
-                        {isCollapsed ? <ChevronRight /> : <ChevronLeft />}
-                    </IconButton>
-                )}
-            </Toolbar>
-            <Divider />
-            <List sx={{ px: 1, py: 2 }}>
-                {navigationItems.map((item) => {
-                    const isActive = location.pathname === item.path;
-                    return (
-                        <ListItem key={item.path} disablePadding sx={{ mb: 0.5 }}>
-                            <ListItemButton
-                                onClick={() => handleNavigation(item.path)}
-                                selected={isActive}
-                                sx={{
-                                    borderRadius: 2,
-                                    "&.Mui-selected": {
-                                        bgcolor: "primary.main",
-                                        color: "primary.contrastText",
-                                        "&:hover": {
-                                            bgcolor: "primary.dark",
-                                        },
-                                        "& .MuiListItemIcon-root": {
-                                            color: "primary.contrastText",
-                                        },
-                                    },
-                                    "&:hover": {
-                                        bgcolor: "action.hover",
-                                    },
-                                }}
-                            >
-                                <Box
+                </Toolbar>
+                <Divider />
+                <List sx={{ px: 1, py: 2 }}>
+                    {navigationItems.map((item) => {
+                        const isActive = location.pathname === item.path;
+                        return (
+                            <ListItem key={item.path} disablePadding sx={{ mb: 0.5 }}>
+                                <ListItemButton
+                                    onClick={() => handleNavigation(item.path)}
+                                    selected={isActive}
                                     sx={{
-                                        display: "flex",
-                                        flexDirection: "column",
-                                        alignItems: "center",
-                                        width: "100%",
-                                        gap: 0.5,
+                                        borderRadius: 2,
+                                        "&.Mui-selected": {
+                                            bgcolor: "primary.main",
+                                            color: "primary.contrastText",
+                                            "&:hover": {
+                                                bgcolor: "primary.dark",
+                                            },
+                                            "& .MuiListItemIcon-root": {
+                                                color: "primary.contrastText",
+                                            },
+                                        },
+                                        "&:hover": {
+                                            bgcolor: "action.hover",
+                                        },
                                     }}
                                 >
-                                    <ListItemIcon
-                                        sx={{
-                                            color: isActive ? "primary.contrastText" : "inherit",
-                                            minWidth: 0,
-                                            justifyContent: "center",
-                                        }}
-                                    >
-                                        {item.icon}
-                                    </ListItemIcon>
-                                    {isCollapsed && (
-                                        <Typography
-                                            variant="caption"
+                                    {isCollapsed ? (
+                                        <Box
                                             sx={{
-                                                fontSize: "0.65rem",
-                                                fontWeight: 600,
-                                                lineHeight: 1,
-                                                textAlign: "center",
-                                                color: isActive ? "primary.contrastText" : "text.secondary",
+                                                display: "flex",
+                                                flexDirection: "column",
+                                                alignItems: "center",
+                                                width: "100%",
+                                                gap: 0.5,
                                             }}
                                         >
-                                            {item.label}
-                                        </Typography>
+                                            <ListItemIcon
+                                                sx={{
+                                                    color: isActive ? "primary.contrastText" : "inherit",
+                                                    minWidth: 0,
+                                                    justifyContent: "center",
+                                                }}
+                                            >
+                                                {item.icon}
+                                            </ListItemIcon>
+                                            <Typography
+                                                variant="caption"
+                                                sx={{
+                                                    fontSize: "0.65rem",
+                                                    fontWeight: 600,
+                                                    lineHeight: 1,
+                                                    textAlign: "center",
+                                                    color: isActive ? "primary.contrastText" : "text.secondary",
+                                                }}
+                                            >
+                                                {item.label}
+                                            </Typography>
+                                        </Box>
+                                    ) : (
+                                        <>
+                                            <ListItemIcon
+                                                sx={{
+                                                    color: isActive ? "primary.contrastText" : "inherit",
+                                                    minWidth: 40,
+                                                    justifyContent: "center",
+                                                }}
+                                            >
+                                                {item.icon}
+                                            </ListItemIcon>
+                                            <ListItemText
+                                                primary={item.label}
+                                                primaryTypographyProps={{
+                                                    fontWeight: isActive ? 600 : 400,
+                                                }}
+                                            />
+                                        </>
                                     )}
-                                </Box>
-                                {!isCollapsed && (
-                                    <ListItemText
-                                        primary={item.label}
-                                        primaryTypographyProps={{
-                                            fontWeight: isActive ? 600 : 400,
-                                            sx: { ml: 1 }
-                                        }}
-                                    />
-                                )}
-                            </ListItemButton>
-                        </ListItem>
-                    );
-                })}
-            </List>
+                                </ListItemButton>
+                            </ListItem>
+                        );
+                    })}
+                </List>
+            </Box>
+
+            {!isMobile && (
+                <Box>
+                    <Divider />
+                    <Box
+                        sx={{
+                            p: 1.5,
+                            display: "flex",
+                            justifyContent: isCollapsed ? "center" : "flex-end",
+                            alignItems: "center",
+                        }}
+                    >
+                        <IconButton
+                            onClick={onToggleCollapse}
+                            size="medium"
+                            sx={{
+                                color: "text.secondary",
+                                transition: theme.transitions.create("transform", {
+                                    duration: theme.transitions.duration.shorter,
+                                }),
+                                "&:hover": {
+                                    bgcolor: "action.hover",
+                                },
+                            }}
+                        >
+                            {isCollapsed ? <ChevronRight /> : <ChevronLeft />}
+                        </IconButton>
+                    </Box>
+                </Box>
+            )}
         </Box>
     );
 
