@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { Avatar, Box, AppBar, Toolbar, IconButton, useTheme, useMediaQuery, Typography } from "@mui/material";
-import { Outlet } from "react-router-dom";
-import { Menu as MenuIcon } from "@mui/icons-material";
+import { Avatar, Box, AppBar, Toolbar, IconButton, useTheme, useMediaQuery, Typography, Fab, Zoom } from "@mui/material";
+import { Outlet, useNavigate, useLocation } from "react-router-dom";
+import { Menu as MenuIcon, Add as AddIcon } from "@mui/icons-material";
 import NavigationSidebar, { DRAWER_WIDTH, COLLAPSED_WIDTH } from "./NavigationSidebar";
 import { useAuth } from "./Auth/AuthProvider";
 
@@ -11,6 +11,10 @@ const Layout = () => {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down("md"));
     const { loggedUser } = useAuth();
+    const navigate = useNavigate();
+    const location = useLocation();
+
+    const isWorkoutPage = location.pathname === "/workouts";
 
     const currentDrawerWidth = isCollapsed ? COLLAPSED_WIDTH : DRAWER_WIDTH;
 
@@ -102,6 +106,32 @@ const Layout = () => {
                     <Outlet />
                 </Box>
             </Box>
+
+            {loggedUser && (
+                <Zoom
+                    in={!isWorkoutPage}
+                    unmountOnExit
+                    timeout={theme.transitions.duration.enteringScreen}
+                >
+                    <Fab
+                        color="primary"
+                        aria-label="add workout"
+                        onClick={() => navigate("/workouts")}
+                        sx={{
+                            position: "fixed",
+                            bottom: { xs: 16, sm: 24 },
+                            right: { xs: 16, sm: 24 },
+                            boxShadow: 3,
+                            "&:hover": {
+                                transform: "scale(1.1)",
+                                transition: "transform 0.2s",
+                            },
+                        }}
+                    >
+                        <AddIcon />
+                    </Fab>
+                </Zoom>
+            )}
         </Box>
     );
 };
