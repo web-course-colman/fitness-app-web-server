@@ -7,7 +7,10 @@ import { useAuth } from "./Auth/AuthProvider";
 
 const Layout = () => {
     const [mobileOpen, setMobileOpen] = useState(false);
-    const [isCollapsed, setIsCollapsed] = useState(false);
+    const [isCollapsed, setIsCollapsed] = useState(() => {
+        const saved = localStorage.getItem("sidebar-collapsed");
+        return saved ? JSON.parse(saved) : false;
+    });
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down("md"));
     const { loggedUser } = useAuth();
@@ -23,7 +26,11 @@ const Layout = () => {
     };
 
     const handleToggleCollapse = () => {
-        setIsCollapsed(!isCollapsed);
+        setIsCollapsed((prev: boolean) => {
+            const newState = !prev;
+            localStorage.setItem("sidebar-collapsed", JSON.stringify(newState));
+            return newState;
+        });
     };
 
     const getInitials = (name: string, lastName: string) => {
