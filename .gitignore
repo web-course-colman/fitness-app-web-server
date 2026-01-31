@@ -137,3 +137,9 @@ dist
 # Vite logs files
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+# Dummy data for development
+server/dummy-data.json
+server/seed.js
+
+.agent/*
