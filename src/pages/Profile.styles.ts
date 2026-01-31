@@ -115,4 +115,18 @@ export const useStyles = makeStyles((theme) => ({
         color: theme.palette.text.secondary,
         fontSize: "0.875rem",
     },
+    postsSection: {
+        display: "flex",
+        flexDirection: "column",
+        gap: theme.spacing(2),
+    },
+    postsTitle: {
+        fontSize: "1.25rem",
+        fontWeight: "bold",
+    },
+    postsGrid: {
+        display: "flex",
+        flexDirection: "column",
+        gap: theme.spacing(2),
+    },
 }));

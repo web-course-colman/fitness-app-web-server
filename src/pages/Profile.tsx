@@ -11,6 +11,7 @@ import StatsCard from "../components/Profile/StatsCard";
 import AchievementsList from "../components/Profile/AchievementsList";
 import { useAuth } from "../components/Auth/AuthProvider";
 import { useUserPosts } from "../hooks/usePosts";
+import PostCard from "../components/Feed/PostCard";
 
 const Profile = () => {
     const classes = useStyles();
@@ -40,12 +41,6 @@ const Profile = () => {
 
     return (
         <Box sx={classes.container}>
-            <Box sx={classes.headerContainer}>
-                <Typography variant="h4" fontWeight="bold">
-                    Profile
-                </Typography>
-            </Box>
-
             <ProfileHeader
                 name={user.name}
                 handle={user.handle}
@@ -66,6 +61,22 @@ const Profile = () => {
             </Box>
 
             <AchievementsList achievements={achievements} />
+
+            <Box sx={classes.postsSection}>
+                <Typography sx={classes.postsTitle}>
+                    Your Posts
+                </Typography>
+                <Box sx={classes.postsGrid}>
+                    {posts?.map((post) => (
+                        <PostCard key={post._id} post={post} />
+                    ))}
+                    {posts?.length === 0 && (
+                        <Typography sx={{ color: 'text.secondary', textAlign: 'center', py: 4 }}>
+                            You haven't posted anything yet.
+                        </Typography>
+                    )}
+                </Box>
+            </Box>
         </Box>
     );
 };
