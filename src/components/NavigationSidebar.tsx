@@ -174,22 +174,15 @@ const NavigationSidebar = ({ mobileOpen, onMobileClose, isCollapsed, onToggleCol
             </Box>
 
             {!isMobile && (
-                <Box>
+                <Box sx={{ mt: "auto" }}>
                     <Divider />
-                    <Box
-                        sx={{
-                            p: 1.5,
-                            display: "flex",
-                            justifyContent: isCollapsed ? "center" : "flex-end",
-                            alignItems: "center",
-                        }}
-                    >
-                        <IconButton
+                    <Box sx={{ p: 1, pb: 2 }}>
+                        <ListItemButton
                             onClick={onToggleCollapse}
-                            size="medium"
                             sx={{
-                                color: "text.secondary",
-                                transition: theme.transitions.create("transform", {
+                                borderRadius: 2,
+                                py: 1.5,
+                                transition: theme.transitions.create(["all"], {
                                     duration: theme.transitions.duration.shorter,
                                 }),
                                 "&:hover": {
@@ -197,8 +190,62 @@ const NavigationSidebar = ({ mobileOpen, onMobileClose, isCollapsed, onToggleCol
                                 },
                             }}
                         >
-                            {isCollapsed ? <ChevronRight /> : <ChevronLeft />}
-                        </IconButton>
+                            {isCollapsed ? (
+                                <Box
+                                    sx={{
+                                        display: "flex",
+                                        flexDirection: "column",
+                                        alignItems: "center",
+                                        width: "100%",
+                                        gap: 0.5,
+                                    }}
+                                >
+                                    <ListItemIcon
+                                        sx={{
+                                            color: "text.secondary",
+                                            minWidth: 0,
+                                            justifyContent: "center",
+                                        }}
+                                    >
+                                        <ChevronRight />
+                                    </ListItemIcon>
+                                    <Typography
+                                        variant="caption"
+                                        sx={{
+                                            fontSize: "0.65rem",
+                                            fontWeight: 600,
+                                            lineHeight: 1,
+                                            textAlign: "center",
+                                            color: "text.secondary",
+                                            textTransform: "uppercase",
+                                            letterSpacing: "0.05em",
+                                        }}
+                                    >
+                                        Expand
+                                    </Typography>
+                                </Box>
+                            ) : (
+                                <>
+                                    <ListItemIcon
+                                        sx={{
+                                            color: "text.secondary",
+                                            minWidth: 40,
+                                            justifyContent: "center",
+                                        }}
+                                    >
+                                        <ChevronLeft />
+                                    </ListItemIcon>
+                                    <ListItemText
+                                        primary="Collapse Sidebar"
+                                        primaryTypographyProps={{
+                                            fontSize: "0.875rem",
+                                            fontWeight: 500,
+                                            color: "text.secondary",
+                                        }}
+                                    />
+                                </>
+                            )}
+                        </ListItemButton>
                     </Box>
                 </Box>
             )}
