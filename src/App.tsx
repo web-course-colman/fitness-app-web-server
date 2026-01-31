@@ -18,6 +18,7 @@ import Preferences from "@/pages/Preferences";
 import NotFound from "@/pages/NotFound";
 
 import WorkoutPost from "@/pages/WorkoutPost";
+import AiTips from "@/pages/AiTips";
 
 const queryClient = new QueryClient();
 
@@ -27,14 +28,6 @@ const App = () => (
             <Toaster />
             <Sonner />
             <BrowserRouter>
-<<<<<<< HEAD
-                <Routes>
-                    <Route path="/ai-tips" element={
-                        // TODO
-                        <div></div>
-                    } />
-                </Routes>
-=======
                 <AuthProvider>
                     <AppThemeProvider>
                         <Routes>
@@ -45,6 +38,7 @@ const App = () => (
                                     <Route path="/feed" element={<Feed />} />
                                     <Route path="/profile" element={<Profile />} />
                                     <Route path="/workouts" element={<WorkoutPost />} />
+                                    <Route path="/ai-tips" element={<AiTips />} />
                                     <Route path="/preferences" element={<Preferences />} />
                                 </Route>
                             </Route>
@@ -52,7 +46,6 @@ const App = () => (
                         </Routes>
                     </AppThemeProvider>
                 </AuthProvider>
->>>>>>> d72c7bfe567cd9712cc393c6533609f0c8046646
             </BrowserRouter>
         </TooltipProvider>
     </QueryClientProvider>
