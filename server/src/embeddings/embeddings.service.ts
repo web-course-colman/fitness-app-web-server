@@ -30,4 +30,19 @@ export class EmbeddingsService {
             refId: new Types.ObjectId(refId)
         }).exec();
     }
+
+    async findSimilar(vector: number[], userId: string, limit: number = 5): Promise<Embedding[]> {
+        const userEmbeddings = await this.embeddingModel.find({ userId: new Types.ObjectId(userId) }).exec();
+
+        // Simple dot product similarity calculation (Mock RAG logic)
+        const scored = userEmbeddings.map(emb => {
+            const score = emb.vector.reduce((sum, val, i) => sum + (val * (vector[i] || 0)), 0);
+            return { emb, score };
+        });
+
+        return scored
+            .sort((a, b) => b.score - a.score)
+            .slice(0, limit)
+            .map(s => s.emb);
+    }
 }

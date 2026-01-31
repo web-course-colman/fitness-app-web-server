@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Post, PostDocument } from './schemas/post.schema';
@@ -10,6 +11,7 @@ export class PostsService {
     constructor(
         @InjectModel(Post.name) private postModel: Model<PostDocument>,
         @InjectModel(User.name) private userModel: Model<UserDocument>,
+        private eventEmitter: EventEmitter2,
     ) { }
 
     async create(createPostDto: CreatePostDto, userId: string): Promise<PostDocument> {
@@ -17,7 +19,15 @@ export class PostsService {
             ...createPostDto,
             author: new Types.ObjectId(userId),
         });
-        return createdPost.save();
+        const post = await createdPost.save();
+
+        // Emit event for background AI processing
+        this.eventEmitter.emit('workout.created', {
+            postId: post._id.toString(),
+            userId: userId,
+        });
+
+        return post;
     }
 
     async findAll(): Promise<PostDocument[]> {
