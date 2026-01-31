@@ -24,7 +24,7 @@ interface PostCardProps {
 
 const PostCard = ({ post }: PostCardProps) => {
     const classes = useStyles();
-    const [showComments, setShowComments] = useState(false);
+    const [showComments, setShowComments] = useState(true);
     const [commentContent, setCommentContent] = useState("");
     const [displayCount, setDisplayCount] = useState(2);
     const addCommentMutation = useAddComment();

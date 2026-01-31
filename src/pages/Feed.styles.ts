@@ -92,40 +92,44 @@ export const useStyles = makeStyles((theme) => ({
         textTransform: "none",
     },
     commentsSection: {
-        marginTop: theme.spacing(2),
+        marginTop: theme.spacing(1),
         display: "flex",
         flexDirection: "column",
-        gap: theme.spacing(2),
-        padding: theme.spacing(1),
+        gap: theme.spacing(0.5),
+        padding: theme.spacing(0.5, 5),
     },
     commentItem: {
         display: "flex",
-        gap: theme.spacing(1.5),
-        padding: theme.spacing(0.1),
+        gap: theme.spacing(1),
+        padding: theme.spacing(0.5, 0),
     },
     commentContent: {
         backgroundColor: theme.palette.action.hover,
-        padding: theme.spacing(1, 1.5),
-        borderRadius: theme.spacing(2),
+        padding: theme.spacing(0.5, 1),
+        borderRadius: theme.spacing(1.5),
         flex: 1,
     },
     commentInputContainer: {
         display: "flex",
         alignItems: "center",
         gap: theme.spacing(1),
-        marginTop: theme.spacing(1),
+        marginTop: theme.spacing(0.5),
     },
     commentInput: {
         "& .MuiOutlinedInput-root": {
-            borderRadius: theme.spacing(3),
+            borderRadius: theme.spacing(2),
             backgroundColor: theme.palette.action.hover,
+            fontSize: "0.875rem",
+        },
+        "& .MuiInputBase-input": {
+            padding: theme.spacing(0.8, 1.5),
         },
     },
     loadMoreButton: {
         padding: 0,
         minWidth: "auto",
         textTransform: "none",
-        fontSize: "0.75rem",
+        fontSize: "0.7rem",
         fontWeight: 600,
         color: theme.palette.primary.main,
         "&:hover": {
@@ -135,8 +139,8 @@ export const useStyles = makeStyles((theme) => ({
     },
     commentsPagination: {
         display: "flex",
-        gap: theme.spacing(2),
-        marginTop: theme.spacing(0.5),
-        paddingLeft: theme.spacing(1),
+        gap: theme.spacing(1.5),
+        marginTop: theme.spacing(0.2),
+        paddingLeft: theme.spacing(0.5),
     },
 }));

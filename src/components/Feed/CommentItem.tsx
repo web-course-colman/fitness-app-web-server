@@ -23,20 +23,20 @@ const CommentItem = ({ comment, classes }: CommentItemProps) => {
         <Box sx={classes.commentItem}>
             <Avatar
                 src={comment.author?.picture || undefined}
-                sx={{ width: 32, height: 32, bgcolor: "primary.main" }}
+                sx={{ width: 28, height: 28, bgcolor: "primary.main", fontSize: "0.75rem" }}
             >
                 {getInitials(comment.author ? `${comment.author.name} ${comment.author.lastName}` : null)}
             </Avatar>
             <Box sx={classes.commentContent}>
-                <Box sx={{ display: "flex", alignItems: "baseline", gap: 1 }}>
-                    <Typography variant="subtitle2" component="span" sx={{ fontWeight: 600 }}>
+                <Box sx={{ display: "flex", alignItems: "baseline", gap: 0.8 }}>
+                    <Typography variant="caption" sx={{ fontWeight: 700, color: "text.primary" }}>
                         {comment.author ? `${comment.author.name} ${comment.author.lastName}` : "Anonymous"}
                     </Typography>
-                    <Typography variant="caption" sx={{ color: "text.secondary" }}>
+                    <Typography variant="caption" sx={{ color: "text.secondary", fontSize: "0.65rem" }}>
                         {formatDate(comment.createdAt)}
                     </Typography>
                 </Box>
-                <Typography variant="body2" sx={{ mt: 0.5 }}>
+                <Typography variant="body2" sx={{ fontSize: "0.8125rem", lineHeight: 1.2 }}>
                     {comment.content}
                 </Typography>
             </Box>
