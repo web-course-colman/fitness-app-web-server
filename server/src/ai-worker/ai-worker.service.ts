@@ -4,6 +4,7 @@ import { WorkoutSummariesService } from '../workout-summaries/workout-summaries.
 import { UserProfilesService } from '../user-profiles/user-profiles.service';
 import { EmbeddingsService } from '../embeddings/embeddings.service';
 import { PostsService } from '../posts/posts.service';
+import { OpenaiService } from '../openai/openai.service';
 
 @Injectable()
 export class AiWorkerService {
@@ -14,6 +15,7 @@ export class AiWorkerService {
         private readonly userProfilesService: UserProfilesService,
         private readonly embeddingsService: EmbeddingsService,
         private readonly postsService: PostsService,
+        private readonly openaiService: OpenaiService,
     ) { }
 
     @OnEvent('workout.created')
@@ -28,17 +30,10 @@ export class AiWorkerService {
                 return;
             }
 
-            // 2. Generate Summary (Mocked AI logic)
+            // 2. Generate Summary via OpenAI
             this.logger.log(`Generating AI summary for workout: ${workout.title}`);
-            const summaryText = `Great session on "${workout.title}"! You focused on ${workout.workoutDetails?.type || 'general fitness'} for ${workout.workoutDetails?.duration || 0} minutes, burning approximately ${workout.workoutDetails?.calories || 0} calories. Keep up the consistency!`;
-
-            const summaryJson = {
-                volume: Math.floor(Math.random() * 5000) + 1000,
-                intensity: "moderate",
-                focusPoints: [workout.workoutDetails?.type || 'strength'],
-                caloriesBurned: workout.workoutDetails?.calories || 0,
-                duration: workout.workoutDetails?.duration || 0
-            };
+            const workoutDesc = `${workout.title}. ${workout.description || ''}. Details: ${JSON.stringify(workout.workoutDetails || {})}`;
+            const { summaryText, summaryJson } = await this.openaiService.generateSummary(workoutDesc);
 
             // 3. Save to workout_summaries
             const summary = await this.workoutSummariesService.create({
@@ -96,14 +91,13 @@ export class AiWorkerService {
     private async generateEmbedding(userId: string, refType: string, refId: string, text: string) {
         this.logger.log(`Generating embedding for ${refType} ${refId}`);
         try {
-            // Mock embedding vector (usually 1536 or 768 dimensions)
-            const mockVector = Array.from({ length: 10 }, () => Math.random());
+            const vector = await this.openaiService.generateEmbedding(text);
 
             await this.embeddingsService.create({
                 userId,
                 refType,
                 refId,
-                vector: mockVector,
+                vector,
                 text,
             });
 

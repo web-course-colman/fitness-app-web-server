@@ -4,6 +4,7 @@ import { WorkoutSummariesModule } from '../workout-summaries/workout-summaries.m
 import { UserProfilesModule } from '../user-profiles/user-profiles.module';
 import { EmbeddingsModule } from '../embeddings/embeddings.module';
 import { PostsModule } from '../posts/posts.module';
+import { OpenaiModule } from '../openai/openai.module';
 
 @Module({
     imports: [
@@ -11,6 +12,7 @@ import { PostsModule } from '../posts/posts.module';
         UserProfilesModule,
         EmbeddingsModule,
         PostsModule,
+        OpenaiModule,
     ],
     providers: [AiWorkerService],
     exports: [AiWorkerService],

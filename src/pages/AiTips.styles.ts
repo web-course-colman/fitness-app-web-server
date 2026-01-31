@@ -157,4 +157,83 @@ export const useStyles = makeStyles((theme) => ({
         borderRadius: theme.spacing(1.5),
         padding: theme.spacing(1.2),
     },
+    resultsContainer: {
+        marginTop: theme.spacing(4),
+        display: "flex",
+        flexDirection: "column",
+        gap: theme.spacing(3),
+        animation: "fadeIn 0.5s ease",
+    },
+    answerBubble: {
+        backgroundColor: theme.palette.mode === "dark" ? "rgba(255, 255, 255, 0.03)" : "rgba(99, 102, 241, 0.02)",
+        borderRadius: theme.spacing(2),
+        padding: theme.spacing(3),
+        border: `1px solid ${theme.palette.mode === "dark" ? "rgba(255, 255, 255, 0.05)" : "rgba(99, 102, 241, 0.08)"}`,
+        position: "relative",
+    },
+    answerText: {
+        fontSize: "1rem",
+        lineHeight: 1.6,
+        color: theme.palette.text.primary,
+    },
+    sectionTitle: {
+        fontSize: "0.85rem",
+        fontWeight: 700,
+        textTransform: "uppercase",
+        letterSpacing: "0.05em",
+        color: theme.palette.primary.main,
+        marginBottom: theme.spacing(1.5),
+        display: "flex",
+        alignItems: "center",
+        gap: theme.spacing(1),
+    },
+    nextStepsContainer: {
+        display: "flex",
+        flexDirection: "column",
+        gap: theme.spacing(1),
+    },
+    nextStepItem: {
+        display: "flex",
+        alignItems: "flex-start",
+        gap: theme.spacing(1.5),
+        padding: theme.spacing(1.5),
+        borderRadius: theme.spacing(1.5),
+        backgroundColor: theme.palette.mode === "dark" ? "rgba(255, 255, 255, 0.02)" : "rgba(0, 0, 0, 0.01)",
+        border: `1px solid ${theme.palette.divider}`,
+        transition: "all 0.2s ease",
+        cursor: "pointer",
+        "&:hover": {
+            borderColor: theme.palette.primary.main,
+            backgroundColor: theme.palette.mode === "dark" ? "rgba(99, 102, 241, 0.05)" : "rgba(99, 102, 241, 0.02)",
+        }
+    },
+    referenceCard: {
+        padding: theme.spacing(2),
+        borderRadius: theme.spacing(2),
+        backgroundColor: theme.palette.mode === "dark" ? "rgba(255, 255, 255, 0.02)" : "#fff",
+        border: `1px solid ${theme.palette.divider}`,
+        display: "flex",
+        flexDirection: "column",
+        gap: theme.spacing(1),
+        transition: "all 0.2s ease",
+        cursor: "pointer",
+        "&:hover": {
+            transform: "translateY(-2px)",
+            boxShadow: theme.shadows[4],
+            borderColor: theme.palette.primary.main,
+        }
+    },
+    referenceText: {
+        fontSize: "0.9rem",
+        color: theme.palette.text.secondary,
+        display: "-webkit-box",
+        WebkitLineClamp: 2,
+        WebkitBoxOrient: "vertical",
+        overflow: "hidden",
+    },
+    referenceDate: {
+        fontSize: "0.75rem",
+        color: theme.palette.text.disabled,
+        fontWeight: 600,
+    }
 }));

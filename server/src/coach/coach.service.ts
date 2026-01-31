@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { EmbeddingsService } from '../embeddings/embeddings.service';
 import { WorkoutSummariesService } from '../workout-summaries/workout-summaries.service';
 import { UserProfilesService } from '../user-profiles/user-profiles.service';
+import { OpenaiService } from '../openai/openai.service';
 
 @Injectable()
 export class CoachService {
@@ -11,6 +12,7 @@ export class CoachService {
         private readonly embeddingsService: EmbeddingsService,
         private readonly workoutSummariesService: WorkoutSummariesService,
         private readonly userProfilesService: UserProfilesService,
+        private readonly openaiService: OpenaiService,
     ) { }
 
     async ask(userId: string, question: string) {
@@ -20,8 +22,8 @@ export class CoachService {
         // If question is very simple, we could answer directly. 
         // For this flow, we'll proceed to RAG as requested.
 
-        // 2. Generate embedding for the question (Mocked)
-        const queryVector = Array.from({ length: 10 }, () => Math.random());
+        // 2. Generate embedding for the question via OpenAI
+        const queryVector = await this.openaiService.generateEmbedding(question);
 
         // 3. Fetch Top-K closest embeddings
         const similarEmbeddings = await this.embeddingsService.findSimilar(queryVector, userId, 5);
@@ -47,42 +49,21 @@ export class CoachService {
             this.logger.warn(`No profile found for user ${userId}`);
         }
 
-        // 5. Generate Answer (Mocked LLM call)
-        // In a real app, we'd send (question + profileContext + validSummaries) to OpenAI/Gemini.
-
-        const answer = this.generateMockAnswer(question, profileContext, validSummaries);
+        // 5. Generate Answer via OpenAI (RAG)
+        const result = await this.openaiService.generateCoachAnswer(question, profileContext, validSummaries);
 
         return {
-            answer: answer.text,
-            suggestedNextSteps: answer.nextSteps,
-            references: validSummaries.map(s => ({
-                id: s['_id'],
-                text: s.summaryText,
-                date: s['createdAt']
-            }))
-        };
-    }
-
-    private generateMockAnswer(question: string, profile: string, summaries: any[]) {
-        const q = question.toLowerCase();
-
-        if (q.includes('squat')) {
-            return {
-                text: "Based on your history, your last heavy squat session was on Jan 28. You felt strong and managed 3 sets of 5 at 100kg. Your profile shows you are focusing on strength gains.",
-                nextSteps: ["Try increasing the weight by 2.5kg for your next session.", "Ensure you have a 48h recovery period."]
-            };
-        }
-
-        if (q.includes('protein')) {
-            return {
-                text: "Looking at your recent summaries, you've been consistent with your post-workout nutrition. Your goals suggest you should aim for ~160g of protein daily.",
-                nextSteps: ["Track your intake for tomorrow to verify you hit the target.", "Consider a casein shake before sleep."]
-            };
-        }
-
-        return {
-            text: `I've analyzed your ${summaries.length} recent sessions and your overall profile. You are making steady progress. How can I help you refine your current training block?`,
-            nextSteps: ["Ask about a specific exercise", "Review your weekly volume trend"]
+            answer: result.answer,
+            suggestedNextSteps: result.suggestedNextSteps,
+            references: result.references?.map(refIndex => {
+                const summary = validSummaries[refIndex - 1]; // OpenAI returns 1-based index
+                if (!summary) return null;
+                return {
+                    id: summary['_id'],
+                    text: summary.summaryText,
+                    date: summary['createdAt']
+                };
+            }).filter(ref => ref !== null) || []
         };
     }
 }

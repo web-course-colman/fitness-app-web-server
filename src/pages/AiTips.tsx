@@ -5,9 +5,9 @@ import {
     TextField,
     IconButton,
     Chip,
-    Button,
-    Stack,
     Tooltip,
+    CircularProgress,
+    Grid,
 } from "@mui/material";
 import {
     AutoAwesome,
@@ -16,9 +16,11 @@ import {
     Restaurant,
     NightsStay,
     Favorite,
-    Lightbulb,
+    CheckCircleOutline,
+    History,
 } from "@mui/icons-material";
 import { useStyles } from "./AiTips.styles";
+import { useAiCoach, CoachResponse } from "../hooks/useAi";
 
 interface Tip {
     id: string;
@@ -60,25 +62,35 @@ const tips: Tip[] = [
 ];
 
 const quickQuestions = [
-    "Best exercises for abs?",
+    "When was my last heavy squat?",
     "How much protein do I need?",
     "Tips for better sleep?",
-    "How to stay motivated?",
+    "Analyze my weekly volume",
 ];
 
 const AiTips = () => {
     const classes = useStyles();
     const [question, setQuestion] = useState("");
+    const [aiResponse, setAiResponse] = useState<CoachResponse | null>(null);
 
-    const handleSend = () => {
-        if (!question.trim()) return;
-        // In a real app, this would call an AI service
-        console.log("Asking AI:", question);
-        setQuestion("");
+    const coachMutation = useAiCoach();
+
+    const handleSend = async (q?: string) => {
+        const query = q || question;
+        if (!query.trim() || coachMutation.isPending) return;
+
+        try {
+            const result = await coachMutation.mutateAsync(query);
+            setAiResponse(result);
+            if (!q) setQuestion("");
+        } catch (error) {
+            console.error("Coach error:", error);
+        }
     };
 
     const handleQuickQuestion = (q: string) => {
         setQuestion(q);
+        handleSend(q);
     };
 
     return (
@@ -117,6 +129,7 @@ const AiTips = () => {
                                 <Chip
                                     key={q}
                                     label={q}
+                                    disabled={coachMutation.isPending}
                                     onClick={() => handleQuickQuestion(q)}
                                     sx={classes.questionChip}
                                 />
@@ -124,20 +137,78 @@ const AiTips = () => {
                         </Box>
                     </Box>
                 </Box>
+
                 <Box sx={classes.inputContainer}>
                     <TextField
                         fullWidth
                         variant="outlined"
                         placeholder="Ask about workouts, nutrition, recovery..."
                         value={question}
+                        disabled={coachMutation.isPending}
                         onChange={(e) => setQuestion(e.target.value)}
                         onKeyPress={(e) => e.key === "Enter" && handleSend()}
                         sx={classes.inputField}
                     />
-                    <IconButton sx={classes.sendButton} onClick={handleSend} size="small">
-                        <Send fontSize="small" />
+                    <IconButton
+                        sx={classes.sendButton}
+                        onClick={() => handleSend()}
+                        disabled={coachMutation.isPending}
+                        size="small"
+                    >
+                        {coachMutation.isPending ? (
+                            <CircularProgress size={20} color="inherit" />
+                        ) : (
+                            <Send fontSize="small" />
+                        )}
                     </IconButton>
                 </Box>
+
+                {aiResponse && (
+                    <Box sx={classes.resultsContainer}>
+                        <Box sx={classes.answerBubble}>
+                            <Typography sx={classes.answerText}>{aiResponse.answer}</Typography>
+                        </Box>
+
+                        {aiResponse.suggestedNextSteps?.length > 0 && (
+                            <Box>
+                                <Typography sx={classes.sectionTitle}>
+                                    <CheckCircleOutline fontSize="inherit" />
+                                    Suggested Next Steps
+                                </Typography>
+                                <Box sx={classes.nextStepsContainer}>
+                                    {aiResponse.suggestedNextSteps.map((step, i) => (
+                                        <Box key={i} sx={classes.nextStepItem} onClick={() => handleQuickQuestion(step)}>
+                                            <Typography variant="body2">{step}</Typography>
+                                        </Box>
+                                    ))}
+                                </Box>
+                            </Box>
+                        )}
+
+                        {aiResponse.references?.length > 0 && (
+                            <Box>
+                                <Typography sx={classes.sectionTitle}>
+                                    <History fontSize="inherit" />
+                                    Referenced Workouts
+                                </Typography>
+                                <Grid container spacing={2}>
+                                    {aiResponse.references.map((ref) => (
+                                        <Grid item xs={12} sm={6} key={ref.id}>
+                                            <Box sx={classes.referenceCard}>
+                                                <Typography sx={classes.referenceDate}>
+                                                    {new Date(ref.date).toLocaleDateString()}
+                                                </Typography>
+                                                <Typography sx={classes.referenceText}>
+                                                    {ref.text}
+                                                </Typography>
+                                            </Box>
+                                        </Grid>
+                                    ))}
+                                </Grid>
+                            </Box>
+                        )}
+                    </Box>
+                )}
             </Box>
         </Box>
     );
