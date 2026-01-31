@@ -7,6 +7,7 @@ import { AuthModule } from './auth/auth.module';
 import { PostsModule } from './posts/posts.module';
 import { WorkoutSummariesModule } from './workout-summaries/workout-summaries.module';
 import { UserProfilesModule } from './user-profiles/user-profiles.module';
+import { EmbeddingsModule } from './embeddings/embeddings.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { UserProfilesModule } from './user-profiles/user-profiles.module';
     PostsModule,
     WorkoutSummariesModule,
     UserProfilesModule,
+    EmbeddingsModule,
   ],
 })
 export class AppModule { }
