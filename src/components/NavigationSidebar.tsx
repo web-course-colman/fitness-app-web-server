@@ -125,20 +125,45 @@ const NavigationSidebar = ({ mobileOpen, onMobileClose, isCollapsed, onToggleCol
                                     },
                                 }}
                             >
-                                <ListItemIcon
+                                <Box
                                     sx={{
-                                        color: isActive ? "primary.contrastText" : "inherit",
-                                        minWidth: isCollapsed ? 0 : 40,
-                                        justifyContent: "center",
+                                        display: "flex",
+                                        flexDirection: "column",
+                                        alignItems: "center",
+                                        width: "100%",
+                                        gap: 0.5,
                                     }}
                                 >
-                                    {item.icon}
-                                </ListItemIcon>
+                                    <ListItemIcon
+                                        sx={{
+                                            color: isActive ? "primary.contrastText" : "inherit",
+                                            minWidth: 0,
+                                            justifyContent: "center",
+                                        }}
+                                    >
+                                        {item.icon}
+                                    </ListItemIcon>
+                                    {isCollapsed && (
+                                        <Typography
+                                            variant="caption"
+                                            sx={{
+                                                fontSize: "0.65rem",
+                                                fontWeight: 600,
+                                                lineHeight: 1,
+                                                textAlign: "center",
+                                                color: isActive ? "primary.contrastText" : "text.secondary",
+                                            }}
+                                        >
+                                            {item.label}
+                                        </Typography>
+                                    )}
+                                </Box>
                                 {!isCollapsed && (
                                     <ListItemText
                                         primary={item.label}
                                         primaryTypographyProps={{
                                             fontWeight: isActive ? 600 : 400,
+                                            sx: { ml: 1 }
                                         }}
                                     />
                                 )}
