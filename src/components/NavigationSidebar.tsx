@@ -280,6 +280,8 @@ const NavigationSidebar = ({ mobileOpen, onMobileClose, isCollapsed, onToggleCol
                     "& .MuiDrawer-paper": {
                         boxSizing: "border-box",
                         width: isCollapsed ? COLLAPSED_WIDTH : DRAWER_WIDTH,
+                        bgcolor: "transparent",
+                        border: "none",
                         transition: theme.transitions.create("width", {
                             easing: theme.transitions.easing.sharp,
                             duration: theme.transitions.duration.enteringScreen,
