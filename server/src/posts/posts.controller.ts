@@ -38,8 +38,7 @@ export class PostsController {
     @Put('like')
     async likeOrUnlikePost(@Body() postId: string, @Request() req) {
         try {
-            const res = await this.postsService.likePost(postId, req.user.userId);
-            return res
+            return await this.postsService.likePost(postId, req.user.userId);
         } catch (err) {
             return err;
         }

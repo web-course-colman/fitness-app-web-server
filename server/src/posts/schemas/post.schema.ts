@@ -1,6 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
-import { User } from 'src/auth/schemas/user.schema';
 
 export type PostDocument = Post & Document;
 
@@ -18,7 +17,6 @@ class WorkoutDetails {
 
 const WorkoutDetailsSchema = SchemaFactory.createForClass(WorkoutDetails);
 
-@Schema({ _id: false })
 class Like {
     @Prop({ required: true })
     username: string;
