@@ -1,3 +1,4 @@
+import { useCallback, useEffect, useState } from "react";
 import {
     Card,
     CardContent,
@@ -6,16 +7,18 @@ import {
     Typography,
     Box,
     Button,
+    TextField,
+    IconButton,
 } from "@mui/material";
-import { Favorite, ChatBubbleOutline, Share as ShareIcon, FavoriteBorder } from "@mui/icons-material";
+import { Favorite, ChatBubbleOutline, Share as ShareIcon, FavoriteBorder, Send } from "@mui/icons-material";
 import { formatDistanceToNow } from "date-fns";
 import { useStyles } from "../../pages/Feed.styles";
-import { Post } from "@/hooks/usePosts";
+import { Post, useAddComment } from "@/hooks/usePosts";
 import PostImages from "./PostImages";
 import PostWorkoutDetails from "./PostWorkoutDetails";
-import { useCallback, useEffect, useState } from "react";
 import api from "@/services/axios";
 import { useAuth } from "../Auth/AuthProvider";
+import CommentItem from "./CommentItem";
 
 interface PostCardProps {
     post: Post;
@@ -27,6 +30,11 @@ const PostCard = ({ post }: PostCardProps) => {
     const [postLikes, setPostLikes] = useState<number>(post.likeNumber);
     const [isLikedByUser, setIsLiked] = useState<boolean>(!!post.likes?.find(like => like.username === loggedUser.username));
 
+    const [showComments, setShowComments] = useState(true);
+    const [commentContent, setCommentContent] = useState("");
+    const [displayCount, setDisplayCount] = useState(2);
+    const addCommentMutation = useAddComment();
+  
     const handleLikePost = useCallback(async () => {
         try {
             const res = await api.put('/api/posts/like', { _id: post._id })
@@ -42,6 +50,7 @@ const PostCard = ({ post }: PostCardProps) => {
         }
     }, [post._id]);
 
+
     const getInitials = (name: string | null) => {
         if (!name) return "U";
         return name.split(" ").filter(Boolean).map(n => n[0]).join("").toUpperCase();
@@ -52,6 +61,27 @@ const PostCard = ({ post }: PostCardProps) => {
         if (isNaN(date.getTime())) return "Unknown date";
         return formatDistanceToNow(date, { addSuffix: true });
     };
+
+    const handleAddComment = async () => {
+        if (!commentContent.trim()) return;
+        try {
+            await addCommentMutation.mutateAsync({
+                postId: post._id,
+                content: commentContent,
+            });
+            setCommentContent("");
+        } catch (error) {
+            console.error("Failed to add comment:", error);
+        }
+    };
+
+    const handleLoadMore = () => {
+        setDisplayCount(prev => prev + 5);
+    };
+
+    const comments = post.comments || [];
+    const visibleComments = comments.slice(0, displayCount);
+    const hasMoreComments = comments.length > displayCount;
 
     return (
         <Card elevation={1} sx={classes.card}>
@@ -111,7 +141,10 @@ const PostCard = ({ post }: PostCardProps) => {
                                 size="small"
                                 startIcon={<ChatBubbleOutline />}
                                 sx={classes.actionButton}
-                            />
+                                onClick={() => setShowComments(!showComments)}
+                            >
+                                {comments.length}
+                            </Button>
                             <Button
                                 variant="text"
                                 size="small"
@@ -120,6 +153,61 @@ const PostCard = ({ post }: PostCardProps) => {
                             />
                         </Box>
                     </Box>
+
+                    {showComments && (
+                        <Box sx={classes.commentsSection}>
+                            {visibleComments.map((comment) => (
+                                <CommentItem key={comment._id} comment={comment} classes={classes} />
+                            ))}
+
+                            {(hasMoreComments || displayCount > 2) && (
+                                <Box sx={classes.commentsPagination}>
+                                    {hasMoreComments && (
+                                        <Button
+                                            onClick={handleLoadMore}
+                                            sx={classes.loadMoreButton}
+                                            disableRipple
+                                        >
+                                            Load more
+                                        </Button>
+                                    )}
+
+                                    {displayCount > 2 && (
+                                        <Button
+                                            onClick={() => setDisplayCount(2)}
+                                            sx={classes.loadMoreButton}
+                                            disableRipple
+                                        >
+                                            Show less
+                                        </Button>
+                                    )}
+                                </Box>
+                            )}
+
+                            <Box sx={classes.commentInputContainer}>
+                                <TextField
+                                    fullWidth
+                                    size="small"
+                                    placeholder="Write a comment..."
+                                    value={commentContent}
+                                    onChange={(e) => setCommentContent(e.target.value)}
+                                    onKeyPress={(e) => {
+                                        if (e.key === 'Enter') {
+                                            handleAddComment();
+                                        }
+                                    }}
+                                    sx={classes.commentInput}
+                                />
+                                <IconButton
+                                    color="primary"
+                                    onClick={handleAddComment}
+                                    disabled={!commentContent.trim() || addCommentMutation.isPending}
+                                >
+                                    <Send />
+                                </IconButton>
+                            </Box>
+                        </Box>
+                    )}
                 </Box>
             </CardContent>
         </Card>

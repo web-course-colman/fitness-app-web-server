@@ -28,6 +28,18 @@ class Like {
 const LikeSchema = SchemaFactory.createForClass(Like);
 
 @Schema({ timestamps: true })
+class Comment {
+    @Prop({ required: true })
+    content: string;
+
+    @Prop({ type: Types.ObjectId, ref: 'User', required: true })
+    author: Types.ObjectId;
+}
+
+const CommentSchema = SchemaFactory.createForClass(Comment);
+
+
+@Schema({ timestamps: true })
 export class Post {
     @Prop({ required: true })
     title: string;
@@ -49,6 +61,9 @@ export class Post {
 
     @Prop({ type: Types.ObjectId, ref: 'User', required: true })
     author: Types.ObjectId;
+
+    @Prop({ type: [CommentSchema], default: [] })
+    comments: Comment[];
 }
 
 export const PostSchema = SchemaFactory.createForClass(Post);
