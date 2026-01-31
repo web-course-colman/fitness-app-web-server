@@ -12,7 +12,8 @@
     "server:start": "npm run start --prefix server",
     "server:dev": "npm run start:dev --prefix server",
     "start": "npm run build && npm run server:build && npm run server:start",
-    "dev:all": "concurrently \"npm run dev\" \"npm run server:dev\""
+    "dev:all": "concurrently \"npm run dev\" \"npm run server:dev\"",
+    "seed-user": "npm run seed --prefix server"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
