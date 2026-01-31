@@ -6,6 +6,7 @@ import { join } from 'path';
 import { AuthModule } from './auth/auth.module';
 import { PostsModule } from './posts/posts.module';
 import { WorkoutSummariesModule } from './workout-summaries/workout-summaries.module';
+import { UserProfilesModule } from './user-profiles/user-profiles.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { WorkoutSummariesModule } from './workout-summaries/workout-summaries.mo
     AuthModule,
     PostsModule,
     WorkoutSummariesModule,
+    UserProfilesModule,
   ],
 })
 export class AppModule { }
