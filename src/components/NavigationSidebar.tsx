@@ -89,7 +89,7 @@ const NavigationSidebar = ({ mobileOpen, onMobileClose, isCollapsed, onToggleCol
                         </IconButton>
                     )}
                 </Toolbar>
-                <Divider />
+                <Divider sx={{ width: "80%", margin: "0 auto" }} />
                 <List sx={{ px: 1, py: 2 }}>
                     {navigationItems.map((item) => {
                         const isActive = location.pathname === item.path;
