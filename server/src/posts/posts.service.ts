@@ -19,14 +19,29 @@ export class PostsService {
     }
 
     async findAll(): Promise<PostDocument[]> {
-        return this.postModel.find().populate('author', '-password').sort({ createdAt: -1 }).exec();
+        return this.postModel.find().populate('author', '-password').populate('comments.author', '-password').sort({ createdAt: -1 }).exec();
     }
 
     async findByAuthor(authorId: string): Promise<PostDocument[]> {
-        return this.postModel.find({ author: authorId }).populate('author', '-password').sort({ createdAt: -1 }).exec();
+        return this.postModel.find({ author: authorId }).populate('author', '-password').populate('comments.author', '-password').sort({ createdAt: -1 }).exec();
     }
 
     async findOne(id: string): Promise<PostDocument | null> {
-        return this.postModel.findById(id).populate('author', '-password').exec();
+        return this.postModel.findById(id).populate('author', '-password').populate('comments.author', '-password').exec();
+    }
+
+    async addComment(postId: string, userId: string, content: string): Promise<PostDocument | null> {
+        return this.postModel.findByIdAndUpdate(
+            postId,
+            {
+                $push: {
+                    comments: {
+                        content,
+                        author: new Types.ObjectId(userId),
+                    },
+                },
+            },
+            { new: true },
+        ).populate('author', '-password').populate('comments.author', '-password').exec();
     }
 }

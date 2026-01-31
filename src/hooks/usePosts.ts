@@ -2,6 +2,19 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "../services/axios";
 import { useAuth } from "../components/Auth/AuthProvider";
 
+export interface Comment {
+  _id: string;
+  content: string;
+  author: {
+    _id: string;
+    name: string;
+    lastName: string;
+    username: string;
+    picture?: string;
+  };
+  createdAt: string;
+}
+
 export interface Post {
   _id: string;
   author: {
@@ -19,6 +32,7 @@ export interface Post {
     calories?: number;
   };
   pictures?: string[];
+  comments?: Comment[];
   createdAt: string;
   updatedAt: string;
 }
@@ -58,6 +72,21 @@ export function useUserPosts() {
       return data;
     },
     enabled: !!loggedUser?.userId,
+  });
+}
+
+export function useAddComment() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ postId, content }: { postId: string; content: string }) => {
+      const { data } = await api.post(`/api/posts/${postId}/comments`, { content });
+      return data;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["posts"] });
+      queryClient.invalidateQueries({ queryKey: ["post", variables.postId] });
+    },
   });
 }
 
