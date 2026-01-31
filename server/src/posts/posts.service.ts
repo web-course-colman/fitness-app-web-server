@@ -48,28 +48,33 @@ export class PostsService {
     }
 
     async likePost(postId: string, userWhoLikeId: string): Promise<PostDocument | null> {
-        const doc = await this.postModel.findById(postId).exec();
         const user = await this.userModel.findById(userWhoLikeId, { _id: 1, username: 1, picture: 1 }).exec();
-
-        if (!doc) throw new NotFoundException(`Post ${postId} not found`);
         if (!user) throw new NotFoundException(`User id ${userWhoLikeId} not found`);
 
-        if (!doc.likes) {
-            doc.likes = [];
-        }
+        const post = await this.postModel.findById(postId).exec();
+        if (!post) throw new NotFoundException(`Post ${postId} not found`);
 
-        const exists = doc.likes.find(like => like.username === user.username);
+        const isLiked = post.likes?.some(like => like.username === user.username);
 
-        if (!exists) {
-            doc.likes.push(user);
-            doc.likeNumber++;
+        if (isLiked) {
+            return this.postModel.findOneAndUpdate(
+                { _id: postId, 'likes.username': user.username },
+                {
+                    $pull: { likes: { username: user.username } },
+                    $inc: { likeNumber: -1 }
+                },
+                { new: true }
+            ).populate('author', '-password').populate('comments.author', '-password').exec();
         } else {
-            doc.likes = doc.likes.filter(like => like.username !== user.username);
-            doc.likeNumber--;
+            const likeData = { username: user.username, picture: user.picture };
+            return this.postModel.findOneAndUpdate(
+                { _id: postId, 'likes.username': { $ne: user.username } },
+                {
+                    $addToSet: { likes: likeData },
+                    $inc: { likeNumber: 1 }
+                },
+                { new: true }
+            ).populate('author', '-password').populate('comments.author', '-password').exec();
         }
-
-        doc.markModified('likes');
-        const saved = await doc.save();
-        return saved;
     }
 }
