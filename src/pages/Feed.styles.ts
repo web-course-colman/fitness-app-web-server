@@ -90,4 +90,51 @@ export const useStyles = makeStyles((theme) => ({
     actionButton: {
         textTransform: "none",
     },
+    commentsSection: {
+        marginTop: theme.spacing(2),
+        display: "flex",
+        flexDirection: "column",
+        gap: theme.spacing(2),
+    },
+    commentItem: {
+        display: "flex",
+        gap: theme.spacing(1.5),
+        padding: theme.spacing(0.1),
+    },
+    commentContent: {
+        backgroundColor: theme.palette.action.hover,
+        padding: theme.spacing(1, 1.5),
+        borderRadius: theme.spacing(2),
+        flex: 1,
+    },
+    commentInputContainer: {
+        display: "flex",
+        alignItems: "center",
+        gap: theme.spacing(1),
+        marginTop: theme.spacing(1),
+    },
+    commentInput: {
+        "& .MuiOutlinedInput-root": {
+            borderRadius: theme.spacing(3),
+            backgroundColor: theme.palette.action.hover,
+        },
+    },
+    loadMoreButton: {
+        padding: 0,
+        minWidth: "auto",
+        textTransform: "none",
+        fontSize: "0.75rem",
+        fontWeight: 600,
+        color: theme.palette.primary.main,
+        "&:hover": {
+            backgroundColor: "transparent",
+            textDecoration: "underline",
+        },
+    },
+    commentsPagination: {
+        display: "flex",
+        gap: theme.spacing(2),
+        marginTop: theme.spacing(0.5),
+        paddingLeft: theme.spacing(1),
+    },
 }));
