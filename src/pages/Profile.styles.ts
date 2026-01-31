@@ -45,6 +45,40 @@ export const useStyles = makeStyles((theme) => ({
     bio: {
         marginTop: theme.spacing(1),
     },
+    minimizedStatsRow: {
+        display: "flex",
+        gap: theme.spacing(3),
+        marginTop: theme.spacing(2),
+        borderTop: `1px solid ${theme.palette.divider}`,
+        paddingTop: theme.spacing(2),
+    },
+    minimizedStatItem: {
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+    },
+    minimizedStatValue: {
+        fontWeight: "bold",
+        fontSize: "1.1rem",
+    },
+    minimizedStatLabel: {
+        color: theme.palette.text.secondary,
+        fontSize: "0.75rem",
+        textTransform: "uppercase",
+        letterSpacing: "0.05em",
+    },
+    minimizedAchievementsRow: {
+        display: "flex",
+        gap: theme.spacing(1),
+        marginTop: theme.spacing(2),
+        flexWrap: "wrap",
+    },
+    minimizedAchievementIcon: {
+        width: 32,
+        height: 32,
+        bgcolor: theme.palette.primary.light,
+        color: theme.palette.primary.contrastText,
+    },
     editButton: {
         marginTop: theme.spacing(1),
         textTransform: "none",

@@ -1,6 +1,18 @@
-import { Box, Card, Avatar, Typography, Button } from "@mui/material";
-import { Edit as EditIcon } from "@mui/icons-material";
+import { Box, Card, Avatar, Typography, Button, Tooltip } from "@mui/material";
+import { Edit as EditIcon, EmojiEvents as TrophyIcon } from "@mui/icons-material";
 import { useStyles } from "../../pages/Profile.styles";
+
+interface Stat {
+    label: string;
+    value: string | number;
+    icon: React.ReactNode;
+}
+
+interface Achievement {
+    id: string;
+    name: string;
+    description: string;
+}
 
 interface ProfileHeaderProps {
     name: string;
@@ -8,9 +20,11 @@ interface ProfileHeaderProps {
     bio: string;
     avatarUrl?: string;
     initials: string;
+    stats: Stat[];
+    achievements: Achievement[];
 }
 
-const ProfileHeader = ({ name, handle, bio, avatarUrl, initials }: ProfileHeaderProps) => {
+const ProfileHeader = ({ name, handle, bio, avatarUrl, initials, stats, achievements }: ProfileHeaderProps) => {
     const classes = useStyles();
 
     return (
@@ -29,8 +43,32 @@ const ProfileHeader = ({ name, handle, bio, avatarUrl, initials }: ProfileHeader
                     <Typography variant="body2" sx={classes.bio}>
                         {bio}
                     </Typography>
+
+                    <Box sx={classes.minimizedAchievementsRow}>
+                        {achievements.map((achievement) => (
+                            <Tooltip key={achievement.id} title={`${achievement.name}: ${achievement.description}`}>
+                                <Avatar sx={classes.minimizedAchievementIcon}>
+                                    <TrophyIcon sx={{ fontSize: '1.2rem' }} />
+                                </Avatar>
+                            </Tooltip>
+                        ))}
+                    </Box>
                 </Box>
             </Box>
+
+            <Box sx={classes.minimizedStatsRow}>
+                {stats.map((stat, index) => (
+                    <Box key={index} sx={classes.minimizedStatItem}>
+                        <Typography sx={classes.minimizedStatValue}>
+                            {stat.value}
+                        </Typography>
+                        <Typography sx={classes.minimizedStatLabel}>
+                            {stat.label}
+                        </Typography>
+                    </Box>
+                ))}
+            </Box>
+
             <Button
                 variant="outlined"
                 fullWidth

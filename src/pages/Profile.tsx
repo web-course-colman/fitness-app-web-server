@@ -1,4 +1,4 @@
-import { Box, Typography, IconButton } from "@mui/material";
+import { Box, Typography, IconButton, CircularProgress } from "@mui/material";
 import {
     Settings as SettingsIcon,
     LocalFireDepartment as FireIcon,
@@ -7,8 +7,6 @@ import {
 } from "@mui/icons-material";
 import { useStyles } from "./Profile.styles";
 import ProfileHeader from "../components/Profile/ProfileHeader";
-import StatsCard from "../components/Profile/StatsCard";
-import AchievementsList from "../components/Profile/AchievementsList";
 import { useAuth } from "../components/Auth/AuthProvider";
 import { useUserPosts } from "../hooks/usePosts";
 import PostCard from "../components/Feed/PostCard";
@@ -16,7 +14,7 @@ import PostCard from "../components/Feed/PostCard";
 const Profile = () => {
     const classes = useStyles();
     const { loggedUser } = useAuth();
-    const { data: posts } = useUserPosts();
+    const { data: posts, isLoading } = useUserPosts();
 
     const user = {
         name: `${loggedUser?.name || ""} ${loggedUser?.lastName || ""}`.trim() || "User",
@@ -29,7 +27,7 @@ const Profile = () => {
     const stats = [
         { label: "Workouts", value: 0, icon: <WorkoutIcon /> },
         { label: "Streak", value: "0 days", icon: <FireIcon /> },
-        { label: "Posts", value: posts?.length || 0, icon: <PostIcon /> },
+        { label: "Posts", value: isLoading ? "..." : (posts?.length || 0), icon: <PostIcon /> },
     ];
 
     const achievements = [
@@ -47,33 +45,30 @@ const Profile = () => {
                 bio={user.bio}
                 avatarUrl={user.avatarUrl}
                 initials={user.initials}
+                stats={stats}
+                achievements={achievements}
             />
-
-            <Box sx={classes.statsRow}>
-                {stats.map((stat, index) => (
-                    <StatsCard
-                        key={index}
-                        label={stat.label}
-                        value={stat.value}
-                        icon={stat.icon}
-                    />
-                ))}
-            </Box>
-
-            <AchievementsList achievements={achievements} />
 
             <Box sx={classes.postsSection}>
                 <Typography sx={classes.postsTitle}>
                     Your Posts
                 </Typography>
                 <Box sx={classes.postsGrid}>
-                    {posts?.map((post) => (
-                        <PostCard key={post._id} post={post} />
-                    ))}
-                    {posts?.length === 0 && (
-                        <Typography sx={{ color: 'text.secondary', textAlign: 'center', py: 4 }}>
-                            You haven't posted anything yet.
-                        </Typography>
+                    {isLoading ? (
+                        <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+                            <CircularProgress size={30} />
+                        </Box>
+                    ) : (
+                        <>
+                            {posts?.map((post) => (
+                                <PostCard key={post._id} post={post} />
+                            ))}
+                            {posts?.length === 0 && (
+                                <Typography sx={{ color: 'text.secondary', textAlign: 'center', py: 4 }}>
+                                    You haven't posted anything yet.
+                                </Typography>
+                            )}
+                        </>
                     )}
                 </Box>
             </Box>
