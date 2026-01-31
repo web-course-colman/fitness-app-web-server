@@ -52,6 +52,19 @@ async function runSeeding() {
         await mongoose.connect(MONGODB_URI);
         console.log('Connected to MongoDB');
 
+        // Drop the problematic unique index if it exists
+        try {
+            await mongoose.connection.db.collection('posts').dropIndex('likes.username_1');
+            console.log('Dropped unique index: likes.username_1');
+        } catch (e) {
+            console.log('Index likes.username_1 did not exist or could not be dropped, skipping.');
+        }
+
+        // Clear existing data
+        await User.deleteMany({});
+        await Post.deleteMany({});
+        console.log('Cleared existing data');
+
         const passwordHash = await bcrypt.hash('password123', 10);
 
         // Create Users
