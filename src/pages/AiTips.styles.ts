@@ -7,7 +7,7 @@ export const useStyles = makeStyles((theme) => ({
         margin: "0 auto",
         display: "flex",
         flexDirection: "column",
-        height: "-webkit-fill-available",
+        height: "80vh",
     },
     header: {
         display: "flex",

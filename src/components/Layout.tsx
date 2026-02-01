@@ -177,6 +177,7 @@ const Layout = () => {
                         boxShadow: "0 4px 24px rgba(0,0,0,0.04)",
                         overflow: "auto",
                         position: "relative",
+                        height: "inherit",
                         border: (theme) => `1px solid ${alpha(theme.palette.divider, 0.08)}`,
                     }}
                 >
