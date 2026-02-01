@@ -119,7 +119,7 @@ export class AiWorkerService {
         }
     }
 
-    private async generateEmbedding(userId: string, refType: string, refId: string, text: string) {
+    private async generateEmbedding(userId: string, refType: 'workout_summary' | 'workout', refId: string, text: string) {
         this.logger.log(`Generating embedding for ${refType} ${refId}`);
         try {
             let vector;
