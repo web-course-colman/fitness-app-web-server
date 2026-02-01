@@ -32,6 +32,9 @@ export class User {
     @Prop({ required: false })
     lastPostDate?: Date;
 
+    @Prop({ required: false, default: 'Athlete' })
+    sportType?: string;
+
     @Prop({ required: false })
     refreshToken?: string;
 

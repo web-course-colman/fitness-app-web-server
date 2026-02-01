@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Box, Button, TextField, Typography, Avatar, Paper, CircularProgress, Stack } from '@mui/material';
+import { Box, Button, TextField, Typography, Avatar, Paper, CircularProgress, Stack, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
 import { useAuth } from '@/components/Auth/AuthProvider';
 import api from '@/services/axios';
 import { toast } from 'sonner';
@@ -10,6 +10,7 @@ interface EditProfileState {
     email: string;
     picture: string;
     description: string;
+    sportType: string;
 }
 
 const EditProfile = () => {
@@ -21,7 +22,8 @@ const EditProfile = () => {
         username: '',
         email: '',
         picture: '',
-        description: ''
+        description: '',
+        sportType: 'Athlete'
     });
 
     useEffect(() => {
@@ -30,7 +32,8 @@ const EditProfile = () => {
                 username: loggedUser.username || '',
                 email: loggedUser.email || '',
                 picture: loggedUser.picture || '',
-                description: loggedUser.description || ''
+                description: loggedUser.description || '',
+                sportType: loggedUser.sportType || ''
             });
         }
     }, [loggedUser]);
@@ -61,7 +64,8 @@ const EditProfile = () => {
                 username: formData.username,
                 email: formData.email,
                 picture: formData.picture,
-                description: formData.description
+                description: formData.description,
+                sportType: formData.sportType
             };
 
             await api.post('/api/auth/profile', payload);
@@ -83,7 +87,7 @@ const EditProfile = () => {
 
     return (
         <Box sx={{ mx: 'auto', maxHeight: 'calc(100vh - 100px)', display: 'flex', flexDirection: 'column', width: '80%' }}>
-            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '24px', flex: 1, overflowY: 'auto', minHeight: 0 }}>
+            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '24px', flex: 1, minHeight: 0 }}>
                 <Box sx={{ display: 'flex', flexDirection: 'row' }}>
                     <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, padding: '2.4rem' }}>
                         <Avatar
@@ -130,6 +134,31 @@ const EditProfile = () => {
                             placeholder="Tell us about yourself..."
                             helperText="Share your fitness journey, goals, or interests"
                         />
+
+                        <FormControl fullWidth>
+                            <InputLabel id="sport-type-label">Sport Type</InputLabel>
+                            <Select
+                                labelId="sport-type-label"
+                                id="sport-type"
+                                name="sportType"
+                                value={formData.sportType}
+                                label="Sport Type"
+                                onChange={(e) => setFormData(prev => ({ ...prev, sportType: e.target.value }))}
+                            >
+                                <MenuItem value="Athlete">Athlete</MenuItem>
+                                <MenuItem value="Runner">Runner</MenuItem>
+                                <MenuItem value="Cyclist">Cyclist</MenuItem>
+                                <MenuItem value="Swimmer">Swimmer</MenuItem>
+                                <MenuItem value="Weightlifter">Weightlifter</MenuItem>
+                                <MenuItem value="Bodybuilder">Bodybuilder</MenuItem>
+                                <MenuItem value="CrossFit">CrossFit</MenuItem>
+                                <MenuItem value="Yoga Practitioner">Yoga Practitioner</MenuItem>
+                                <MenuItem value="Martial Artist">Martial Artist</MenuItem>
+                                <MenuItem value="Climber">Climber</MenuItem>
+                                <MenuItem value="Dancer">Dancer</MenuItem>
+                                <MenuItem value="Fitness Enthusiast">Fitness Enthusiast</MenuItem>
+                            </Select>
+                        </FormControl>
 
                         <TextField
                             label="Profile Picture URL"

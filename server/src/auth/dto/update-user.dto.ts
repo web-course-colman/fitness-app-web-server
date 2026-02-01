@@ -17,5 +17,10 @@ export class UpdateUserDto {
 
     @IsString()
     @IsOptional()
+    sportType?: string;
+
+    @IsString()
+    @IsOptional()
+    @IsString()
     picture?: string;
 }

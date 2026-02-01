@@ -138,7 +138,7 @@ const Layout = () => {
                                         fontSize: "0.7rem",
                                     }}
                                 >
-                                    Athlete
+                                    {loggedUser.sportType || 'Athlete'}
                                 </Typography>
                             </Box>
                         </Box>
