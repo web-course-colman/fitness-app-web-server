@@ -27,7 +27,7 @@ interface Tip {
     title: string;
     description: string;
     category: "workout" | "nutrition" | "recovery" | "motivation";
-    icon: React.ReactNode;
+    icon: React.ReactElement;
 }
 
 const tips: Tip[] = [
@@ -195,7 +195,7 @@ const AiTips = () => {
                                                 </Typography>
                                                 <Grid container spacing={1}>
                                                     {msg.data.references.map((ref) => (
-                                                        <Grid item xs={12} key={ref.id}>
+                                                        <Grid size={12} key={ref.id}>
                                                             <Box sx={classes.referenceCard}>
                                                                 <Typography sx={classes.referenceDate}>
                                                                     {new Date(ref.date).toLocaleDateString()}
