@@ -82,13 +82,13 @@ const EditProfile = () => {
     }
 
     return (
-        <Box sx={{ maxWidth: 600, mx: 'auto', maxHeight: 'calc(100vh - 100px)', display: 'flex', flexDirection: 'column' }}>
-            <Paper elevation={3} sx={{ p: 4, borderRadius: 2, flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-                <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '24px', flex: 1, overflowY: 'auto', minHeight: 0 }}>
-                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+        <Box sx={{ mx: 'auto', maxHeight: 'calc(100vh - 100px)', display: 'flex', flexDirection: 'column', width: '80%' }}>
+            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '24px', flex: 1, overflowY: 'auto', minHeight: 0 }}>
+                <Box sx={{ display: 'flex', flexDirection: 'row' }}>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, padding: '2.4rem' }}>
                         <Avatar
                             src={formData.picture || loggedUser?.picture}
-                            sx={{ width: 100, height: 100, border: '4px solid', borderColor: 'primary.main' }}
+                            sx={{ width: 200, height: 200, border: '4px solid', borderColor: 'primary.main' }}
                         >
                             {loggedUser?.username?.charAt(0).toUpperCase()}
                         </Avatar>
@@ -97,7 +97,7 @@ const EditProfile = () => {
                         </Typography>
                     </Box>
 
-                    <Stack spacing={3}>
+                    <Stack spacing={3} sx={{ width: '100%', padding: '2.4rem' }}>
                         <TextField
                             label="Username"
                             name="username"
@@ -141,28 +141,28 @@ const EditProfile = () => {
                             helperText="Enter a valid image URL"
                         />
                     </Stack>
+                </Box>
 
-                    <Box sx={{ display: 'flex', gap: 2, mt: 'auto', pt: 2 }}>
-                        <Button
-                            variant="outlined"
-                            fullWidth
-                            onClick={() => navigate('/profile')}
-                            disabled={isLoading}
-                            type="button"
-                        >
-                            Cancel
-                        </Button>
-                        <Button
-                            type="submit"
-                            variant="contained"
-                            fullWidth
-                            disabled={isLoading}
-                        >
-                            {isLoading ? 'Saving...' : 'Save Changes'}
-                        </Button>
-                    </Box>
-                </form>
-            </Paper>
+                <Box sx={{ display: 'flex', gap: 2, mt: 'auto', pt: 2, width: '80%', mx: 'auto' }}>
+                    <Button
+                        variant="outlined"
+                        fullWidth
+                        onClick={() => navigate('/profile')}
+                        disabled={isLoading}
+                        type="button"
+                    >
+                        Cancel
+                    </Button>
+                    <Button
+                        type="submit"
+                        variant="contained"
+                        fullWidth
+                        disabled={isLoading}
+                    >
+                        {isLoading ? 'Saving...' : 'Save Changes'}
+                    </Button>
+                </Box>
+            </form>
         </Box>
     );
 };

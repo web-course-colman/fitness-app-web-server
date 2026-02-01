@@ -43,6 +43,7 @@ const Layout = () => {
             "/workouts": "New Workout",
             "/ai-tips": "AI Coacher",
             "/profile": "Profile",
+            "/edit-profile": "Edit Profile",
             "/preferences": "Settings",
         };
         return titles[pathname] || "FitTrack";
