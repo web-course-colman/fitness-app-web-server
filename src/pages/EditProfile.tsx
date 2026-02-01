@@ -1,15 +1,14 @@
 import { useState, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
-import { Box, Button, TextField, Typography, Avatar, Paper, CircularProgress } from '@mui/material';
+import { Box, Button, TextField, Typography, Avatar, Paper, CircularProgress, Stack } from '@mui/material';
 import { useAuth } from '@/components/Auth/AuthProvider';
 import api from '@/services/axios';
 import { toast } from 'sonner';
 
-interface EditProfileForm {
+interface EditProfileState {
     username: string;
-    picture: string;
     email: string;
+    picture: string;
 }
 
 const EditProfile = () => {
@@ -17,36 +16,54 @@ const EditProfile = () => {
     const navigate = useNavigate();
     const [isLoading, setIsLoading] = useState(false);
 
-    const { register, handleSubmit, formState: { errors }, watch, reset } = useForm<EditProfileForm>({
-        defaultValues: {
-            username: loggedUser?.username || '',
-            picture: loggedUser?.picture || '',
-            email: loggedUser?.email || ''
-        }
+    const [formData, setFormData] = useState<EditProfileState>({
+        username: '',
+        email: '',
+        picture: ''
     });
 
     useEffect(() => {
         if (loggedUser) {
-            reset({
-                username: loggedUser.username,
-                picture: loggedUser.picture || '',
-                email: loggedUser.email || ''
+            setFormData({
+                username: loggedUser.username || '',
+                email: loggedUser.email || '',
+                picture: loggedUser.picture || ''
             });
         }
-    }, [loggedUser, reset]);
+    }, [loggedUser]);
 
-    const watchedPicture = watch('picture');
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+    };
 
-    if (authLoading) {
-        return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}><CircularProgress /></Box>;
-    }
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
 
-    const onSubmit = async (data: EditProfileForm) => {
+        // Basic validation
+        if (!formData.username.trim() || formData.username.length < 3) {
+            toast.error('Username must be at least 3 characters');
+            return;
+        }
+        if (!formData.email.trim() || !formData.email.includes('@')) {
+            toast.error('Please enter a valid email');
+            return;
+        }
+
         try {
             setIsLoading(true);
-            await api.post('/api/auth/profile', data);
-            await refreshProfile();
+
+            // Clean payload
+            const payload = {
+                username: formData.username,
+                email: formData.email,
+                picture: formData.picture
+            };
+
+            await api.post('/api/auth/profile', payload);
+
             toast.success('Profile updated successfully');
+            await refreshProfile();
             navigate('/profile');
         } catch (error: any) {
             console.error(error);
@@ -56,18 +73,17 @@ const EditProfile = () => {
         }
     };
 
+    if (authLoading) {
+        return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}><CircularProgress /></Box>;
+    }
+
     return (
-        <Box sx={{ maxWidth: 600, mx: 'auto', height: 'calc(100vh - 140px)' }}>
-            <Paper elevation={3} sx={{ p: 4, borderRadius: 2, height: '100%', display: 'flex', flexDirection: 'column' }}>
-                <Typography variant="h4" mb={4} fontWeight="bold" textAlign="center">
-                    Edit Profile
-                </Typography>
-
-                <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ display: 'flex', flexDirection: 'column', gap: 3, flex: 1, overflowY: 'auto', minHeight: 0, '&::-webkit-scrollbar': { display: 'none' }, scrollbarWidth: 'none' }}>
-
+        <Box sx={{ maxWidth: 600, mx: 'auto', maxHeight: 'calc(100vh - 100px)', display: 'flex', flexDirection: 'column' }}>
+            <Paper elevation={3} sx={{ p: 4, borderRadius: 2, flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '24px', flex: 1, overflowY: 'auto', minHeight: 0 }}>
                     <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
                         <Avatar
-                            src={watchedPicture || loggedUser?.picture}
+                            src={formData.picture || loggedUser?.picture}
                             sx={{ width: 100, height: 100, border: '4px solid', borderColor: 'primary.main' }}
                         >
                             {loggedUser?.username?.charAt(0).toUpperCase()}
@@ -77,51 +93,46 @@ const EditProfile = () => {
                         </Typography>
                     </Box>
 
-                    <TextField
-                        label="Username"
-                        fullWidth
-                        {...register('username', {
-                            required: 'Username is required',
-                            minLength: { value: 3, message: 'Username must be at least 3 characters' }
-                        })}
-                        error={!!errors.username}
-                        helperText={errors.username?.message}
-                    />
+                    <Stack spacing={3}>
+                        <TextField
+                            label="Username"
+                            name="username"
+                            fullWidth
+                            value={formData.username}
+                            onChange={handleChange}
+                            required
+                            helperText={formData.username.length < 3 ? "Minimum 3 characters" : ""}
+                            error={formData.username.length > 0 && formData.username.length < 3}
+                        />
 
-                    <TextField
-                        label="Email"
-                        fullWidth
-                        {...register('email', {
-                            required: 'Email is required',
-                            pattern: {
-                                value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                                message: 'Invalid email address'
-                            }
-                        })}
-                        error={!!errors.email}
-                        helperText={errors.email?.message}
-                    />
+                        <TextField
+                            label="Email"
+                            name="email"
+                            fullWidth
+                            value={formData.email}
+                            onChange={handleChange}
+                            required
+                            type="email"
+                        />
 
-                    <TextField
-                        label="Profile Picture URL"
-                        fullWidth
-                        {...register('picture', {
-                            pattern: {
-                                value: /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/,
-                                message: 'Invalid URL format'
-                            }
-                        })}
-                        error={!!errors.picture}
-                        helperText={errors.picture?.message}
-                        placeholder="https://example.com/avatar.jpg"
-                    />
+                        <TextField
+                            label="Profile Picture URL"
+                            name="picture"
+                            fullWidth
+                            value={formData.picture}
+                            onChange={handleChange}
+                            placeholder="https://example.com/image.jpg"
+                            helperText="Enter a valid image URL"
+                        />
+                    </Stack>
 
-                    <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
+                    <Box sx={{ display: 'flex', gap: 2, mt: 'auto', pt: 2 }}>
                         <Button
                             variant="outlined"
                             fullWidth
                             onClick={() => navigate('/profile')}
                             disabled={isLoading}
+                            type="button"
                         >
                             Cancel
                         </Button>
@@ -134,7 +145,7 @@ const EditProfile = () => {
                             {isLoading ? 'Saving...' : 'Save Changes'}
                         </Button>
                     </Box>
-                </Box>
+                </form>
             </Paper>
         </Box>
     );

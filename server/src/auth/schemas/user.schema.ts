@@ -24,6 +24,9 @@ export class User {
     email?: string;
 
     @Prop({ required: false })
+    description?: string;
+
+    @Prop({ required: false })
     refreshToken?: string;
 
     @Prop({

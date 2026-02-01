@@ -181,7 +181,7 @@ export class AuthService {
         ).exec();
     }
 
-    async updateUser(userId: string, updateDto: { username?: string; picture?: string }) {
+    async updateUser(userId: string, updateDto: { username?: string; picture?: string; email?: string }) {
         if (updateDto.username) {
             const existingUser = await this.userModel.findOne({
                 username: updateDto.username,

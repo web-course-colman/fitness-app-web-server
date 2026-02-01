@@ -13,6 +13,10 @@ export class UpdateUserDto {
 
     @IsString()
     @IsOptional()
-    @IsUrl()
+    description?: string;
+
+    @IsString()
+    @IsOptional()
+    @IsString()
     picture?: string;
 }
