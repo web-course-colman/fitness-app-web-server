@@ -41,7 +41,7 @@ const Layout = () => {
         const titles: Record<string, string> = {
             "/feed": "Feed",
             "/workouts": "New Workout",
-            "/progress": "Progress",
+            "/ai-tips": "AI Coacher",
             "/profile": "Profile",
             "/preferences": "Settings",
         };

@@ -18,6 +18,7 @@ import Preferences from "@/pages/Preferences";
 import NotFound from "@/pages/NotFound";
 
 import WorkoutPost from "@/pages/WorkoutPost";
+import AiTips from "@/pages/AiTips";
 
 const queryClient = new QueryClient();
 
@@ -37,6 +38,7 @@ const App = () => (
                                     <Route path="/feed" element={<Feed />} />
                                     <Route path="/profile" element={<Profile />} />
                                     <Route path="/workouts" element={<WorkoutPost />} />
+                                    <Route path="/ai-tips" element={<AiTips />} />
                                     <Route path="/preferences" element={<Preferences />} />
                                 </Route>
                             </Route>

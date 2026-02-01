@@ -25,6 +25,7 @@ import {
     Close,
     ChevronLeft,
     ChevronRight,
+    AutoAwesome,
 } from "@mui/icons-material";
 
 const DRAWER_WIDTH = 280;
@@ -38,7 +39,7 @@ interface NavigationItem {
 
 const navigationItems: NavigationItem[] = [
     { label: "Feed", path: "/feed", icon: <Home /> },
-    { label: "Progress", path: "/progress", icon: <TrendingUp /> },
+    { label: "AI Tips", path: "/ai-tips", icon: <AutoAwesome /> },
     { label: "Profile", path: "/profile", icon: <Person /> },
     { label: "Settings", path: "/preferences", icon: <Settings /> },
 ];
