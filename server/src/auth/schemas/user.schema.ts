@@ -21,6 +21,21 @@ export class User {
     picture?: string;
 
     @Prop({ required: false })
+    email?: string;
+
+    @Prop({ required: false })
+    description?: string;
+
+    @Prop({ required: false, default: 0 })
+    streak?: number;
+
+    @Prop({ required: false })
+    lastPostDate?: Date;
+
+    @Prop({ required: false, default: 'Athlete' })
+    sportType?: string;
+
+    @Prop({ required: false })
     refreshToken?: string;
 
     @Prop({

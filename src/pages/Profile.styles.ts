@@ -3,7 +3,7 @@ import { makeStyles } from "@/hooks/makeStyles";
 export const useStyles = makeStyles((theme) => ({
     container: {
         padding: theme.spacing(2),
-        maxWidth: 1200,
+        maxWidth: 800,
         margin: "0 auto",
         display: "flex",
         flexDirection: "column",

@@ -14,6 +14,7 @@ import Index from "@/pages/index";
 import Login from "@/pages/Login";
 import Feed from "@/pages/Feed";
 import Profile from "@/pages/Profile";
+import EditProfile from "@/pages/EditProfile";
 import Preferences from "@/pages/Preferences";
 import NotFound from "@/pages/NotFound";
 
@@ -37,6 +38,7 @@ const App = () => (
                                 <Route element={<Layout />}>
                                     <Route path="/feed" element={<Feed />} />
                                     <Route path="/profile" element={<Profile />} />
+                                    <Route path="/edit-profile" element={<EditProfile />} />
                                     <Route path="/workouts" element={<WorkoutPost />} />
                                     <Route path="/ai-tips" element={<AiTips />} />
                                     <Route path="/preferences" element={<Preferences />} />

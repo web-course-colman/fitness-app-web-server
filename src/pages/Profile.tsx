@@ -19,13 +19,13 @@ const Profile = () => {
     const user = {
         name: `${loggedUser?.name || ""} ${loggedUser?.lastName || ""}`.trim() || "User",
         handle: `@${loggedUser?.username || "user"}`,
-        bio: "Fitness enthusiast | Building strength 💪",
+        bio: loggedUser?.description || "No bio yet",
         avatarUrl: loggedUser?.picture || "",
         initials: loggedUser?.name ? loggedUser.name.charAt(0).toUpperCase() : "U"
     };
 
     const stats = [
-        { label: "Streak", value: "0 days", icon: <FireIcon /> },
+        { label: "Streak", value: `${loggedUser?.streak || 0} days`, icon: <FireIcon /> },
         { label: "Workouts", value: isLoading ? "..." : (posts?.length || 0), icon: <WorkoutIcon /> },
     ];
 
