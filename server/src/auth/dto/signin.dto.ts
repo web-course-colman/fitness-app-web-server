@@ -3,4 +3,5 @@ export class SigninDto {
     password: string;
     name: string;
     lastName: string;
+    email?: string;
 }

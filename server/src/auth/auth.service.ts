@@ -19,7 +19,7 @@ export class AuthService {
     ) { }
 
     async signin(signinDto: SigninDto): Promise<{ message: string }> {
-        const { username, password, name, lastName } = signinDto;
+        const { username, password, name, lastName, email } = signinDto;
 
         // Check if user already exists
         const existingUser = await this.userModel.findOne({ username }).exec();
@@ -37,6 +37,7 @@ export class AuthService {
             password: hashedPassword,
             name,
             lastName,
+            email,
         });
 
         await newUser.save();
@@ -47,7 +48,7 @@ export class AuthService {
     async login(loginDto: LoginDto): Promise<{
         access_token: string;
         refresh_token: string;
-        user: { name: string; lastName: string; username: string; picture?: string; preferences: any };
+        user: { name: string; lastName: string; username: string; picture?: string; email?: string; preferences: any };
     }> {
         const { username, password } = loginDto;
 
@@ -73,6 +74,7 @@ export class AuthService {
                 lastName: user.lastName,
                 username: user.username,
                 picture: user.picture,
+                email: user.email,
                 preferences: user.preferences,
             },
         };
@@ -101,6 +103,7 @@ export class AuthService {
             password: placeholderPassword,
             name: firstName,
             lastName: lastName,
+            email,
             picture,
         });
 

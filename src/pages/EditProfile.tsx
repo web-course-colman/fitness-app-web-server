@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 interface EditProfileForm {
     username: string;
     picture: string;
+    email: string;
 }
 
 const EditProfile = () => {
@@ -19,7 +20,8 @@ const EditProfile = () => {
     const { register, handleSubmit, formState: { errors }, watch, reset } = useForm<EditProfileForm>({
         defaultValues: {
             username: loggedUser?.username || '',
-            picture: loggedUser?.picture || ''
+            picture: loggedUser?.picture || '',
+            email: loggedUser?.email || ''
         }
     });
 
@@ -27,7 +29,8 @@ const EditProfile = () => {
         if (loggedUser) {
             reset({
                 username: loggedUser.username,
-                picture: loggedUser.picture || ''
+                picture: loggedUser.picture || '',
+                email: loggedUser.email || ''
             });
         }
     }, [loggedUser, reset]);
@@ -54,13 +57,13 @@ const EditProfile = () => {
     };
 
     return (
-        <Box sx={{ p: 3, maxWidth: 600, mx: 'auto', mt: 4 }}>
-            <Paper elevation={3} sx={{ p: 4, borderRadius: 2 }}>
+        <Box sx={{ maxWidth: 600, mx: 'auto', height: 'calc(100vh - 140px)' }}>
+            <Paper elevation={3} sx={{ p: 4, borderRadius: 2, height: '100%', display: 'flex', flexDirection: 'column' }}>
                 <Typography variant="h4" mb={4} fontWeight="bold" textAlign="center">
                     Edit Profile
                 </Typography>
 
-                <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ display: 'flex', flexDirection: 'column', gap: 3, flex: 1, overflowY: 'auto', minHeight: 0, '&::-webkit-scrollbar': { display: 'none' }, scrollbarWidth: 'none' }}>
 
                     <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
                         <Avatar
@@ -83,6 +86,20 @@ const EditProfile = () => {
                         })}
                         error={!!errors.username}
                         helperText={errors.username?.message}
+                    />
+
+                    <TextField
+                        label="Email"
+                        fullWidth
+                        {...register('email', {
+                            required: 'Email is required',
+                            pattern: {
+                                value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                                message: 'Invalid email address'
+                            }
+                        })}
+                        error={!!errors.email}
+                        helperText={errors.email?.message}
                     />
 
                     <TextField

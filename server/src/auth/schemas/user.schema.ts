@@ -21,6 +21,9 @@ export class User {
     picture?: string;
 
     @Prop({ required: false })
+    email?: string;
+
+    @Prop({ required: false })
     refreshToken?: string;
 
     @Prop({
