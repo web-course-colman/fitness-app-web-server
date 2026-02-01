@@ -16,6 +16,7 @@ import { CoachModule } from './coach/coach.module';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      envFilePath: ['.env', 'server/.env'],
     }),
     EventEmitterModule.forRoot(),
     MongooseModule.forRootAsync({

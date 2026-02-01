@@ -11,13 +11,26 @@ export class WorkoutSummariesService {
         private workoutSummaryModel: Model<WorkoutSummaryDocument>,
     ) { }
 
-    async create(createDto: CreateWorkoutSummaryDto): Promise<WorkoutSummary> {
+    async create(createDto: CreateWorkoutSummaryDto): Promise<WorkoutSummaryDocument> {
         const createdSummary = new this.workoutSummaryModel({
             ...createDto,
             workoutId: new Types.ObjectId(createDto.workoutId),
             userId: new Types.ObjectId(createDto.userId),
+            status: 'pending',
         });
         return createdSummary.save();
+    }
+
+    async updateStatus(id: string, status: 'completed' | 'failed', data: Partial<WorkoutSummary>): Promise<WorkoutSummaryDocument> {
+        const summary = await this.workoutSummaryModel.findByIdAndUpdate(
+            id,
+            { ...data, status },
+            { new: true }
+        ).exec();
+        if (!summary) {
+            throw new NotFoundException(`Workout summary ${id} not found`);
+        }
+        return summary;
     }
 
     async findAll(): Promise<WorkoutSummary[]> {
@@ -28,7 +41,7 @@ export class WorkoutSummariesService {
         return this.workoutSummaryModel.find({ userId: new Types.ObjectId(userId) }).exec();
     }
 
-    async findByWorkout(workoutId: string): Promise<WorkoutSummary> {
+    async findByWorkout(workoutId: string): Promise<WorkoutSummaryDocument> {
         const summary = await this.workoutSummaryModel.findOne({ workoutId: new Types.ObjectId(workoutId) }).exec();
         if (!summary) {
             throw new NotFoundException(`Workout summary for workout ${workoutId} not found`);

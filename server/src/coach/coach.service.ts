@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, ServiceUnavailableException, HttpException, HttpStatus } from '@nestjs/common';
 import { EmbeddingsService } from '../embeddings/embeddings.service';
 import { WorkoutSummariesService } from '../workout-summaries/workout-summaries.service';
 import { UserProfilesService } from '../user-profiles/user-profiles.service';
@@ -23,7 +23,16 @@ export class CoachService {
         // For this flow, we'll proceed to RAG as requested.
 
         // 2. Generate embedding for the question via OpenAI
-        const queryVector = await this.openaiService.generateEmbedding(question);
+        let queryVector;
+        try {
+            queryVector = await this.openaiService.generateEmbedding(question);
+        } catch (error: any) {
+            this.logger.error(`Failed to generate query embedding: ${error.message}`);
+            if (error.status === 429) {
+                throw new HttpException('OpenAI Rate Limit Exceeded. Please try again soon.', HttpStatus.TOO_MANY_REQUESTS);
+            }
+            throw new ServiceUnavailableException('The AI Coach is currently unavailable. Please try again later.');
+        }
 
         // 3. Fetch Top-K closest embeddings
         const similarEmbeddings = await this.embeddingsService.findSimilar(queryVector, userId, 5);
@@ -50,7 +59,16 @@ export class CoachService {
         }
 
         // 5. Generate Answer via OpenAI (RAG)
-        const result = await this.openaiService.generateCoachAnswer(question, profileContext, validSummaries);
+        let result;
+        try {
+            result = await this.openaiService.generateCoachAnswer(question, profileContext, validSummaries);
+        } catch (error: any) {
+            this.logger.error(`Coach answer generation failed: ${error.message}`);
+            if (error.status === 429) {
+                throw new HttpException('OpenAI Rate Limit Exceeded. Please try again soon.', HttpStatus.TOO_MANY_REQUESTS);
+            }
+            throw new ServiceUnavailableException('The AI Coach failed to generate an answer. Please try again later.');
+        }
 
         return {
             answer: result.answer,

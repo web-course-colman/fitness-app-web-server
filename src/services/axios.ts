@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { toast } from '../hooks/use-toast';
 
 const api = axios.create({
     withCredentials: true,
@@ -8,6 +9,15 @@ api.interceptors.response.use(
     (response) => response,
     async (error) => {
         const originalRequest = error.config;
+
+        if (error.response?.status === 429) {
+            toast({
+                title: 'Rate Limit Exceeded',
+                description: 'OpenAI is currently busy. Please try again in a few minutes.',
+                variant: 'destructive',
+            });
+        }
+
         if (error.response?.status === 401 && !originalRequest._retry) {
             originalRequest._retry = true;
             try {

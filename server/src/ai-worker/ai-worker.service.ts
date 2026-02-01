@@ -22,30 +22,56 @@ export class AiWorkerService {
     async handleWorkoutCreated(payload: { postId: string; userId: string }) {
         this.logger.log(`Processing workout created event for post ${payload.postId}`);
 
+        // 1. Create a pending summary record immediately
+        let summary;
         try {
-            // 1. Load workout
+            summary = await this.workoutSummariesService.create({
+                workoutId: payload.postId,
+                userId: payload.userId,
+            });
+            this.logger.log(`Created pending workout summary ${summary['_id']}`);
+        } catch (error) {
+            this.logger.error(`Failed to create pending summary: ${error.message}`);
+            return;
+        }
+
+        try {
+            // 2. Load workout
             const workout = await this.postsService.findOne(payload.postId);
             if (!workout) {
                 this.logger.error(`Workout ${payload.postId} not found`);
+                await this.workoutSummariesService.updateStatus(summary['_id'].toString(), 'failed', {
+                    error: 'Workout post not found'
+                });
                 return;
             }
 
-            // 2. Generate Summary via OpenAI
+            // 3. Generate Summary via OpenAI
             this.logger.log(`Generating AI summary for workout: ${workout.title}`);
             const workoutDesc = `${workout.title}. ${workout.description || ''}. Details: ${JSON.stringify(workout.workoutDetails || {})}`;
-            const { summaryText, summaryJson } = await this.openaiService.generateSummary(workoutDesc);
 
-            // 3. Save to workout_summaries
-            const summary = await this.workoutSummariesService.create({
-                workoutId: payload.postId,
-                userId: payload.userId,
+            let aiResult;
+            try {
+                aiResult = await this.openaiService.generateSummary(workoutDesc);
+            } catch (error) {
+                this.logger.error(`OpenAI summary generation failed: ${error.message}`);
+                await this.workoutSummariesService.updateStatus(summary['_id'].toString(), 'failed', {
+                    error: `AI processing failed: ${error.message}`
+                });
+                return;
+            }
+
+            const { summaryText, summaryJson } = aiResult;
+
+            // 4. Update summary to completed
+            await this.workoutSummariesService.updateStatus(summary['_id'].toString(), 'completed', {
                 summaryText,
                 summaryJson,
             });
 
-            this.logger.log(`Saved workout summary ${summary['_id']}`);
+            this.logger.log(`Completed workout summary ${summary['_id']}`);
 
-            // 4. Trigger Profile Update and Embedding
+            // 5. Trigger Profile Update and Embedding
             await Promise.all([
                 this.updateUserProfile(payload.userId, summaryText, summaryJson),
                 this.generateEmbedding(payload.userId, 'workout_summary', summary['_id'].toString(), summaryText)
@@ -53,6 +79,11 @@ export class AiWorkerService {
 
         } catch (error) {
             this.logger.error(`Error processing workout created: ${error.message}`, error.stack);
+            if (summary) {
+                await this.workoutSummariesService.updateStatus(summary['_id'].toString(), 'failed', {
+                    error: `Unexpected error: ${error.message}`
+                });
+            }
         }
     }
 
@@ -91,7 +122,13 @@ export class AiWorkerService {
     private async generateEmbedding(userId: string, refType: string, refId: string, text: string) {
         this.logger.log(`Generating embedding for ${refType} ${refId}`);
         try {
-            const vector = await this.openaiService.generateEmbedding(text);
+            let vector;
+            try {
+                vector = await this.openaiService.generateEmbedding(text);
+            } catch (error) {
+                this.logger.error(`OpenAI embedding generation failed: ${error.message}`);
+                return; // Silently fail for embeddings to not block other processes, but log it
+            }
 
             await this.embeddingsService.create({
                 userId,

@@ -9,7 +9,10 @@ export class OpenaiService {
 
     constructor(private configService: ConfigService) {
         const apiKey = this.configService.get<string>('OPENAI_API_KEY');
-        this.openai = new OpenAI({ apiKey });
+        if (!apiKey) {
+            this.logger.error('OPENAI_API_KEY is missing from configuration!');
+        }
+        this.openai = new OpenAI({ apiKey: apiKey || '' });
     }
 
     async generateSummary(workoutContent: string) {
@@ -41,7 +44,7 @@ export class OpenaiService {
             response_format: { type: 'json_object' }
         });
 
-        return JSON.parse(response.choices[0].message.content);
+        return JSON.parse(response.choices[0].message.content || '{}');
     }
 
     async generateEmbedding(text: string): Promise<number[]> {
@@ -89,6 +92,6 @@ export class OpenaiService {
             response_format: { type: 'json_object' }
         });
 
-        return JSON.parse(response.choices[0].message.content);
+        return JSON.parse(response.choices[0].message.content || '{}');
     }
 }

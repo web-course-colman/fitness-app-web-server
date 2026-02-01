@@ -9,9 +9,9 @@ export class CreateWorkoutSummaryDto {
     @IsString()
     userId: string;
 
-    @IsNotEmpty()
+    @IsOptional()
     @IsString()
-    summaryText: string;
+    summaryText?: string;
 
     @IsOptional()
     @IsObject()

@@ -68,28 +68,48 @@ const quickQuestions = [
     "Analyze my weekly volume",
 ];
 
+interface Message {
+    role: "user" | "coach";
+    content: string;
+    data?: CoachResponse;
+}
+
 const AiTips = () => {
     const classes = useStyles();
     const [question, setQuestion] = useState("");
-    const [aiResponse, setAiResponse] = useState<CoachResponse | null>(null);
+    const [messages, setMessages] = useState<Message[]>([]);
+    const scrollRef = React.useRef<HTMLDivElement>(null);
 
     const coachMutation = useAiCoach();
+
+    React.useEffect(() => {
+        if (scrollRef.current) {
+            scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+        }
+    }, [messages]);
 
     const handleSend = async (q?: string) => {
         const query = q || question;
         if (!query.trim() || coachMutation.isPending) return;
 
+        const userMsg: Message = { role: "user", content: query };
+        setMessages(prev => [...prev, userMsg]);
+        if (!q) setQuestion("");
+
         try {
             const result = await coachMutation.mutateAsync(query);
-            setAiResponse(result);
-            if (!q) setQuestion("");
+            const coachMsg: Message = {
+                role: "coach",
+                content: result.answer,
+                data: result
+            };
+            setMessages(prev => [...prev, coachMsg]);
         } catch (error) {
             console.error("Coach error:", error);
         }
     };
 
     const handleQuickQuestion = (q: string) => {
-        setQuestion(q);
         handleSend(q);
     };
 
@@ -104,38 +124,102 @@ const AiTips = () => {
                     Get personalized fitness advice powered by AI
                 </Typography>
 
-                <Box sx={classes.minimizedSection}>
-                    <Box sx={classes.tagsGroup}>
-                        <Typography sx={classes.miniSectionTitle}>Today's Tips</Typography>
-                        <Box sx={classes.tagsRow}>
-                            {tips.map((tip) => (
-                                <Tooltip key={tip.id} title={tip.description} arrow placement="top">
-                                    <Chip
-                                        icon={tip.icon}
-                                        label={tip.title}
-                                        onClick={() => { }}
-                                        sx={classes.tipChip}
-                                    />
-                                </Tooltip>
-                            ))}
-                        </Box>
-                    </Box>
+                <Box sx={classes.chatContainer} ref={scrollRef}>
+                    {messages.length === 0 ? (
+                        <Box sx={classes.minimizedSection}>
+                            <Box sx={classes.tagsGroup}>
+                                <Typography sx={classes.miniSectionTitle}>Today's Tips</Typography>
+                                <Box sx={classes.tagsRow}>
+                                    {tips.map((tip) => (
+                                        <Tooltip key={tip.id} title={tip.description} arrow placement="top">
+                                            <Chip
+                                                icon={tip.icon}
+                                                label={tip.title}
+                                                onClick={() => { }}
+                                                sx={classes.tipChip}
+                                            />
+                                        </Tooltip>
+                                    ))}
+                                </Box>
+                            </Box>
 
-                    {/* Quick Questions Tags */}
-                    <Box sx={classes.tagsGroup}>
-                        <Typography sx={classes.miniSectionTitle}>Quick Questions</Typography>
-                        <Box sx={classes.tagsRow}>
-                            {quickQuestions.map((q) => (
-                                <Chip
-                                    key={q}
-                                    label={q}
-                                    disabled={coachMutation.isPending}
-                                    onClick={() => handleQuickQuestion(q)}
-                                    sx={classes.questionChip}
-                                />
-                            ))}
+                            <Box sx={classes.tagsGroup}>
+                                <Typography sx={classes.miniSectionTitle}>Quick Questions</Typography>
+                                <Box sx={classes.tagsRow}>
+                                    {quickQuestions.map((q) => (
+                                        <Chip
+                                            key={q}
+                                            label={q}
+                                            disabled={coachMutation.isPending}
+                                            onClick={() => handleQuickQuestion(q)}
+                                            sx={classes.questionChip}
+                                        />
+                                    ))}
+                                </Box>
+                            </Box>
                         </Box>
-                    </Box>
+                    ) : (
+                        messages.map((msg, index) => (
+                            <Box
+                                key={index}
+                                sx={{
+                                    ...classes.messageBubble,
+                                    ...(msg.role === "user" ? classes.userBubble : classes.coachBubble)
+                                }}
+                            >
+                                <Typography sx={classes.answerText}>{msg.content}</Typography>
+
+                                {msg.role === "coach" && msg.data && (
+                                    <Box sx={classes.resultsContainer}>
+                                        {msg.data.suggestedNextSteps?.length > 0 && (
+                                            <Box>
+                                                <Typography sx={classes.sectionTitle}>
+                                                    <CheckCircleOutline fontSize="inherit" />
+                                                    Suggested Next Steps
+                                                </Typography>
+                                                <Box sx={classes.nextStepsContainer}>
+                                                    {msg.data.suggestedNextSteps.map((step, i) => (
+                                                        <Box key={i} sx={classes.nextStepItem} onClick={() => handleQuickQuestion(step)}>
+                                                            <Typography variant="body2">{step}</Typography>
+                                                        </Box>
+                                                    ))}
+                                                </Box>
+                                            </Box>
+                                        )}
+
+                                        {msg.data.references?.length > 0 && (
+                                            <Box>
+                                                <Typography sx={classes.sectionTitle}>
+                                                    <History fontSize="inherit" />
+                                                    Referenced Workouts
+                                                </Typography>
+                                                <Grid container spacing={1}>
+                                                    {msg.data.references.map((ref) => (
+                                                        <Grid item xs={12} key={ref.id}>
+                                                            <Box sx={classes.referenceCard}>
+                                                                <Typography sx={classes.referenceDate}>
+                                                                    {new Date(ref.date).toLocaleDateString()}
+                                                                </Typography>
+                                                                <Typography sx={classes.referenceText}>
+                                                                    {ref.text}
+                                                                </Typography>
+                                                            </Box>
+                                                        </Grid>
+                                                    ))}
+                                                </Grid>
+                                            </Box>
+                                        )}
+                                    </Box>
+                                )}
+                            </Box>
+                        ))
+                    )}
+                    {coachMutation.isPending && (
+                        <Box sx={{ ...classes.messageBubble, ...classes.coachBubble, display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <CircularProgress size={16} color="inherit" />
+                            <Typography sx={classes.answerText}>AI is thinking...</Typography>
+                        </Box>
+                    )}
                 </Box>
 
                 <Box sx={classes.inputContainer}>
@@ -162,53 +246,6 @@ const AiTips = () => {
                         )}
                     </IconButton>
                 </Box>
-
-                {aiResponse && (
-                    <Box sx={classes.resultsContainer}>
-                        <Box sx={classes.answerBubble}>
-                            <Typography sx={classes.answerText}>{aiResponse.answer}</Typography>
-                        </Box>
-
-                        {aiResponse.suggestedNextSteps?.length > 0 && (
-                            <Box>
-                                <Typography sx={classes.sectionTitle}>
-                                    <CheckCircleOutline fontSize="inherit" />
-                                    Suggested Next Steps
-                                </Typography>
-                                <Box sx={classes.nextStepsContainer}>
-                                    {aiResponse.suggestedNextSteps.map((step, i) => (
-                                        <Box key={i} sx={classes.nextStepItem} onClick={() => handleQuickQuestion(step)}>
-                                            <Typography variant="body2">{step}</Typography>
-                                        </Box>
-                                    ))}
-                                </Box>
-                            </Box>
-                        )}
-
-                        {aiResponse.references?.length > 0 && (
-                            <Box>
-                                <Typography sx={classes.sectionTitle}>
-                                    <History fontSize="inherit" />
-                                    Referenced Workouts
-                                </Typography>
-                                <Grid container spacing={2}>
-                                    {aiResponse.references.map((ref) => (
-                                        <Grid item xs={12} sm={6} key={ref.id}>
-                                            <Box sx={classes.referenceCard}>
-                                                <Typography sx={classes.referenceDate}>
-                                                    {new Date(ref.date).toLocaleDateString()}
-                                                </Typography>
-                                                <Typography sx={classes.referenceText}>
-                                                    {ref.text}
-                                                </Typography>
-                                            </Box>
-                                        </Grid>
-                                    ))}
-                                </Grid>
-                            </Box>
-                        )}
-                    </Box>
-                )}
             </Box>
         </Box>
     );
