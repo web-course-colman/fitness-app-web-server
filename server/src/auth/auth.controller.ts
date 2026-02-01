@@ -5,6 +5,7 @@ import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { SigninDto } from './dto/signin.dto';
 import { UpdatePreferencesDto } from './dto/update-preferences.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -65,6 +66,13 @@ export class AuthController {
     async getProfile(@Req() req: any) {
         const user = await this.authService.getUserById(req.user.userId);
         return user;
+    }
+
+    @Post('profile')
+    @UseGuards(AuthGuard('jwt'))
+    async updateProfile(@Req() req, @Body() updateUserDto: UpdateUserDto) {
+        const userId = req.user.userId;
+        return this.authService.updateUser(userId, updateUserDto);
     }
 
     @Get('refresh')

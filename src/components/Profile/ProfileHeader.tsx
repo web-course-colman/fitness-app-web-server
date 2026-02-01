@@ -1,4 +1,5 @@
 import { Box, Card, Avatar, Typography, Button, Tooltip, Divider } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 import { Edit as EditIcon, EmojiEvents as TrophyIcon } from "@mui/icons-material";
 import { useStyles } from "../../pages/Profile.styles";
 
@@ -26,6 +27,7 @@ interface ProfileHeaderProps {
 
 const ProfileHeader = ({ name, handle, bio, avatarUrl, initials, stats, achievements }: ProfileHeaderProps) => {
     const classes = useStyles();
+    const navigate = useNavigate();
 
     return (
         <Box sx={classes.profileCard}>
@@ -78,6 +80,7 @@ const ProfileHeader = ({ name, handle, bio, avatarUrl, initials, stats, achievem
                 fullWidth
                 startIcon={<EditIcon />}
                 sx={classes.editButton}
+                onClick={() => navigate('/edit-profile')}
             >
                 Edit Profile
             </Button>

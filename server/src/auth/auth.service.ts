@@ -178,6 +178,25 @@ export class AuthService {
         ).exec();
     }
 
+    async updateUser(userId: string, updateDto: { username?: string; picture?: string }) {
+        if (updateDto.username) {
+            const existingUser = await this.userModel.findOne({
+                username: updateDto.username,
+                _id: { $ne: userId }
+            }).exec();
+
+            if (existingUser) {
+                throw new ConflictException('Username already taken');
+            }
+        }
+
+        return this.userModel.findByIdAndUpdate(
+            userId,
+            { $set: updateDto },
+            { new: true }
+        ).exec();
+    }
+
     async getUserById(userId: string) {
         return this.userModel.findById(userId).exec();
     }
