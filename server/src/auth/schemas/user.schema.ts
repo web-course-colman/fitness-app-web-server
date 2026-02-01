@@ -26,6 +26,12 @@ export class User {
     @Prop({ required: false })
     description?: string;
 
+    @Prop({ required: false, default: 0 })
+    streak?: number;
+
+    @Prop({ required: false })
+    lastPostDate?: Date;
+
     @Prop({ required: false })
     refreshToken?: string;
 

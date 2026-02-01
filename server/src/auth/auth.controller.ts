@@ -35,32 +35,31 @@ export class AuthController {
         return result;
     }
 
-    // Temporarily disabled - Google OAuth credentials need updating
-    // @Get('google')
-    // @UseGuards(AuthGuard('google'))
-    // async googleAuth(@Req() req) { }
+    @Get('google')
+    @UseGuards(AuthGuard('google'))
+    async googleAuth(@Req() req) { }
 
-    // @Get('google/redirect')
-    // @UseGuards(AuthGuard('google'))
-    // async googleAuthRedirect(@Req() req, @Res() res: Response) {
-    //     const user = req.user;
-    //     const tokens = await this.authService.getTokens(user);
-    //     await this.authService.updateRefreshToken(user._id.toString(), tokens.refresh_token);
+    @Get('google/redirect')
+    @UseGuards(AuthGuard('google'))
+    async googleAuthRedirect(@Req() req, @Res() res: Response) {
+        const user = req.user;
+        const tokens = await this.authService.getTokens(user);
+        await this.authService.updateRefreshToken(user._id.toString(), tokens.refresh_token);
 
-    //     res.cookie('Authentication', tokens.access_token, {
-    //         httpOnly: true,
-    //         secure: process.env.NODE_ENV === 'production',
-    //         sameSite: 'lax',
-    //         maxAge: 15 * 60 * 1000,
-    //     });
-    //     res.cookie('Refresh', tokens.refresh_token, {
-    //         httpOnly: true,
-    //         secure: process.env.NODE_ENV === 'production',
-    //         sameSite: 'lax',
-    //         maxAge: 7 * 24 * 60 * 60 * 1000,
-    //     });
-    //     res.redirect('http://localhost:8080/feed');
-    // }
+        res.cookie('Authentication', tokens.access_token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            maxAge: 15 * 60 * 1000,
+        });
+        res.cookie('Refresh', tokens.refresh_token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            maxAge: 7 * 24 * 60 * 60 * 1000,
+        });
+        res.redirect('http://localhost:8080/feed');
+    }
 
     @Get('profile')
     @UseGuards(AuthGuard('jwt'))

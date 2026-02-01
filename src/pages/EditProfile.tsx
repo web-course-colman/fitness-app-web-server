@@ -9,6 +9,7 @@ interface EditProfileState {
     username: string;
     email: string;
     picture: string;
+    description: string;
 }
 
 const EditProfile = () => {
@@ -19,7 +20,8 @@ const EditProfile = () => {
     const [formData, setFormData] = useState<EditProfileState>({
         username: '',
         email: '',
-        picture: ''
+        picture: '',
+        description: ''
     });
 
     useEffect(() => {
@@ -27,7 +29,8 @@ const EditProfile = () => {
             setFormData({
                 username: loggedUser.username || '',
                 email: loggedUser.email || '',
-                picture: loggedUser.picture || ''
+                picture: loggedUser.picture || '',
+                description: loggedUser.description || ''
             });
         }
     }, [loggedUser]);
@@ -57,7 +60,8 @@ const EditProfile = () => {
             const payload = {
                 username: formData.username,
                 email: formData.email,
-                picture: formData.picture
+                picture: formData.picture,
+                description: formData.description
             };
 
             await api.post('/api/auth/profile', payload);
@@ -113,6 +117,18 @@ const EditProfile = () => {
                             onChange={handleChange}
                             required
                             type="email"
+                        />
+
+                        <TextField
+                            label="Bio / Description"
+                            name="description"
+                            fullWidth
+                            multiline
+                            rows={3}
+                            value={formData.description}
+                            onChange={handleChange}
+                            placeholder="Tell us about yourself..."
+                            helperText="Share your fitness journey, goals, or interests"
                         />
 
                         <TextField

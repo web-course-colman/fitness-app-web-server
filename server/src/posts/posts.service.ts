@@ -21,6 +21,9 @@ export class PostsService {
         });
         const post = await createdPost.save();
 
+        // Update user streak
+        await this.updateUserStreak(userId);
+
         // Emit event for background AI processing
         this.eventEmitter.emit('workout.created', {
             postId: post._id.toString(),
@@ -28,6 +31,46 @@ export class PostsService {
         });
 
         return post;
+    }
+
+    private async updateUserStreak(userId: string): Promise<void> {
+        const user = await this.userModel.findById(userId).exec();
+        if (!user) return;
+
+        const now = new Date();
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+        if (!user.lastPostDate) {
+            // First post ever
+            await this.userModel.findByIdAndUpdate(userId, {
+                streak: 1,
+                lastPostDate: now,
+            }).exec();
+            return;
+        }
+
+        const lastPostDate = new Date(user.lastPostDate);
+        const lastPostDay = new Date(lastPostDate.getFullYear(), lastPostDate.getMonth(), lastPostDate.getDate());
+
+        const daysDifference = Math.floor((today.getTime() - lastPostDay.getTime()) / (1000 * 60 * 60 * 24));
+
+        let newStreak: number;
+
+        if (daysDifference === 0) {
+            // Same day - maintain streak
+            newStreak = user.streak || 1;
+        } else if (daysDifference === 1) {
+            // Next consecutive day - increment streak
+            newStreak = (user.streak || 0) + 1;
+        } else {
+            // Gap in posting - reset to 1
+            newStreak = 1;
+        }
+
+        await this.userModel.findByIdAndUpdate(userId, {
+            streak: newStreak,
+            lastPostDate: now,
+        }).exec();
     }
 
     async findAll(): Promise<PostDocument[]> {

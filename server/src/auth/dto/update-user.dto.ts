@@ -17,6 +17,5 @@ export class UpdateUserDto {
 
     @IsString()
     @IsOptional()
-    @IsString()
     picture?: string;
 }

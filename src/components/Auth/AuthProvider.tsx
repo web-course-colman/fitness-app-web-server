@@ -23,6 +23,8 @@ export type User = {
     username: string;
     picture?: string;
     email?: string;
+    description?: string;
+    streak?: number;
     preferences: {
         pushNotifications: boolean;
         darkMode: boolean;
@@ -56,6 +58,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 username: data.username,
                 picture: data.picture,
                 email: data.email,
+                description: data.description,
+                streak: data.streak,
                 preferences: data.preferences,
                 loggedInAt: Date.now(),
             });
