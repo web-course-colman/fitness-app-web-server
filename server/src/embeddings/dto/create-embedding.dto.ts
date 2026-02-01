@@ -1,24 +1,12 @@
-import { IsNotEmpty, IsString, IsArray, IsEnum, IsNumber } from 'class-validator';
+import { createZodDto } from 'nestjs-zod';
+import { z } from 'zod';
 
-export class CreateEmbeddingDto {
-    @IsNotEmpty()
-    @IsString()
-    userId: string;
+const CreateEmbeddingSchema = z.object({
+    userId: z.string().min(1),
+    refType: z.enum(['workout_summary', 'workout']),
+    refId: z.string().min(1),
+    vector: z.array(z.number()),
+    text: z.string().min(1),
+});
 
-    @IsNotEmpty()
-    @IsEnum(['workout_summary', 'workout'])
-    refType: string;
-
-    @IsNotEmpty()
-    @IsString()
-    refId: string;
-
-    @IsNotEmpty()
-    @IsArray()
-    @IsNumber({}, { each: true })
-    vector: number[];
-
-    @IsNotEmpty()
-    @IsString()
-    text: string;
-}
+export class CreateEmbeddingDto extends createZodDto(CreateEmbeddingSchema) { }

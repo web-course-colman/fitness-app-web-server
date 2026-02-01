@@ -1,6 +1,13 @@
 import { Controller, Get, Post, Body, Param, Query } from '@nestjs/common';
 import { EmbeddingsService } from './embeddings.service';
 import { CreateEmbeddingDto } from './dto/create-embedding.dto';
+import { z } from 'zod';
+
+const UserIdSchema = z.string().min(1);
+const ReferenceQuerySchema = z.object({
+    refType: z.enum(['workout_summary', 'workout']),
+    refId: z.string().min(1),
+});
 
 @Controller('embeddings')
 export class EmbeddingsController {
@@ -13,6 +20,7 @@ export class EmbeddingsController {
 
     @Get('user/:userId')
     findByUser(@Param('userId') userId: string) {
+        UserIdSchema.parse(userId);
         return this.embeddingsService.findByUser(userId);
     }
 
@@ -21,6 +29,7 @@ export class EmbeddingsController {
         @Query('refType') refType: string,
         @Query('refId') refId: string,
     ) {
+        ReferenceQuerySchema.parse({ refType, refId });
         return this.embeddingsService.findByReference(refType, refId);
     }
 }

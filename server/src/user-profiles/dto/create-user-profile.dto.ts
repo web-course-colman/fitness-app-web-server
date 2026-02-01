@@ -1,20 +1,11 @@
-import { IsNotEmpty, IsString, IsObject, IsNumber, MaxLength } from 'class-validator';
+import { createZodDto } from 'nestjs-zod';
+import { z } from 'zod';
 
-export class CreateUserProfileDto {
-    @IsNotEmpty()
-    @IsString()
-    userId: string;
+const CreateUserProfileSchema = z.object({
+    userId: z.string().min(1),
+    profileSummaryText: z.string().max(2500),
+    profileSummaryJson: z.record(z.string(), z.any()),
+    version: z.number(),
+});
 
-    @IsNotEmpty()
-    @IsString()
-    @MaxLength(2500)
-    profileSummaryText: string;
-
-    @IsNotEmpty()
-    @IsObject()
-    profileSummaryJson: Record<string, any>;
-
-    @IsNotEmpty()
-    @IsNumber()
-    version: number;
-}
+export class CreateUserProfileDto extends createZodDto(CreateUserProfileSchema) { }

@@ -1,19 +1,11 @@
-import { IsNotEmpty, IsOptional, IsString, IsObject } from 'class-validator';
+import { createZodDto } from 'nestjs-zod';
+import { z } from 'zod';
 
-export class CreateWorkoutSummaryDto {
-    @IsNotEmpty()
-    @IsString()
-    workoutId: string;
+const CreateWorkoutSummarySchema = z.object({
+    workoutId: z.string().min(1),
+    userId: z.string().min(1),
+    summaryText: z.string().optional(),
+    summaryJson: z.record(z.string(), z.any()).optional(),
+});
 
-    @IsNotEmpty()
-    @IsString()
-    userId: string;
-
-    @IsOptional()
-    @IsString()
-    summaryText?: string;
-
-    @IsOptional()
-    @IsObject()
-    summaryJson?: Record<string, any>;
-}
+export class CreateWorkoutSummaryDto extends createZodDto(CreateWorkoutSummarySchema) { }
