@@ -224,6 +224,7 @@ const Layout = () => {
             sx={{
               position: "fixed",
               background: "linear-gradient(90deg, #6366f1 0%, #a855f7 100%)",
+              color: "primary.contrastText",
               bottom: { xs: 16, sm: 24 },
               right: { xs: 16, sm: 24 },
               boxShadow: 3,
