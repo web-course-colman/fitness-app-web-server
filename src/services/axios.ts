@@ -18,6 +18,22 @@ api.interceptors.response.use(
             });
         }
 
+        if (error.response?.status === 400 || error.response?.status === 422) {
+            toast({
+                title: 'Invalid Request',
+                description: error.response?.data?.message || 'Please check your input and try again.',
+                variant: 'destructive',
+            });
+        }
+
+        if (error.response?.status === 502 || error.response?.status === 503) {
+            toast({
+                title: 'Server Error',
+                description: 'The server is temporarily unavailable. Please try again later.',
+                variant: 'destructive',
+            });
+        }
+
         if (error.response?.status === 401 && !originalRequest._retry) {
             originalRequest._retry = true;
             try {
