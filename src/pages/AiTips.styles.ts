@@ -147,7 +147,7 @@ export const useStyles = makeStyles((theme) => ({
     },
     userBubble: {
         alignSelf: "flex-end",
-        backgroundColor: theme.palette.primary.main,
+        background: "linear-gradient(90deg, #6366f1 0%, #a855f7 100%)",
         color: "#fff",
         borderBottomRightRadius: theme.spacing(0.5),
     },
@@ -192,10 +192,10 @@ export const useStyles = makeStyles((theme) => ({
         },
     },
     sendButton: {
-        backgroundColor: theme.palette.mode === "dark" ? "#6366f1" : "#1e293b",
+        background: "linear-gradient(90deg, #6366f1 0%, #a855f7 100%)",
         color: "#fff",
         "&:hover": {
-            backgroundColor: theme.palette.mode === "dark" ? "#4f46e5" : "#0f172a",
+            background: "linear-gradient(90deg, #4f46e5 0%, #9333ea 100%)",
             transform: "scale(1.05)",
         },
         transition: "all 0.2s ease",
