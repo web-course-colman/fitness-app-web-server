@@ -30,6 +30,7 @@ export interface Post {
     type?: string;
     duration?: number;
     calories?: number;
+    subjectiveFeedbackFeelings?: string;
   };
   pictures?: string[];
   likes: { username: string; picture?: string }[];

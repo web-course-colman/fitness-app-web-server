@@ -13,6 +13,12 @@ class WorkoutDetails {
 
     @Prop({ required: false })
     calories?: number;
+
+    @Prop({ required: false })
+    subjectiveFeedbackFeelings?: string;
+
+    @Prop({ required: false })
+    personalGoals?: string;
 }
 
 const WorkoutDetailsSchema = SchemaFactory.createForClass(WorkoutDetails);

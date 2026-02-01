@@ -17,6 +17,12 @@ export class WorkoutSummary {
     @Prop({ type: Object, required: false })
     summaryJson?: Record<string, any>;
 
+    @Prop({ required: false })
+    subjectiveFeedbackFeelings?: string;
+
+    @Prop({ required: false })
+    personalGoals?: string;
+
     @Prop({
         required: true,
         enum: ['pending', 'completed', 'failed'],

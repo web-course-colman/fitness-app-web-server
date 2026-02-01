@@ -67,6 +67,9 @@ export class AiWorkerService {
             await this.workoutSummariesService.updateStatus(summary['_id'].toString(), 'completed', {
                 summaryText,
                 summaryJson,
+                ...(workout.workoutDetails?.subjectiveFeedbackFeelings && {
+                    subjectiveFeedbackFeelings: workout.workoutDetails.subjectiveFeedbackFeelings,
+                }),
             });
 
             this.logger.log(`Completed workout summary ${summary['_id']}`);
