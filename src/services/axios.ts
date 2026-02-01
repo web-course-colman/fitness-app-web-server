@@ -13,7 +13,7 @@ api.interceptors.response.use(
         if (error.response?.status === 429) {
             toast({
                 title: 'Rate Limit Exceeded',
-                description: 'OpenAI is currently busy. Please try again in a few minutes.',
+                description: 'Please try again in a few minutes.',
                 variant: 'destructive',
             });
         }
