@@ -1,4 +1,7 @@
-import { Controller, Post, Get, Body, HttpCode, HttpStatus, Res, UseGuards, Req, UnauthorizedException } from '@nestjs/common';
+import { Controller, Post, Get, Body, HttpCode, HttpStatus, Res, UseGuards, Req, UnauthorizedException, UseInterceptors, UploadedFile } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
 import { AuthGuard } from '@nestjs/passport';
 import type { Response, Request } from 'express';
 import { AuthService } from './auth.service';
@@ -70,9 +73,40 @@ export class AuthController {
 
     @Post('profile')
     @UseGuards(AuthGuard('jwt'))
-    async updateProfile(@Req() req, @Body() updateUserDto: UpdateUserDto) {
+    @UseInterceptors(FileInterceptor('file', {
+        storage: diskStorage({
+            destination: './uploads/avatars',
+            filename: (req, file, cb) => {
+                const randomName = Array(32).fill(null).map(() => (Math.round(Math.random() * 16)).toString(16)).join('');
+                cb(null, `${randomName}${extname(file.originalname)}`);
+            },
+        }),
+        fileFilter: (req, file, cb) => {
+            if (!file.originalname.match(/\.(jpg|jpeg|png|gif|webp)$/)) {
+                return cb(new Error('Only image files are allowed!'), false);
+            }
+            cb(null, true);
+        },
+        limits: {
+            fileSize: 5 * 1024 * 1024, // 5MB limit
+        },
+    }))
+    async updateProfile(@Req() req, @Body() updateUserDto: UpdateUserDto, @UploadedFile() file: any) {
         const userId = req.user.userId;
-        return this.authService.updateUser(userId, updateUserDto);
+
+        // If a file was uploaded, update the picture field with the full URL
+        if (file) {
+            const serverUrl = process.env.SERVER_URL || 'http://localhost:3002';
+            updateUserDto.picture = `${serverUrl}/uploads/avatars/${file.filename}`;
+        }
+
+        const updatedUser = await this.authService.updateUser(userId, updateUserDto);
+
+        if (!updatedUser) {
+            throw new UnauthorizedException('User not found');
+        }
+
+        return updatedUser;
     }
 
     @Get('refresh')

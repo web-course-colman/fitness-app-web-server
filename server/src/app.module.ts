@@ -27,7 +27,18 @@ import { CoachModule } from './coach/coach.module';
       inject: [ConfigService],
     }),
     ServeStaticModule.forRoot({
+      rootPath: join(process.cwd(), 'uploads'),
+      serveRoot: '/uploads',
+      serveStaticOptions: {
+        setHeaders: (res, path) => {
+          res.set('Access-Control-Allow-Origin', '*');
+          res.set('Cross-Origin-Resource-Policy', 'cross-origin');
+        },
+      },
+    }),
+    ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', '..', 'dist'),
+      exclude: ['/api/(.*)', '/uploads/(.*)'],
     }),
     AuthModule,
     PostsModule,

@@ -4,6 +4,7 @@ import { Box, Button, TextField, Typography, Avatar, Paper, CircularProgress, St
 import { useAuth } from '@/components/Auth/AuthProvider';
 import api from '@/services/axios';
 import { toast } from 'sonner';
+import { useStyles } from './EditProfile.styles';
 
 interface EditProfileState {
     username: string;
@@ -14,6 +15,7 @@ interface EditProfileState {
 }
 
 const EditProfile = () => {
+    const classes = useStyles();
     const { loggedUser, refreshProfile, isLoading: authLoading } = useAuth();
     const navigate = useNavigate();
     const [isLoading, setIsLoading] = useState(false);
@@ -25,6 +27,8 @@ const EditProfile = () => {
         description: '',
         sportType: 'Athlete'
     });
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [previewUrl, setPreviewUrl] = useState<string>('');
 
     useEffect(() => {
         if (loggedUser) {
@@ -43,6 +47,19 @@ const EditProfile = () => {
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setSelectedFile(file);
+            // Create preview URL
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setPreviewUrl(reader.result as string);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
@@ -59,22 +76,35 @@ const EditProfile = () => {
         try {
             setIsLoading(true);
 
-            // Clean payload
-            const payload = {
-                username: formData.username,
-                email: formData.email,
-                picture: formData.picture,
-                description: formData.description,
-                sportType: formData.sportType
-            };
+            // Create FormData for multipart upload
+            const formDataToSend = new FormData();
+            formDataToSend.append('username', formData.username);
+            formDataToSend.append('email', formData.email);
+            formDataToSend.append('description', formData.description);
+            formDataToSend.append('sportType', formData.sportType);
 
-            await api.post('/api/auth/profile', payload);
+            // Only append picture URL if no file is selected
+            if (!selectedFile && formData.picture) {
+                formDataToSend.append('picture', formData.picture);
+            }
 
+            // Append file if selected
+            if (selectedFile) {
+                formDataToSend.append('file', selectedFile);
+            }
+
+            const response = await api.post('/api/auth/profile', formDataToSend, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+
+            console.log('Profile update response:', response.data);
             toast.success('Profile updated successfully');
             await refreshProfile();
             navigate('/profile');
         } catch (error: any) {
-            console.error(error);
+            console.error('Profile update error:', error);
             toast.error(error.response?.data?.message || 'Failed to update profile');
         } finally {
             setIsLoading(false);
@@ -86,22 +116,40 @@ const EditProfile = () => {
     }
 
     return (
-        <Box sx={{ mx: 'auto', maxHeight: 'calc(100vh - 100px)', display: 'flex', flexDirection: 'column', width: '80%' }}>
-            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '24px', flex: 1, minHeight: 0 }}>
-                <Box sx={{ display: 'flex', flexDirection: 'row' }}>
-                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, padding: '2.4rem' }}>
+        <Box sx={classes.container}>
+            <Box component="form" onSubmit={handleSubmit} sx={classes.form}>
+                <Box sx={classes.contentRow}>
+                    <Box sx={classes.leftColumn}>
                         <Avatar
-                            src={formData.picture || loggedUser?.picture}
-                            sx={{ width: 200, height: 200, border: '4px solid', borderColor: 'primary.main' }}
+                            src={previewUrl || formData.picture || loggedUser?.picture}
+                            sx={classes.avatar}
                         >
                             {loggedUser?.username?.charAt(0).toUpperCase()}
                         </Avatar>
                         <Typography variant="caption" color="text.secondary">
                             Preview
                         </Typography>
+                        <Button
+                            variant="outlined"
+                            component="label"
+                            size="small"
+                        >
+                            Upload Avatar
+                            <input
+                                type="file"
+                                hidden
+                                accept="image/*"
+                                onChange={handleFileChange}
+                            />
+                        </Button>
+                        {selectedFile && (
+                            <Typography variant="caption" color="primary">
+                                {selectedFile.name}
+                            </Typography>
+                        )}
                     </Box>
 
-                    <Stack spacing={3} sx={{ width: '100%', padding: '2.4rem' }}>
+                    <Stack spacing={3} sx={classes.rightColumn}>
                         <TextField
                             label="Username"
                             name="username"
@@ -172,7 +220,7 @@ const EditProfile = () => {
                     </Stack>
                 </Box>
 
-                <Box sx={{ display: 'flex', gap: 2, mt: 'auto', pt: 2, width: '80%', mx: 'auto' }}>
+                <Box sx={classes.actions}>
                     <Button
                         variant="outlined"
                         fullWidth
@@ -191,7 +239,7 @@ const EditProfile = () => {
                         {isLoading ? 'Saving...' : 'Save Changes'}
                     </Button>
                 </Box>
-            </form>
+            </Box>
         </Box>
     );
 };
