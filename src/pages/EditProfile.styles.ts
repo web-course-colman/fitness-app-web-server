@@ -34,13 +34,13 @@ export const useStyles = makeStyles((theme) => ({
     },
     rightColumn: {
         width: '100%',
-        padding: '2.4rem',
+        paddingTop: '2.4rem',
     },
     actions: {
         display: 'flex',
         gap: theme.spacing(2),
         mt: 'auto',
-        pt: theme.spacing(2),
+        padding: theme.spacing(4),
         width: '80%',
         mx: 'auto',
     },

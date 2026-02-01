@@ -207,16 +207,6 @@ const EditProfile = () => {
                                 <MenuItem value="Fitness Enthusiast">Fitness Enthusiast</MenuItem>
                             </Select>
                         </FormControl>
-
-                        <TextField
-                            label="Profile Picture URL"
-                            name="picture"
-                            fullWidth
-                            value={formData.picture}
-                            onChange={handleChange}
-                            placeholder="https://example.com/image.jpg"
-                            helperText="Enter a valid image URL"
-                        />
                     </Stack>
                 </Box>
 
