@@ -1,11 +1,19 @@
 # Fitness App
 
-A full-stack web application for fitness tracking, featuring a modern React frontend and a robust NestJS backend.
+A full-stack web application for fitness tracking and coaching, featuring a modern React frontend and a robust NestJS backend. This application now includes AI-powered coaching and workout analysis.
 
 ## Project Structure
 
 - `/src`: React frontend (Vite, Tailwind CSS, shadcn/ui, Material UI)
-- `/server`: NestJS backend
+- `/server`: NestJS backend (MongoDB, OpenAI integration)
+
+## Features
+
+- **Personalized AI Coach**: Chat interface powered by OpenAI to get fitness advice and answers.
+- **Workout Summaries**: AI-generated summaries of your workout sessions.
+- **Social Feed**: Share posts, like, and comment on other users' activities.
+- **User Profiles**: Manage your profile and view others.
+- **Authentication**: Secure login and registration with JWT.
 
 ## Getting Started
 
@@ -13,6 +21,8 @@ A full-stack web application for fitness tracking, featuring a modern React fron
 
 - Node.js (v18 or higher)
 - npm
+- **MongoDB**: You need a running MongoDB instance (local or cloud like MongoDB Atlas).
+- **OpenAI API Key**: Required for AI features.
 
 ### Installation
 
@@ -28,6 +38,21 @@ A full-stack web application for fitness tracking, featuring a modern React fron
    cd server
    npm install
    cd ..
+   ```
+
+3. **Environment Configuration**:
+   Create a `.env` file in the `server` directory with the following variables:
+   ```env
+   MONGO_URI=mongodb://localhost:27017/fitness-app
+   OPENAI_API_KEY=your_openai_api_key_here
+   JWT_SECRET=your_jwt_secret_key
+   ```
+   *Note: Adjust `MONGO_URI` if you are using a remote database.*
+
+4. **Seed Initial Data**:
+   Populate the database with initial user data:
+   ```sh
+   npm run seed-user
    ```
 
 ## Running the Application
@@ -60,6 +85,7 @@ npm start
 - `npm run server:dev`: Start only the backend development server.
 - `npm run build`: Build the frontend.
 - `npm run server:build`: Build the backend.
+- `npm run seed-user`: Run the database seeding script.
 
 ### Server Directory
 - `npm run start:dev`: Start the NestJS server in watch mode.
@@ -79,8 +105,10 @@ npm start
 ### Backend
 - **Framework**: NestJS
 - **Language**: TypeScript
+- **Database**: MongoDB with Mongoose
+- **AI Integration**: OpenAI API
+- **Authentication**: Passport.js, JWT
 
 ## Deployment
 
 The application is designed to be deployed as a single unit or separately. The `npm start` command in the root directory builds both parts and runs the server, which is configured to serve the static client files.
-
