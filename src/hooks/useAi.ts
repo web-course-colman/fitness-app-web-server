@@ -14,12 +14,46 @@ export interface CoachResponse {
     references: CoachReference[];
 }
 
+export interface OneRm {
+    squat?: number;
+    bench?: number;
+    deadlift?: number;
+}
+
 export interface UserProfileSummary {
     userId: string;
     profileSummaryText: string;
     profileSummaryJson: Record<string, any>;
     version: number;
-    updatedAt: string;
+    updatedAt?: string;
+    height?: number;
+    currentWeight?: number;
+    age?: number;
+    sex?: 'male' | 'female' | 'other';
+    bodyFatPercentage?: number;
+    vo2max?: number;
+    oneRm?: OneRm;
+    workoutsPerWeek?: number;
+}
+
+/** Fetches user profile; returns null if profile does not exist (404). Use on Edit Profile to allow creating. */
+export function useUserProfileForEdit() {
+    const { loggedUser } = useAuth();
+
+    return useQuery<UserProfileSummary | null>({
+        queryKey: ['user-profile-edit', loggedUser?.userId],
+        queryFn: async () => {
+            if (!loggedUser?.userId) return null;
+            try {
+                const { data } = await api.get<UserProfileSummary>(`/api/user-profiles/${loggedUser.userId}`);
+                return data;
+            } catch (err: any) {
+                if (err.response?.status === 404) return null;
+                throw err;
+            }
+        },
+        enabled: !!loggedUser?.userId,
+    });
 }
 
 export function useAiCoach() {

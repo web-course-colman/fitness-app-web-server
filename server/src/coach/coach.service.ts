@@ -3,6 +3,31 @@ import { EmbeddingsService } from '../embeddings/embeddings.service';
 import { WorkoutSummariesService } from '../workout-summaries/workout-summaries.service';
 import { UserProfilesService } from '../user-profiles/user-profiles.service';
 import { OpenaiService } from '../openai/openai.service';
+import { UserProfile } from '../user-profiles/schemas/user-profile.schema';
+
+function buildProfileContext(profile: UserProfile): string {
+    const parts: string[] = [];
+    if (profile.profileSummaryText?.trim()) {
+        parts.push(profile.profileSummaryText.trim());
+    }
+    const stats: string[] = [];
+    if (profile.height != null) stats.push(`Height: ${profile.height} cm`);
+    if (profile.currentWeight != null) stats.push(`Current weight: ${profile.currentWeight} kg`);
+    if (profile.age != null) stats.push(`Age: ${profile.age}`);
+    if (profile.sex) stats.push(`Sex: ${profile.sex}`);
+    if (profile.bodyFatPercentage != null) stats.push(`Body fat: ${profile.bodyFatPercentage}%`);
+    if (profile.vo2max != null) stats.push(`VO2max: ${profile.vo2max} ml/kg/min`);
+    if (profile.oneRm) {
+        const oneRm = profile.oneRm;
+        const lifts = [oneRm.squat != null && `Squat ${oneRm.squat} kg`, oneRm.bench != null && `Bench ${oneRm.bench} kg`, oneRm.deadlift != null && `Deadlift ${oneRm.deadlift} kg`].filter(Boolean);
+        if (lifts.length) stats.push(`1RM: ${lifts.join(', ')}`);
+    }
+    if (profile.workoutsPerWeek != null) stats.push(`Workouts per week: ${profile.workoutsPerWeek}`);
+    if (stats.length) {
+        parts.push('Fitness stats: ' + stats.join('. '));
+    }
+    return parts.length ? parts.join('\n\n') : 'No profile summary available.';
+}
 
 @Injectable()
 export class CoachService {
@@ -49,11 +74,11 @@ export class CoachService {
         );
         const validSummaries = summaries.filter(s => s !== null);
 
-        // b. User Profile Context
+        // b. User Profile Context (full user-profile doc)
         let profileContext = "No profile summary available.";
         try {
             const profile = await this.userProfilesService.findByUser(userId);
-            profileContext = profile.profileSummaryText;
+            profileContext = buildProfileContext(profile);
         } catch (e) {
             this.logger.warn(`No profile found for user ${userId}`);
         }
