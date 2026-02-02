@@ -9,6 +9,7 @@ export class CreatePostDto {
         duration?: number;
         calories?: number;
         subjectiveFeedbackFeelings?: string;
+        personalGoals?: string;
     };
     likes: User[];
     likesNumber: number;

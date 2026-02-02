@@ -11,6 +11,7 @@ export class PostsController {
     @UseGuards(AuthGuard('jwt'))
     @Post()
     async create(@Body() createPostDto: CreatePostDto, @Request() req) {
+        console.log('Incoming post DTO:', JSON.stringify(createPostDto, null, 2));
         return this.postsService.create(createPostDto, req.user.userId);
     }
 

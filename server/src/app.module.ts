@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { EventEmitterModule } from '@nestjs/event-emitter';
@@ -38,7 +38,7 @@ import { CoachModule } from './coach/coach.module';
     }),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', '..', 'dist'),
-      exclude: ['/api/(.*)', '/uploads/(.*)'],
+      exclude: ['/uploads/(.*)'],
     }),
     AuthModule,
     PostsModule,

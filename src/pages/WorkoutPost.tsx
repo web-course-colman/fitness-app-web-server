@@ -71,6 +71,7 @@ const WorkoutPost = () => {
         calories: calories ? parseInt(calories) : undefined,
         subjectiveFeedbackFeelings:
           subjectiveFeedbackFeelings.trim() || undefined,
+        personalGoals: personalGoals.trim() || undefined,
       },
     };
 
