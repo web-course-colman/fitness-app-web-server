@@ -171,7 +171,7 @@ export class CoachService {
                                 const remainder = buffer.substring(delimiterIndex + delimiter.length);
 
                                 if (textPart) {
-                                    subscriber.next({ type: 'message', data: textPart });
+                                    subscriber.next({ data: { type: 'message', data: textPart } });
                                 }
 
                                 isCollectingMetadata = true;
@@ -185,7 +185,7 @@ export class CoachService {
                                 const keepLength = delimiter.length - 1;
                                 if (buffer.length > keepLength) {
                                     const toEmit = buffer.substring(0, buffer.length - keepLength);
-                                    subscriber.next({ type: 'message', data: toEmit });
+                                    subscriber.next({ data: { type: 'message', data: toEmit } });
                                     buffer = buffer.substring(buffer.length - keepLength);
                                 }
                             }
@@ -194,7 +194,7 @@ export class CoachService {
 
                     // Flush any remaining text in buffer if we never found metadata (shouldn't happen if AI follows instructions, but safety first)
                     if (!isCollectingMetadata && buffer.length > 0) {
-                        subscriber.next({ type: 'message', data: buffer });
+                        subscriber.next({ data: { type: 'message', data: buffer } });
                     }
 
                     // Process Metadata
@@ -214,10 +214,12 @@ export class CoachService {
                             }).filter(ref => ref !== null) || [];
 
                             subscriber.next({
-                                type: 'metadata',
                                 data: {
-                                    suggestedNextSteps: result.suggestedNextSteps,
-                                    references: resolvedReferences
+                                    type: 'metadata',
+                                    data: {
+                                        suggestedNextSteps: result.suggestedNextSteps,
+                                        references: resolvedReferences
+                                    }
                                 }
                             });
                         } catch (e) {
@@ -225,13 +227,14 @@ export class CoachService {
                         }
                     }
 
+                    subscriber.complete();
                 } catch (err) {
                     this.logger.error(err);
                     subscriber.error(err);
                 }
-                subscriber.complete();
             })();
         });
     }
 }
+
 

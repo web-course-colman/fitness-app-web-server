@@ -15,6 +15,7 @@ export class CoachController {
     }
 
     @UseGuards(AuthGuard('jwt'))
+    @Post('ask-stream')
     @Sse('ask-stream')
     askStream(@Body() askCoachDto: AskCoachDto, @Request() req): Observable<MessageEvent> {
         return this.coachService.askStream(req.user.userId, askCoachDto.question);

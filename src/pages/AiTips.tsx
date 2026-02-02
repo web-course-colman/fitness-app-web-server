@@ -101,7 +101,6 @@ const AiTips = () => {
         setIsLoading(true);
 
         // Create a placeholder message for the coach
-        const placeholderId = Date.now().toString();
         const initialCoachMsg: Message = {
             role: "coach",
             content: "",
@@ -128,6 +127,7 @@ const AiTips = () => {
             const reader = response.body.getReader();
             const decoder = new TextDecoder();
             let buffer = '';
+            let currentCoachContent = "";
 
             while (true) {
                 const { done, value } = await reader.read();
@@ -136,37 +136,67 @@ const AiTips = () => {
                 const chunk = decoder.decode(value, { stream: true });
                 buffer += chunk;
 
-                // Process complete SSE messages
-                const lines = buffer.split('\n\n');
-                buffer = lines.pop() || ''; // Keep incomplete line in buffer
+                // Process complete SSE messages (support both \n\n and \r\n\r\n)
+                const blocks = buffer.split(/\r?\n\r?\n/);
+                buffer = blocks.pop() || ''; // Keep incomplete block in buffer
 
-                for (const line of lines) {
-                    if (line.startsWith('data: ')) {
-                        const jsonStr = line.substring(6);
-                        try {
-                            const event = JSON.parse(jsonStr);
+                for (const block of blocks) {
+                    const trimmedBlock = block.trim();
+                    if (!trimmedBlock) continue;
 
+                    // SSE can have multiple data: lines; join them per spec.
+                    const dataLines = trimmedBlock
+                        .split(/\r?\n/)
+                        .map(l => l.trim())
+                        .filter(l => l.startsWith('data:'))
+                        .map(l => l.replace(/^data:\s?/, ''));
+
+                    if (dataLines.length === 0) continue;
+
+                    const jsonStr = dataLines.join('\n');
+
+                    try {
+                        const event = JSON.parse(jsonStr);
+                        console.log("Received SSE event:", event);
+
+                        if (event.type === 'message') {
+                            currentCoachContent += event.data;
                             setMessages(prev => {
                                 const newMessages = [...prev];
-                                const lastMsg = newMessages[newMessages.length - 1];
-
-                                if (event.type === 'message') {
-                                    // Append text
-                                    lastMsg.content += event.data;
-                                    // Also update answer in data to match
-                                    if (lastMsg.data) lastMsg.data.answer += event.data;
-                                } else if (event.type === 'metadata') {
-                                    // Update metadata
-                                    if (lastMsg.data) {
-                                        lastMsg.data.suggestedNextSteps = event.data.suggestedNextSteps;
-                                        lastMsg.data.references = event.data.references;
-                                    }
+                                const lastIdx = newMessages.length - 1;
+                                if (lastIdx >= 0 && newMessages[lastIdx].role === 'coach') {
+                                    newMessages[lastIdx] = {
+                                        ...newMessages[lastIdx],
+                                        content: currentCoachContent,
+                                        data: newMessages[lastIdx].data
+                                            ? {
+                                                ...newMessages[lastIdx].data!,
+                                                answer: currentCoachContent,
+                                            }
+                                            : undefined,
+                                    };
                                 }
                                 return newMessages;
                             });
-                        } catch (e) {
-                            console.error("Error parsing SSE JSON:", e);
+                        } else if (event.type === 'metadata') {
+                            setMessages(prev => {
+                                const newMessages = [...prev];
+                                const lastIdx = newMessages.length - 1;
+                                if (lastIdx >= 0 && newMessages[lastIdx].role === 'coach') {
+                                    newMessages[lastIdx] = {
+                                        ...newMessages[lastIdx],
+                                        data: {
+                                            ...newMessages[lastIdx].data!,
+                                            suggestedNextSteps: event.data?.suggestedNextSteps || [],
+                                            references: event.data?.references || [],
+                                        },
+                                    };
+                                }
+                                return newMessages;
+                            });
                         }
+                    } catch (e) {
+                        console.error("Error parsing SSE JSON:", e, "Block:", trimmedBlock);
                     }
                 }
             }
@@ -241,7 +271,9 @@ const AiTips = () => {
                                     ...(msg.role === "user" ? classes.userBubble : classes.coachBubble)
                                 }}
                             >
-                                <Typography sx={classes.answerText} dangerouslySetInnerHTML={{ __html: msg.content.replace(/\n/g, '<br/>') }} />
+                                <Typography sx={classes.answerText} style={{ whiteSpace: 'pre-wrap' }}>
+                                    {msg.content}
+                                </Typography>
 
                                 {msg.role === "coach" && msg.data && (
                                     <Box sx={classes.resultsContainer}>
