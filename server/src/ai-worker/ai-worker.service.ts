@@ -71,7 +71,7 @@ export class AiWorkerService {
                     subjectiveFeedbackFeelings: workout.workoutDetails.subjectiveFeedbackFeelings,
                 }),
                 ...(workout.workoutDetails?.personalGoals && {
-                    subjectiveFeedbackFeelings: workout.workoutDetails.subjectiveFeedbackFeelings,
+                    personalGoals: workout.workoutDetails.personalGoals,
                 }),
             });
 
