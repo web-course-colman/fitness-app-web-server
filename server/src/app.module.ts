@@ -38,7 +38,6 @@ import { CoachModule } from './coach/coach.module';
     }),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', '..', 'dist'),
-      exclude: ['/uploads/(.*)'],
     }),
     AuthModule,
     PostsModule,
