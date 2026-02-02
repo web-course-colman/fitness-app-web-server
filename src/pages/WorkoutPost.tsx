@@ -142,7 +142,7 @@ const WorkoutPost = () => {
           </Box>
 
           <Box sx={styles.inputSection}>
-            <Typography sx={styles.label}>Description (optional)</Typography>
+            <Typography sx={styles.label}>Description (Will help AI Tips)</Typography>
             <TextField
               fullWidth
               multiline
