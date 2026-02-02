@@ -20,7 +20,7 @@ import {
     History,
 } from "@mui/icons-material";
 import { useStyles } from "./AiTips.styles";
-import { useAiCoach, CoachResponse } from "../hooks/useAi";
+import { CoachResponse } from "../hooks/useAi";
 
 interface Tip {
     id: string;
@@ -78,9 +78,11 @@ const AiTips = () => {
     const classes = useStyles();
     const [question, setQuestion] = useState("");
     const [messages, setMessages] = useState<Message[]>([]);
+    const [isLoading, setIsLoading] = useState(false);
     const scrollRef = React.useRef<HTMLDivElement>(null);
 
-    const coachMutation = useAiCoach();
+    // Keep the mutation for non-streaming checks if needed, or just remove if fully replacing.
+    // For now, we'll bypass it for the main chat interaction.
 
     React.useEffect(() => {
         if (scrollRef.current) {
@@ -90,22 +92,124 @@ const AiTips = () => {
 
     const handleSend = async (q?: string) => {
         const query = q || question;
-        if (!query.trim() || coachMutation.isPending) return;
+        if (!query.trim() || isLoading) return;
 
         const userMsg: Message = { role: "user", content: query };
         setMessages(prev => [...prev, userMsg]);
         if (!q) setQuestion("");
 
+        setIsLoading(true);
+
+        // Create a placeholder message for the coach
+        const initialCoachMsg: Message = {
+            role: "coach",
+            content: "",
+            data: { answer: "", suggestedNextSteps: [], references: [] } // Init empty data
+        };
+        setMessages(prev => [...prev, initialCoachMsg]);
+
         try {
-            const result = await coachMutation.mutateAsync(query);
-            const coachMsg: Message = {
-                role: "coach",
-                content: result.answer,
-                data: result
-            };
-            setMessages(prev => [...prev, coachMsg]);
+            const response = await fetch('/api/coach/ask-stream', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ question: query }),
+                credentials: 'include', // Important for cookies
+            });
+
+            if (!response.ok) {
+                throw new Error(response.statusText);
+            }
+
+            if (!response.body) throw new Error("No response body");
+
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let buffer = '';
+            let currentCoachContent = "";
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+
+                const chunk = decoder.decode(value, { stream: true });
+                buffer += chunk;
+
+                // Process complete SSE messages (support both \n\n and \r\n\r\n)
+                const blocks = buffer.split(/\r?\n\r?\n/);
+                buffer = blocks.pop() || ''; // Keep incomplete block in buffer
+
+                for (const block of blocks) {
+                    const trimmedBlock = block.trim();
+                    if (!trimmedBlock) continue;
+
+                    // SSE can have multiple data: lines; join them per spec.
+                    const dataLines = trimmedBlock
+                        .split(/\r?\n/)
+                        .map(l => l.trim())
+                        .filter(l => l.startsWith('data:'))
+                        .map(l => l.replace(/^data:\s?/, ''));
+
+                    if (dataLines.length === 0) continue;
+
+                    const jsonStr = dataLines.join('\n');
+
+                    try {
+                        const event = JSON.parse(jsonStr);
+                        console.log("Received SSE event:", event);
+
+                        if (event.type === 'message') {
+                            currentCoachContent += event.data;
+                            setMessages(prev => {
+                                const newMessages = [...prev];
+                                const lastIdx = newMessages.length - 1;
+                                if (lastIdx >= 0 && newMessages[lastIdx].role === 'coach') {
+                                    newMessages[lastIdx] = {
+                                        ...newMessages[lastIdx],
+                                        content: currentCoachContent,
+                                        data: newMessages[lastIdx].data
+                                            ? {
+                                                ...newMessages[lastIdx].data!,
+                                                answer: currentCoachContent,
+                                            }
+                                            : undefined,
+                                    };
+                                }
+                                return newMessages;
+                            });
+                        } else if (event.type === 'metadata') {
+                            setMessages(prev => {
+                                const newMessages = [...prev];
+                                const lastIdx = newMessages.length - 1;
+                                if (lastIdx >= 0 && newMessages[lastIdx].role === 'coach') {
+                                    newMessages[lastIdx] = {
+                                        ...newMessages[lastIdx],
+                                        data: {
+                                            ...newMessages[lastIdx].data!,
+                                            suggestedNextSteps: event.data?.suggestedNextSteps || [],
+                                            references: event.data?.references || [],
+                                        },
+                                    };
+                                }
+                                return newMessages;
+                            });
+                        }
+                    } catch (e) {
+                        console.error("Error parsing SSE JSON:", e, "Block:", trimmedBlock);
+                    }
+                }
+            }
         } catch (error) {
             console.error("Coach error:", error);
+            setMessages(prev => {
+                const newMessages = [...prev];
+                const lastMsg = newMessages[newMessages.length - 1];
+                lastMsg.content += "\n\n(Error: Failed to get full response from AI)";
+                return newMessages;
+            });
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -150,7 +254,7 @@ const AiTips = () => {
                                         <Chip
                                             key={q}
                                             label={q}
-                                            disabled={coachMutation.isPending}
+                                            disabled={isLoading}
                                             onClick={() => handleQuickQuestion(q)}
                                             sx={classes.questionChip}
                                         />
@@ -167,7 +271,9 @@ const AiTips = () => {
                                     ...(msg.role === "user" ? classes.userBubble : classes.coachBubble)
                                 }}
                             >
-                                <Typography sx={classes.answerText}>{msg.content}</Typography>
+                                <Typography sx={classes.answerText} style={{ whiteSpace: 'pre-wrap' }}>
+                                    {msg.content}
+                                </Typography>
 
                                 {msg.role === "coach" && msg.data && (
                                     <Box sx={classes.resultsContainer}>
@@ -214,7 +320,7 @@ const AiTips = () => {
                             </Box>
                         ))
                     )}
-                    {coachMutation.isPending && (
+                    {isLoading && messages[messages.length - 1]?.role !== 'coach' && (
                         <Box sx={{ ...classes.messageBubble, ...classes.coachBubble, display: 'flex', alignItems: 'center', gap: 1 }}>
                             <CircularProgress size={16} color="inherit" />
                             <Typography sx={classes.answerText}>AI is thinking...</Typography>
@@ -228,7 +334,7 @@ const AiTips = () => {
                         variant="outlined"
                         placeholder="Ask about workouts, nutrition, recovery..."
                         value={question}
-                        disabled={coachMutation.isPending}
+                        disabled={isLoading}
                         onChange={(e) => setQuestion(e.target.value)}
                         onKeyPress={(e) => e.key === "Enter" && handleSend()}
                         sx={classes.inputField}
@@ -236,10 +342,10 @@ const AiTips = () => {
                     <IconButton
                         sx={classes.sendButton}
                         onClick={() => handleSend()}
-                        disabled={coachMutation.isPending}
+                        disabled={isLoading}
                         size="small"
                     >
-                        {coachMutation.isPending ? (
+                        {isLoading ? (
                             <CircularProgress size={20} color="inherit" />
                         ) : (
                             <Send fontSize="small" />
@@ -250,5 +356,6 @@ const AiTips = () => {
         </Box>
     );
 };
+
 
 export default AiTips;
