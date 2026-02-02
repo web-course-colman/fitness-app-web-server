@@ -9,7 +9,7 @@ export default defineConfig(({ mode }) => ({
     port: 8080,
     proxy: {
       "/api": {
-        target: process.env.VITE_SERVER_URL || "http://localhost:3002",
+        target: process.env.VITE_API_URL || "http://localhost:3002",
         changeOrigin: true,
       },
     },
@@ -20,6 +20,6 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
-  envDir: process.env.VITE_SERVER_URL,
+  envDir: process.env.VITE_API_URL,
 }));
 
