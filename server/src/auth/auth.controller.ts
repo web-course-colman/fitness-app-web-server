@@ -62,7 +62,7 @@ export class AuthController {
             maxAge: 7 * 24 * 60 * 60 * 1000,
         });
         if (process.env.NODE_ENV === 'production') {
-            res.redirect(`http://localhost:${process.env.PORT}/feed`);
+            res.redirect(`${process.env.SERVER_URL}/feed`);
         } else {
             res.redirect('http://localhost:8080/feed');
         }
