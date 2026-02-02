@@ -94,4 +94,42 @@ export class OpenaiService {
 
         return JSON.parse(response.choices[0].message.content || '{}');
     }
+
+    async generateCoachAnswerStream(question: string, profile: string, contexts: any[]) {
+        this.logger.log('Generating AI Coach answer (streaming)...');
+
+        const contextString = contexts.map((s, i) =>
+            `Workout ${i + 1} (${new Date(s.createdAt).toLocaleDateString()}): ${s.summaryText}`
+        ).join('\n');
+
+        const stream = await this.openai.chat.completions.create({
+            model: 'gpt-4o-mini',
+            messages: [
+                {
+                    role: 'system',
+                    content: `You are an expert AI Fitness Coach. Use the user's profile and workout history to answer their question.
+                    
+                    User Profile: ${profile}
+                    
+                    Relevant Workout History:
+                    ${contextString}
+                    
+                    IMPORTANT: You must stream your response in a specific format.
+                    First, provide your natural language answer directly.
+                    Then, at the very end, output a delimiter "||METADATA||" followed immediately by a JSON object containing suggestedNextSteps and references.
+                    
+                    Example format:
+                    This is my answer to your question...
+                    ||METADATA||{"suggestedNextSteps": ["Step 1", "Step 2"], "references": [1, 3]}`
+                },
+                {
+                    role: 'user',
+                    content: question
+                }
+            ],
+            stream: true,
+        });
+
+        return stream;
+    }
 }
