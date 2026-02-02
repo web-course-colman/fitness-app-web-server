@@ -53,6 +53,43 @@ const personalGoalOptions = [
   { group: "🧠 Mental & habit goals", label: "End the session in a better mood than I started" },
 ];
 
+const feedbackOptions = [
+  // 😊 Positive / strong session
+  { group: "😊 Positive / strong session", label: "Felt strong and focused throughout the workout. Energy stayed high until the end." },
+  { group: "😊 Positive / strong session", label: "Great pump and muscle activation, especially in legs and core." },
+  { group: "😊 Positive / strong session", label: "Mood improved a lot after finishing. Felt confident and motivated." },
+  { group: "😊 Positive / strong session", label: "Breathing felt controlled and steady during cardio." },
+  { group: "😊 Positive / strong session", label: "Left the gym feeling energized, not exhausted." },
+
+  // 😮💨 Challenging but productive
+  { group: "😮💨 Challenging but productive", label: "Tough session, especially the last sets, but pushed through." },
+  { group: "😮💨 Challenging but productive", label: "Energy dropped slightly toward the end, but overall performance was solid." },
+  { group: "😮💨 Challenging but productive", label: "Muscles were burning, but form stayed clean." },
+  { group: "😮💨 Challenging but productive", label: "Mentally challenging, but satisfying once completed." },
+  { group: "😮💨 Challenging but productive", label: "Felt fatigue, yet recovery between sets was acceptable." },
+
+  // 😐 Neutral / maintenance workout
+  { group: "😐 Neutral / maintenance workout", label: "Felt okay overall, nothing exceptional but consistent." },
+  { group: "😐 Neutral / maintenance workout", label: "Energy levels were average, maintained steady pace." },
+  { group: "😐 Neutral / maintenance workout", label: "No major struggle, but also no big breakthroughs." },
+  { group: "😐 Neutral / maintenance workout", label: "Focused on completing the workout rather than pushing limits." },
+  { group: "😐 Neutral / maintenance workout", label: "Body felt stable and balanced." },
+
+  // ⚠️ Soreness / recovery awareness
+  { group: "⚠️ Soreness / recovery awareness", label: "Mild soreness in shoulders and chest from previous session." },
+  { group: "⚠️ Soreness / recovery awareness", label: "Muscles felt tight at the start but loosened up after warm-up." },
+  { group: "⚠️ Soreness / recovery awareness", label: "No sharp pain, just general fatigue." },
+  { group: "⚠️ Soreness / recovery awareness", label: "Felt slightly stiff but manageable." },
+  { group: "⚠️ Soreness / recovery awareness", label: "Need extra stretching and recovery today." },
+
+  // 🧠 Mental & emotional state
+  { group: "🧠 Mental & emotional state", label: "Started the workout unmotivated but felt much better after." },
+  { group: "🧠 Mental & emotional state", label: "Focus was off at first, improved mid-session." },
+  { group: "🧠 Mental & emotional state", label: "Stress levels dropped significantly after training." },
+  { group: "🧠 Mental & emotional state", label: "Felt proud for showing up despite low motivation." },
+  { group: "🧠 Mental & emotional state", label: "Training helped clear my head." },
+];
+
 interface WorkoutDetailsSectionProps {
   workoutType: string;
   duration: string;
@@ -152,22 +189,47 @@ const WorkoutDetailsSection = ({
 
       <Box sx={styles.rowItem}>
         <Typography sx={styles.label}>
-          Subjective feedback & feelings (won't appear in feed)
+          Subjective feedback & feelings
         </Typography>
-        <TextField
-          fullWidth
-          multiline
-          rows={3}
-          placeholder="How did you feel? Energy, mood, soreness, progress..."
-          variant="outlined"
-          sx={styles.textField}
+        <Autocomplete
+          freeSolo
+          options={feedbackOptions.sort((a, b) =>
+            -b.group.localeCompare(a.group)
+          )}
+          groupBy={(option) => option.group}
+          getOptionLabel={(option) => {
+            if (typeof option === "string") {
+              return option;
+            }
+            return option.label;
+          }}
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              fullWidth
+              variant="outlined"
+              placeholder="How did you feel? Energy, mood, soreness, progress..."
+              sx={styles.textField}
+            />
+          )}
           value={subjectiveFeedbackFeelings}
-          onChange={(e) => onSubjectiveFeedbackFeelingsChange(e.target.value)}
+          onChange={(e, newValue) => {
+            if (typeof newValue === 'string') {
+              onSubjectiveFeedbackFeelingsChange(newValue);
+            } else if (newValue && newValue.label) {
+              onSubjectiveFeedbackFeelingsChange(newValue.label);
+            } else {
+              onSubjectiveFeedbackFeelingsChange("");
+            }
+          }}
+          onInputChange={(event, newInputValue) => {
+            onSubjectiveFeedbackFeelingsChange(newInputValue);
+          }}
         />
       </Box>
 
       <Box sx={styles.rowItem}>
-        <Typography sx={styles.label}>Personal goals (won't appear in feed)</Typography>
+        <Typography sx={styles.label}>Personal goals</Typography>
         <Autocomplete
           freeSolo
           options={personalGoalOptions.sort((a, b) =>
