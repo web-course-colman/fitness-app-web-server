@@ -155,7 +155,7 @@ const Layout = () => {
               variant="h6"
               noWrap
               component="div"
-              sx={{ fontWeight: 600, display: { xs: "none", sm: "block" } }}
+              sx={{ fontWeight: 600, display: { xs: "none", sm: "block" }, width: '9vw' }}
             >
               {getPageTitle(location.pathname)}
             </Typography>
@@ -175,9 +175,7 @@ const Layout = () => {
               }}
               onChange={(_, value) => {
                 if (value) {
-                  // Navigate to user profile if we had a user profile page that takes ID
-                  // For now, let's just log it or navigate to a generic profile if it's the current user
-                  console.log("Selected user:", value);
+                  navigate(`/feed?authorId=${value._id}&authorName=${encodeURIComponent(`${value.name} ${value.lastName}`)}`);
                 }
               }}
               renderInput={(params) => (
