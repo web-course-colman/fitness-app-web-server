@@ -70,6 +70,9 @@ export class AiWorkerService {
                 ...(workout.workoutDetails?.subjectiveFeedbackFeelings && {
                     subjectiveFeedbackFeelings: workout.workoutDetails.subjectiveFeedbackFeelings,
                 }),
+                ...(workout.workoutDetails?.personalGoals && {
+                    subjectiveFeedbackFeelings: workout.workoutDetails.subjectiveFeedbackFeelings,
+                }),
             });
 
             this.logger.log(`Completed workout summary ${summary['_id']}`);
