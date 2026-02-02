@@ -8,7 +8,7 @@ async function bootstrap() {
 
   // Enable CORS for frontend
   app.enableCors({
-    origin: ['http://localhost:8080', 'http://localhost:5173'], // need to add url when going on colman cloud
+    origin: ['http://localhost:8080', 'http://localhost:5173'],
     credentials: true,
   });
 

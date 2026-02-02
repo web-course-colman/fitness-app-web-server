@@ -61,7 +61,11 @@ export class AuthController {
             sameSite: 'lax',
             maxAge: 7 * 24 * 60 * 60 * 1000,
         });
-        res.redirect('http://localhost:8080/feed');
+        if (process.env.NODE_ENV === 'production') {
+            res.redirect(`http://localhost:${process.env.PORT}/feed`);
+        } else {
+            res.redirect('http://localhost:8080/feed');
+        }
     }
 
     @Get('profile')
@@ -96,7 +100,8 @@ export class AuthController {
 
         // If a file was uploaded, update the picture field with the full URL
         if (file) {
-            const serverUrl = process.env.SERVER_URL || 'http://localhost:3002';
+            const port = process.env.PORT || '3002';
+            const serverUrl = process.env.SERVER_URL || `http://localhost:${port}`;
             updateUserDto.picture = `${serverUrl}/uploads/avatars/${file.filename}`;
         }
 

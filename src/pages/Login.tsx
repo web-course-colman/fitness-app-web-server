@@ -242,17 +242,18 @@ const Login = () => {
                     ? "Signing in..."
                     : "Creating account..."
                   : isLogin
-                  ? "Sign In"
-                  : "Create Account"}
+                    ? "Sign In"
+                    : "Create Account"}
               </Button>
 
               <Button
                 variant="outlined"
                 fullWidth
-                onClick={() =>
-                  (window.location.href =
-                    "http://localhost:3002/api/auth/google")
-                }
+                onClick={() => {
+                  const port = import.meta.env.VITE_SERVER_PORT || '3002';
+                  const serverUrl = import.meta.env.VITE_SERVER_URL || `http://localhost:${port}`;
+                  window.location.href = `${serverUrl}/api/auth/google`;
+                }}
                 startIcon={<Google />}
                 sx={{ mt: 2 }}
                 disabled={loading}
