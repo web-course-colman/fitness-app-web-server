@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Avatar,
   Box,
@@ -12,14 +12,35 @@ import {
   Zoom,
   alpha,
   Paper,
+  Autocomplete,
+  TextField,
+  InputAdornment,
+  CircularProgress,
+  ListItem,
+  ListItemAvatar,
+  ListItemText,
 } from "@mui/material";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
-import { Menu as MenuIcon, Add as AddIcon } from "@mui/icons-material";
+import {
+  Menu as MenuIcon,
+  Add as AddIcon,
+  Search as SearchIcon,
+} from "@mui/icons-material";
 import NavigationSidebar, {
   DRAWER_WIDTH,
   COLLAPSED_WIDTH,
 } from "./NavigationSidebar";
 import { useAuth } from "./Auth/AuthProvider";
+import api from "../services/axios";
+import { debounce } from "lodash";
+
+interface SearchUser {
+  _id: string;
+  name: string;
+  lastName: string;
+  username: string;
+  picture?: string;
+}
 
 const Layout = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -27,6 +48,11 @@ const Layout = () => {
     const saved = localStorage.getItem("sidebar-collapsed");
     return saved ? JSON.parse(saved) : false;
   });
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [options, setOptions] = useState<SearchUser[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [inputValue, setInputValue] = useState("");
+
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const { loggedUser } = useAuth();
@@ -36,6 +62,29 @@ const Layout = () => {
   const isWorkoutPage = location.pathname === "/workouts";
 
   const currentDrawerWidth = isCollapsed ? COLLAPSED_WIDTH : DRAWER_WIDTH;
+
+  const fetchUsers = useCallback(
+    debounce(async (query: string) => {
+      if (!query) {
+        setOptions([]);
+        return;
+      }
+      setLoading(true);
+      try {
+        const response = await api.get(`/api/auth/search?q=${query}`);
+        setOptions(response.data);
+      } catch (error) {
+        console.error("Error searching users:", error);
+      } finally {
+        setLoading(false);
+      }
+    }, 300),
+    []
+  );
+
+  useEffect(() => {
+    fetchUsers(inputValue);
+  }, [inputValue, fetchUsers]);
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -91,8 +140,8 @@ const Layout = () => {
           zIndex: (theme) => theme.zIndex.drawer + 1,
         }}
       >
-        <Toolbar sx={{ justifyContent: "space-between" }}>
-          <Box sx={{ display: "flex", alignItems: "center" }}>
+        <Toolbar sx={{ justifyContent: "space-between", gap: 2 }}>
+          <Box sx={{ display: "flex", alignItems: "center", flexShrink: 0 }}>
             <IconButton
               color="inherit"
               aria-label="open drawer"
@@ -106,10 +155,96 @@ const Layout = () => {
               variant="h6"
               noWrap
               component="div"
-              sx={{ fontWeight: 600 }}
+              sx={{ fontWeight: 600, display: { xs: "none", sm: "block" } }}
             >
               {getPageTitle(location.pathname)}
             </Typography>
+          </Box>
+
+          <Box sx={{ flexGrow: 1, maxWidth: 600 }}>
+            <Autocomplete
+              open={searchOpen}
+              onOpen={() => setSearchOpen(true)}
+              onClose={() => setSearchOpen(false)}
+              isOptionEqualToValue={(option, value) => option._id === value._id}
+              getOptionLabel={(option) => `${option.name} ${option.lastName}`}
+              options={options}
+              loading={loading}
+              onInputChange={(_, newInputValue) => {
+                setInputValue(newInputValue);
+              }}
+              onChange={(_, value) => {
+                if (value) {
+                  // Navigate to user profile if we had a user profile page that takes ID
+                  // For now, let's just log it or navigate to a generic profile if it's the current user
+                  console.log("Selected user:", value);
+                }
+              }}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  placeholder="Search users..."
+                  variant="outlined"
+                  size="small"
+                  fullWidth
+                  InputProps={{
+                    ...params.InputProps,
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <SearchIcon sx={{ color: "text.secondary" }} />
+                      </InputAdornment>
+                    ),
+                    endAdornment: (
+                      <>
+                        {loading ? (
+                          <CircularProgress color="inherit" size={20} />
+                        ) : null}
+                        {params.InputProps.endAdornment}
+                      </>
+                    ),
+                    sx: {
+                      borderRadius: "12px",
+                      bgcolor: (theme) =>
+                        alpha(
+                          theme.palette.mode === "dark"
+                            ? "#ffffff"
+                            : "#000000",
+                          0.05
+                        ),
+                      "& fieldset": { border: "none" },
+                      "&:hover": {
+                        bgcolor: (theme) =>
+                          alpha(
+                            theme.palette.mode === "dark"
+                              ? "#ffffff"
+                              : "#000000",
+                            0.08
+                          ),
+                      },
+                    },
+                  }}
+                />
+              )}
+              renderOption={(props, option) => (
+                <ListItem {...props} key={option._id}>
+                  <ListItemAvatar>
+                    <Avatar
+                      src={option.picture}
+                      alt={option.name}
+                      sx={{ width: 32, height: 32 }}
+                    >
+                      {getInitials(option.name, option.lastName)}
+                    </Avatar>
+                  </ListItemAvatar>
+                  <ListItemText
+                    primary={`${option.name} ${option.lastName}`}
+                    secondary={`@${option.username}`}
+                    primaryTypographyProps={{ variant: "body2", fontWeight: 600 }}
+                    secondaryTypographyProps={{ variant: "caption" }}
+                  />
+                </ListItem>
+              )}
+            />
           </Box>
 
           {loggedUser && (
@@ -122,10 +257,12 @@ const Layout = () => {
                 pr: { xs: 0.5, sm: 2 },
                 transition: "all 0.2s ease-in-out",
                 cursor: "pointer",
+                flexShrink: 0,
                 "&:hover": {
                   transform: "translateY(-1px)",
                 },
               }}
+              onClick={() => navigate("/profile")}
             >
               <Avatar
                 src={loggedUser.picture}
@@ -142,7 +279,7 @@ const Layout = () => {
               >
                 {getInitials(loggedUser.name, loggedUser.lastName)}
               </Avatar>
-              <Box sx={{ display: { xs: "none", sm: "block" } }}>
+              <Box sx={{ display: { xs: "none", lg: "block" } }}>
                 <Typography
                   variant="body2"
                   sx={{
