@@ -146,3 +146,6 @@ server/seed.js
 
 # Uploads directory
 server/uploads/*
+
+# Certificates
+server/certs/*
