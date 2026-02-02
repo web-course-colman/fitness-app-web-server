@@ -9,6 +9,11 @@ export const useStyles = makeStyles((theme) => ({
         flexDirection: "column",
         gap: theme.spacing(3),
     },
+    menuContainer: {
+        display: "flex",
+        flexDirection: "row",
+        justifyContent: "space-evenly",
+    },
     header: {
         display: "flex",
         alignItems: "center",
@@ -104,6 +109,7 @@ export const useStyles = makeStyles((theme) => ({
         },
     },
     workoutDetailsBox: {
+        width: "45%",
         padding: theme.spacing(3),
         border: `1px solid ${theme.palette.divider}`,
         borderRadius: "4px",
