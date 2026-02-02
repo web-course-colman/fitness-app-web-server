@@ -203,4 +203,17 @@ export class AuthService {
     async getUserById(userId: string) {
         return this.userModel.findById(userId).exec();
     }
+
+    async searchUsers(query: string) {
+        return this.userModel.find({
+            $or: [
+                { name: { $regex: query, $options: 'i' } },
+                { lastName: { $regex: query, $options: 'i' } },
+                { username: { $regex: query, $options: 'i' } },
+            ],
+        })
+            .select('name lastName username picture')
+            .limit(10)
+            .exec();
+    }
 }

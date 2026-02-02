@@ -41,11 +41,12 @@ export interface Post {
   updatedAt: string;
 }
 
-export function usePosts() {
+export function usePosts(authorId?: string) {
   return useQuery<Post[]>({
-    queryKey: ["posts"],
+    queryKey: authorId ? ["posts", "author", authorId] : ["posts"],
     queryFn: async () => {
-      const { data } = await api.get("/api/posts");
+      const url = authorId ? `/api/posts/author/${authorId}` : "/api/posts";
+      const { data } = await api.get(url);
       return data;
     },
   });

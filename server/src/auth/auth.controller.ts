@@ -146,4 +146,11 @@ export class AuthController {
         const userId = req.user.userId;
         return this.authService.updatePreferences(userId, updatePreferencesDto);
     }
+
+    @Get('search')
+    @UseGuards(AuthGuard('jwt'))
+    async searchUsers(@Req() req: any) {
+        const query = req.query.q || '';
+        return this.authService.searchUsers(query);
+    }
 }
