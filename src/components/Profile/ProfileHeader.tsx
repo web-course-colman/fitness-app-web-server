@@ -32,7 +32,7 @@ const ProfileHeader = ({ name, handle, bio, avatarUrl, initials, stats, achievem
     return (
         <Box sx={classes.profileCard}>
             <Box sx={classes.userInfo}>
-                <Box sx={classes.userInfo}>
+                <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, alignItems: 'center', gap: 3, width: { xs: '100%', md: 'auto' } }}>
                     <Avatar src={avatarUrl} sx={classes.avatar}>
                         {initials}
                     </Avatar>

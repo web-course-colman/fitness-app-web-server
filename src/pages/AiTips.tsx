@@ -5,61 +5,17 @@ import {
     TextField,
     IconButton,
     Chip,
-    Tooltip,
     CircularProgress,
     Grid,
 } from "@mui/material";
 import {
     AutoAwesome,
     Send,
-    FitnessCenter,
-    Restaurant,
-    NightsStay,
-    Favorite,
     CheckCircleOutline,
     History,
 } from "@mui/icons-material";
 import { useStyles } from "./AiTips.styles";
 import { CoachResponse } from "../hooks/useAi";
-
-interface Tip {
-    id: string;
-    title: string;
-    description: string;
-    category: "workout" | "nutrition" | "recovery" | "motivation";
-    icon: React.ReactElement;
-}
-
-const tips: Tip[] = [
-    {
-        id: "1",
-        title: "Progressive Overload",
-        description: "Increase your weights by 2.5-5% each week to continuously challenge your muscles and promote growth.",
-        category: "workout",
-        icon: <FitnessCenter fontSize="small" />,
-    },
-    {
-        id: "2",
-        title: "Post-Workout Nutrition",
-        description: "Consume protein within 30-60 minutes after training to optimize muscle recovery and growth.",
-        category: "nutrition",
-        icon: <Restaurant fontSize="small" />,
-    },
-    {
-        id: "3",
-        title: "Sleep for Gains",
-        description: "Aim for 7-9 hours of quality sleep. This is when your body repairs and builds muscle tissue.",
-        category: "recovery",
-        icon: <NightsStay fontSize="small" />,
-    },
-    {
-        id: "4",
-        title: "Track Your Progress",
-        description: "Document your workouts and celebrate small wins. Progress photos can be incredibly motivating!",
-        category: "motivation",
-        icon: <Favorite fontSize="small" sx={{ color: "#ff4d4f" }} />,
-    },
-];
 
 const quickQuestions = [
     "When was my last heavy squat?",
@@ -231,21 +187,6 @@ const AiTips = () => {
                 <Box sx={classes.chatContainer} ref={scrollRef}>
                     {messages.length === 0 ? (
                         <Box sx={classes.minimizedSection}>
-                            <Box sx={classes.tagsGroup}>
-                                <Typography sx={classes.miniSectionTitle}>Today's Tips</Typography>
-                                <Box sx={classes.tagsRow}>
-                                    {tips.map((tip) => (
-                                        <Tooltip key={tip.id} title={tip.description} arrow placement="top">
-                                            <Chip
-                                                icon={tip.icon}
-                                                label={tip.title}
-                                                onClick={() => { }}
-                                                sx={classes.tipChip}
-                                            />
-                                        </Tooltip>
-                                    ))}
-                                </Box>
-                            </Box>
 
                             <Box sx={classes.tagsGroup}>
                                 <Typography sx={classes.miniSectionTitle}>Quick Questions</Typography>

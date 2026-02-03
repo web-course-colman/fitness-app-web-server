@@ -61,6 +61,7 @@ const NavigationSidebar = ({
   const location = useLocation();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  const showFullContent = !isCollapsed || isMobile;
 
   const handleNavigation = (path: string) => {
     navigate(path);
@@ -76,14 +77,14 @@ const NavigationSidebar = ({
           sx={{
             display: "flex",
             alignItems: "center",
-            justifyContent: isCollapsed ? "center" : "space-between",
-            px: isCollapsed ? 1 : 2,
+            justifyContent: !showFullContent ? "center" : "space-between",
+            px: !showFullContent ? 1 : 2,
             minHeight: "64px !important",
           }}
         >
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
             <FitnessCenter sx={{ color: "primary.main", fontSize: 28 }} />
-            {!isCollapsed && (
+            {showFullContent && (
               <Typography variant="h6" component="div" fontWeight="bold" noWrap>
                 FitTrack
               </Typography>
@@ -123,7 +124,7 @@ const NavigationSidebar = ({
                     },
                   }}
                 >
-                  {isCollapsed ? (
+                  {!showFullContent ? (
                     <Box
                       sx={{
                         display: "flex",

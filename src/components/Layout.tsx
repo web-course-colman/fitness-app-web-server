@@ -59,7 +59,8 @@ const Layout = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const isWorkoutPage = location.pathname === "/workouts";
+  const hideFab = ["/workouts", "/ai-tips"].includes(location.pathname);
+  const isAiTipsPage = location.pathname === "/ai-tips";
 
   const currentDrawerWidth = isCollapsed ? COLLAPSED_WIDTH : DRAWER_WIDTH;
 
@@ -137,7 +138,7 @@ const Layout = () => {
             easing: theme.transitions.easing.sharp,
             duration: theme.transitions.duration.enteringScreen,
           }),
-          zIndex: (theme) => theme.zIndex.drawer + 1,
+          zIndex: (theme) => ({ md: theme.zIndex.drawer + 1 }),
         }}
       >
         <Toolbar sx={{ justifyContent: "space-between", gap: 2 }}>
@@ -155,7 +156,7 @@ const Layout = () => {
               variant="h6"
               noWrap
               component="div"
-              sx={{ fontWeight: 600, display: { xs: "none", sm: "block" }, width: '9vw' }}
+              sx={{ fontWeight: 700, display: { xs: "none", sm: "block" }, minWidth: '100px' }}
             >
               {getPageTitle(location.pathname)}
             </Typography>
@@ -219,6 +220,8 @@ const Layout = () => {
                             0.08
                           ),
                       },
+                      height: { xs: 36, sm: 40 },
+                      fontSize: { xs: '0.875rem', sm: '1rem' }
                     },
                   }}
                 />
@@ -334,14 +337,22 @@ const Layout = () => {
             bgcolor: "background.paper",
             borderRadius: { xs: "24px 0 0 0", sm: "40px 0 0 0" },
             boxShadow: "0 4px 24px rgba(0,0,0,0.04)",
-            overflow: "auto",
+            overflow: isAiTipsPage ? "hidden" : "auto",
             position: "relative",
-            height: "inherit",
+            height: "100%",
+            display: "flex",
+            flexDirection: "column",
             border: (theme) =>
               `1px solid ${alpha(theme.palette.divider, 0.08)}`,
           }}
         >
-          <Box sx={{ p: { xs: 2, sm: 4 } }}>
+          <Box sx={{
+            p: isAiTipsPage ? 0 : { xs: 1.5, sm: 3, md: 4 },
+            flex: 1,
+            minHeight: 0,
+            display: isAiTipsPage ? "flex" : "block",
+            flexDirection: "column"
+          }}>
             <Outlet />
           </Box>
         </Box>
@@ -349,7 +360,7 @@ const Layout = () => {
 
       {loggedUser && (
         <Zoom
-          in={!isWorkoutPage}
+          in={!hideFab}
           unmountOnExit
           timeout={theme.transitions.duration.enteringScreen}
         >
