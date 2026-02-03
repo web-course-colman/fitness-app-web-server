@@ -1,0 +1,19 @@
+name: Deploy (git pull + PM2)
+
+on:
+  push:
+    branches: ["main"]
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+    steps:
+      - name: Update code and restart
+        run: |
+          cd /home/node86/fitness-app-web-server
+          git fetch --all
+          git reset --hard origin/main
+          npm ci
+          npm run build
+          pm2 reload ecosystem.config.js --env production
+          pm2 save
