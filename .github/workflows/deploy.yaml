@@ -10,6 +10,7 @@ jobs:
     steps:
       - name: Update code and restart
         run: |
+          echo "hello from runner"
           cd /home/node86/fitness-app-web-server
           git fetch --all
           git reset --hard origin/main
