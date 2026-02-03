@@ -3,6 +3,7 @@ name: Deploy (git pull + PM2)
 on:
   push:
     branches: ["main"]
+  workflow_dispatchh:
 
 jobs:
   deploy:
