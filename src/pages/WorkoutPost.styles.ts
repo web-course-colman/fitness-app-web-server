@@ -9,10 +9,67 @@ export const useStyles = makeStyles((theme) => ({
         flexDirection: "column",
         gap: theme.spacing(3),
     },
-    menuContainer: {
+    stepperContainer: {
+        width: "100%",
         display: "flex",
-        flexDirection: "row",
-        justifyContent: "space-evenly",
+        flexDirection: "column",
+        alignItems: "center",
+        gap: theme.spacing(3),
+        marginBottom: theme.spacing(4),
+    },
+    muiStepper: {
+        width: "100%",
+        maxWidth: 500,
+        "& .MuiStepIcon-root": {
+            color: theme.palette.divider,
+            "&.Mui-active": {
+                color: theme.palette.primary.main,
+            },
+            "&.Mui-completed": {
+                color: theme.palette.primary.main,
+            },
+        },
+        "& .MuiStepLabel-label": {
+            fontSize: "0.85rem",
+            fontWeight: 500,
+            color: theme.palette.text.secondary,
+            "&.Mui-active": {
+                color: theme.palette.primary.main,
+                fontWeight: 600,
+            },
+            "&.Mui-completed": {
+                color: theme.palette.primary.main,
+            },
+        },
+    },
+    stepContent: {
+        width: "100%",
+        display: "flex",
+        flexDirection: "column",
+        gap: theme.spacing(3),
+        animation: "fadeIn 0.3s ease-in-out",
+        "@keyframes fadeIn": {
+            from: { opacity: 0, transform: "translateY(10px)" },
+            to: { opacity: 1, transform: "translateY(0)" },
+        },
+    },
+    navigationButtons: {
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        marginTop: theme.spacing(4),
+        paddingTop: theme.spacing(3),
+        borderTop: `1px solid ${theme.palette.divider}`,
+    },
+    backButton: {
+        textTransform: "none",
+        fontWeight: 600,
+    },
+    nextButton: {
+        textTransform: "none",
+        fontWeight: 600,
+        padding: "8px 24px",
+        borderRadius: "8px",
     },
     header: {
         display: "flex",
@@ -48,6 +105,8 @@ export const useStyles = makeStyles((theme) => ({
         fontWeight: 600,
         fontSize: "0.9rem",
         color: theme.palette.text.primary,
+        paddingTop: theme.spacing(1),
+        paddingBottom: theme.spacing(0.5),
     },
     textField: {
         "& .MuiOutlinedInput-root": {
@@ -108,14 +167,18 @@ export const useStyles = makeStyles((theme) => ({
             backgroundColor: "rgba(0,0,0,0.8)",
         },
     },
-    workoutDetailsBox: {
-        width: "45%",
+    formBox: {
+        width: "100%",
+        maxWidth: 600,
+        margin: "0 auto",
         padding: theme.spacing(3),
         border: `1px solid ${theme.palette.divider}`,
-        borderRadius: "4px",
+        borderRadius: "12px",
         display: "flex",
         flexDirection: "column",
         gap: theme.spacing(3),
+        backgroundColor: theme.palette.mode === "dark" ? "#1e1e1e" : "#fff",
+        boxShadow: theme.palette.mode === "dark" ? "none" : "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)",
     },
     detailsTitle: {
         fontWeight: 600,
@@ -132,6 +195,5 @@ export const useStyles = makeStyles((theme) => ({
         flex: 1,
         display: "flex",
         flexDirection: "column",
-        gap: theme.spacing(1),
     },
 }));
