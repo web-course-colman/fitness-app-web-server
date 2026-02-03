@@ -4,7 +4,7 @@ export const useStyles = makeStyles((theme) => ({
     container: {
         maxWidth: 1000,
         margin: "0 auto",
-        padding: theme.spacing(3),
+        padding: { xs: theme.spacing(2), sm: theme.spacing(3) },
         display: "flex",
         flexDirection: "column",
         gap: theme.spacing(3),
@@ -60,6 +60,7 @@ export const useStyles = makeStyles((theme) => ({
         marginTop: theme.spacing(4),
         paddingTop: theme.spacing(3),
         borderTop: `1px solid ${theme.palette.divider}`,
+        gap: theme.spacing(2),
     },
     backButton: {
         textTransform: "none",
@@ -171,7 +172,7 @@ export const useStyles = makeStyles((theme) => ({
         width: "100%",
         maxWidth: 600,
         margin: "0 auto",
-        padding: theme.spacing(3),
+        padding: { xs: theme.spacing(2), sm: theme.spacing(3) },
         border: `1px solid ${theme.palette.divider}`,
         borderRadius: "12px",
         display: "flex",

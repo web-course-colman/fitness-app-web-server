@@ -22,14 +22,16 @@ export const useStyles = makeStyles((theme) => ({
     },
     userInfo: {
         display: "flex",
+        flexDirection: { xs: "column", md: "row" },
         justifyContent: "space-between",
         gap: theme.spacing(3),
-        alignItems: "center",
+        alignItems: { xs: "center", md: "center" },
+        textAlign: { xs: "center", md: "left" },
     },
     avatar: {
-        width: 100,
-        height: 100,
-        fontSize: "2.5rem",
+        width: { xs: 80, md: 100 },
+        height: { xs: 80, md: 100 },
+        fontSize: { xs: "2rem", md: "2.5rem" },
         bgcolor: "#34495e", // Dark color from the image
     },
     details: {
@@ -47,9 +49,11 @@ export const useStyles = makeStyles((theme) => ({
     },
     minimizedStatsRow: {
         display: "flex",
-        gap: theme.spacing(3),
+        gap: { xs: theme.spacing(2), sm: theme.spacing(3) },
         marginTop: theme.spacing(2),
-        padding: theme.spacing(4),
+        padding: { xs: theme.spacing(2, 1), sm: theme.spacing(4) },
+        width: { xs: "100%", md: "auto" },
+        justifyContent: { xs: "center", md: "flex-start" },
     },
     minimizedStatItem: {
         display: "flex",
@@ -71,6 +75,7 @@ export const useStyles = makeStyles((theme) => ({
         gap: theme.spacing(1),
         marginTop: theme.spacing(2),
         flexWrap: "wrap",
+        justifyContent: { xs: "center", md: "flex-start" },
     },
     minimizedAchievementIcon: {
         width: 32,
@@ -161,6 +166,6 @@ export const useStyles = makeStyles((theme) => ({
         display: "flex",
         flexDirection: "column",
         gap: theme.spacing(2),
-        padding: theme.spacing(1, 5),
+        padding: { xs: theme.spacing(1, 0), sm: theme.spacing(1, 2), md: theme.spacing(1, 5) },
     },
 }));

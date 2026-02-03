@@ -7,7 +7,8 @@ export const useStyles = makeStyles((theme) => ({
         margin: "0 auto",
         display: "flex",
         flexDirection: "column",
-        height: "80vh",
+        height: "100%",
+        padding: { xs: theme.spacing(1, 1, 2, 1), sm: theme.spacing(2, 2, 3, 2) },
     },
     header: {
         display: "flex",
@@ -19,7 +20,7 @@ export const useStyles = makeStyles((theme) => ({
         display: "flex",
         flexDirection: "column",
         gap: theme.spacing(2.5),
-        padding: theme.spacing(4),
+        padding: { xs: theme.spacing(2), sm: theme.spacing(4) },
     },
     tagsGroup: {
         display: "flex",
@@ -77,8 +78,8 @@ export const useStyles = makeStyles((theme) => ({
         background: theme.palette.mode === "dark"
             ? "linear-gradient(135deg, #1e293b 0%, #0f172a 100%)"
             : "linear-gradient(135deg, #ffffff 0%, #f8faff 100%)",
-        borderRadius: theme.spacing(3),
-        padding: theme.spacing(4),
+        borderRadius: { xs: theme.spacing(2), sm: theme.spacing(3) },
+        padding: { xs: theme.spacing(2), sm: theme.spacing(4) },
         boxShadow: theme.palette.mode === "dark"
             ? "0 10px 30px rgba(0, 0, 0, 0.4)"
             : "0 10px 30px rgba(0, 0, 0, 0.03)",
@@ -88,7 +89,8 @@ export const useStyles = makeStyles((theme) => ({
         marginTop: theme.spacing(1),
         display: "flex",
         flexDirection: "column",
-        height: "80vh",
+        height: "100%",
+        minHeight: 0,
         "&::before": {
             content: '""',
             position: "absolute",
@@ -141,7 +143,7 @@ export const useStyles = makeStyles((theme) => ({
     messageBubble: {
         padding: theme.spacing(1.5, 2),
         borderRadius: theme.spacing(2),
-        maxWidth: "85%",
+        maxWidth: { xs: "95%", sm: "85%" },
         position: "relative",
         animation: "slideIn 0.3s ease",
     },
@@ -160,11 +162,11 @@ export const useStyles = makeStyles((theme) => ({
     },
     inputContainer: {
         display: "flex",
-        gap: theme.spacing(1.5),
+        gap: { xs: theme.spacing(1), sm: theme.spacing(1.5) },
         alignItems: "center",
         backgroundColor: theme.palette.mode === "dark" ? "rgba(255, 255, 255, 0.05)" : "rgba(0, 0, 0, 0.03)",
         borderRadius: theme.spacing(2),
-        padding: theme.spacing(1, 1.5),
+        padding: { xs: theme.spacing(0.5, 1), sm: theme.spacing(1, 1.5) },
         border: `1px solid ${theme.palette.mode === "dark" ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.05)"}`,
         transition: "all 0.2s ease",
         flexShrink: 0,
