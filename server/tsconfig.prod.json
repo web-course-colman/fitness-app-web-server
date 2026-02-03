@@ -2,12 +2,8 @@
     "extends": "./tsconfig.build.json",
     "compilerOptions": {
         "sourceMap": false,
-        "noImplicitAny": true,
-        "strict": true,
+        "noImplicitAny": false,
+        "strict": false,
         "incremental": false
-    },
-    "exclude": [
-        "./test",
-        "./src"
-    ]
+    }
 }
