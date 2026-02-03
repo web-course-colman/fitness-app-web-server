@@ -17,65 +17,30 @@ export const useStyles = makeStyles((theme) => ({
         gap: theme.spacing(3),
         marginBottom: theme.spacing(4),
     },
-    stepper: {
+    muiStepper: {
         width: "100%",
-        maxWidth: 400,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        position: "relative",
-        "&::before": {
-            content: '""',
-            position: "absolute",
-            top: "50%",
-            left: 0,
-            right: 0,
-            height: 2,
-            backgroundColor: theme.palette.divider,
-            zIndex: 0,
-            transform: "translateY(-50%)",
+        maxWidth: 500,
+        "& .MuiStepIcon-root": {
+            color: theme.palette.divider,
+            "&.Mui-active": {
+                color: theme.palette.primary.main,
+            },
+            "&.Mui-completed": {
+                color: theme.palette.primary.main,
+            },
         },
-    },
-    step: {
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        gap: theme.spacing(1),
-        position: "relative",
-        zIndex: 1,
-        backgroundColor: "transparent",
-    },
-    stepCircle: {
-        width: 32,
-        height: 32,
-        borderRadius: "50%",
-        backgroundColor: theme.palette.mode === "dark" ? "#2c2c2c" : "#fff",
-        border: `2px solid ${theme.palette.divider}`,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        fontWeight: 600,
-        color: theme.palette.text.secondary,
-        transition: "all 0.3s ease",
-    },
-    activeStepCircle: {
-        backgroundColor: theme.palette.primary.main,
-        borderColor: theme.palette.primary.main,
-        color: "#fff",
-    },
-    completedStepCircle: {
-        backgroundColor: theme.palette.primary.main,
-        borderColor: theme.palette.primary.main,
-        color: "#fff",
-    },
-    stepLabel: {
-        fontSize: "0.8rem",
-        fontWeight: 500,
-        color: theme.palette.text.secondary,
-    },
-    activeStepLabel: {
-        color: theme.palette.primary.main,
-        fontWeight: 600,
+        "& .MuiStepLabel-label": {
+            fontSize: "0.85rem",
+            fontWeight: 500,
+            color: theme.palette.text.secondary,
+            "&.Mui-active": {
+                color: theme.palette.primary.main,
+                fontWeight: 600,
+            },
+            "&.Mui-completed": {
+                color: theme.palette.primary.main,
+            },
+        },
     },
     stepContent: {
         width: "100%",
@@ -140,6 +105,8 @@ export const useStyles = makeStyles((theme) => ({
         fontWeight: 600,
         fontSize: "0.9rem",
         color: theme.palette.text.primary,
+        paddingTop: theme.spacing(1),
+        paddingBottom: theme.spacing(0.5),
     },
     textField: {
         "& .MuiOutlinedInput-root": {
@@ -228,6 +195,5 @@ export const useStyles = makeStyles((theme) => ({
         flex: 1,
         display: "flex",
         flexDirection: "column",
-        gap: theme.spacing(1),
     },
 }));

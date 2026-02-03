@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { Box, Typography, TextField, Button, IconButton } from "@mui/material";
+import { Box, Typography, TextField, Button, IconButton, Stepper, Step, StepLabel } from "@mui/material";
 import { ArrowBack, Send } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import { useStyles } from "./WorkoutPost.styles";
@@ -133,29 +133,13 @@ const WorkoutPost = () => {
 
       {/* Progress Bar */}
       <Box sx={styles.stepperContainer}>
-        <Box sx={styles.stepper}>
-          {[1, 2].map((i) => (
-            <Box key={i} sx={styles.step}>
-              <Box
-                sx={{
-                  ...styles.stepCircle,
-                  ...(step === i ? styles.activeStepCircle : {}),
-                  ...(step > i ? styles.completedStepCircle : {}),
-                }}
-              >
-                {i}
-              </Box>
-              <Typography
-                sx={{
-                  ...styles.stepLabel,
-                  ...(step === i ? styles.activeStepLabel : {}),
-                }}
-              >
-                {i === 1 ? "Basics" : "Details"}
-              </Typography>
-            </Box>
+        <Stepper activeStep={step - 1} sx={styles.muiStepper}>
+          {["Basics", "Details"].map((label) => (
+            <Step key={label}>
+              <StepLabel>{label}</StepLabel>
+            </Step>
           ))}
-        </Box>
+        </Stepper>
       </Box>
 
       {/* Content Inputs */}
