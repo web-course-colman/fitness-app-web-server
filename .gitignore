@@ -149,3 +149,4 @@ server/uploads/*
 
 # Certificates
 server/certs/*
+server/.well-known/*

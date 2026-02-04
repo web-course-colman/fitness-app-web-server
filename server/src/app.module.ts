@@ -42,6 +42,7 @@ import { CoachModule } from './coach/coach.module';
       serveStaticOptions: {
         setHeaders: (res) => {
           res.set('Access-Control-Allow-Origin', '*');
+          res.set('Cross-Origin-Resource-Policy', 'cross-origin');
         },
       },
     }),
