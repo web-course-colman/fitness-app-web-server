@@ -4,7 +4,6 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { MongooseModule } from '@nestjs/mongoose';
 import { join } from 'path';
-import { existsSync } from 'fs';
 import { AuthModule } from './auth/auth.module';
 import { PostsModule } from './posts/posts.module';
 import { WorkoutSummariesModule } from './workout-summaries/workout-summaries.module';
@@ -12,18 +11,6 @@ import { UserProfilesModule } from './user-profiles/user-profiles.module';
 import { EmbeddingsModule } from './embeddings/embeddings.module';
 import { AiWorkerModule } from './ai-worker/ai-worker.module';
 import { CoachModule } from './coach/coach.module';
-
-function resolveWellKnownRoot(): string {
-  // Keep the same style as uploads (process.cwd()), but support the two common launch locations:
-  // 1) cwd = repo root  -> files live in /server/.well-known
-  // 2) cwd = /server    -> files live in /.well-known
-  const candidates = [
-    join(process.cwd(), '.well-known'),
-    join(process.cwd(), 'server', '.well-known'),
-  ];
-
-  return candidates.find((p) => existsSync(p)) ?? candidates[0];
-}
 
 @Module({
   imports: [
@@ -50,7 +37,7 @@ function resolveWellKnownRoot(): string {
       },
     }),
     ServeStaticModule.forRoot({
-      rootPath: resolveWellKnownRoot(),
+      rootPath: join(process.cwd(), '.well-known'),
       serveRoot: '/.well-known',
       serveStaticOptions: {
         setHeaders: (res, path) => {
