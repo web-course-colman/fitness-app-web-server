@@ -30,7 +30,7 @@ import { CoachModule } from './coach/coach.module';
       rootPath: join(process.cwd(), 'uploads'),
       serveRoot: '/uploads',
       serveStaticOptions: {
-        setHeaders: (res, path) => {
+        setHeaders: (res) => {
           res.set('Access-Control-Allow-Origin', '*');
           res.set('Cross-Origin-Resource-Policy', 'cross-origin');
         },
@@ -40,7 +40,7 @@ import { CoachModule } from './coach/coach.module';
       rootPath: join(process.cwd(), '.well-known'),
       serveRoot: '/.well-known',
       serveStaticOptions: {
-        setHeaders: (res, path) => {
+        setHeaders: (res) => {
           res.set('Access-Control-Allow-Origin', '*');
           res.set('Cross-Origin-Resource-Policy', 'cross-origin');
         },
