@@ -37,6 +37,15 @@ import { CoachModule } from './coach/coach.module';
       },
     }),
     ServeStaticModule.forRoot({
+      rootPath: join(process.cwd(), '.well-known'),
+      serveRoot: '/.well-known',
+      serveStaticOptions: {
+        setHeaders: (res) => {
+          res.set('Access-Control-Allow-Origin', '*');
+        },
+      },
+    }),
+    ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', '..', 'dist'),
     }),
     AuthModule,
