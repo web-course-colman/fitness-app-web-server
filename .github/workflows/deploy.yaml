@@ -17,5 +17,6 @@ jobs:
           git reset --hard origin/main
           npm ci
           npm run build
+          npm run server:build
           pm2 reload ecosystem.config.cjs --env production
           pm2 save
