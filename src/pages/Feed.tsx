@@ -6,7 +6,7 @@ import {
 } from "@mui/material";
 import { Close as CloseIcon } from "@mui/icons-material";
 import { useEffect, useMemo, useRef } from "react";
-import { useAllPostsInfinite, usePosts } from "@/hooks/usePosts";
+import { useAllPostsInfinite, useAuthorPostsInfinite } from "@/hooks/usePosts";
 import { useStyles } from "./Feed.styles";
 import PostCard from "@/components/Feed/PostCard";
 import { useSearchParams } from "react-router-dom";
@@ -20,36 +20,32 @@ const Feed = () => {
     // How many posts to fetch per "page" when infinite-scrolling
     const limit = 3;
 
-    // Author filter keeps existing (non-paginated) behavior.
-    const { data: authorPosts, isLoading: isLoadingAuthor, error: authorError } = usePosts(authorId || undefined, {
-        enabled: !!authorId,
-    });
-
-    // "All posts" uses infinite scrolling when no author filter is applied.
-    const {
-        data: allPostsInfinite,
-        isLoading: isLoadingAll,
-        error: allError,
-        fetchNextPage,
-        hasNextPage,
-        isFetchingNextPage,
-    } = useAllPostsInfinite({
+    // Always call both hooks, but enable only the one that matches the current filter.
+    const allQuery = useAllPostsInfinite({
         limit,
         enabled: !authorId,
     });
 
-    const infinitePosts = useMemo(() => {
-        return allPostsInfinite?.pages.flatMap((p) => p.items) ?? [];
-    }, [allPostsInfinite]);
+    const authorQuery = useAuthorPostsInfinite(authorId || undefined, {
+        limit,
+        enabled: !!authorId,
+    });
 
-    const posts = authorId ? authorPosts : infinitePosts;
-    const isLoading = authorId ? isLoadingAuthor : isLoadingAll;
-    const error = authorId ? authorError : allError;
+    const activeQuery = authorId ? authorQuery : allQuery;
+
+    const posts = useMemo(() => {
+        return activeQuery.data?.pages.flatMap((p) => p.items) ?? [];
+    }, [activeQuery.data]);
+
+    const isLoading = activeQuery.isLoading;
+    const error = activeQuery.error;
+    const fetchNextPage = activeQuery.fetchNextPage;
+    const hasNextPage = activeQuery.hasNextPage;
+    const isFetchingNextPage = activeQuery.isFetchingNextPage;
 
     const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
     useEffect(() => {
-        if (authorId) return;
         if (!loadMoreRef.current) return;
 
         const el = loadMoreRef.current;
@@ -116,21 +112,19 @@ const Feed = () => {
                             <PostCard key={post._id} post={post} />
                         ))}
 
-                        {!authorId && (
-                            <>
-                                <Box ref={loadMoreRef} sx={classes.infiniteSentinel} />
-                                {isFetchingNextPage && (
-                                    <Box sx={classes.infiniteLoaderContainer}>
-                                        <CircularProgress size={26} />
-                                    </Box>
-                                )}
-                                {!hasNextPage && (
-                                    <Box sx={{ textAlign: "center", py: 2, color: "text.secondary" }}>
-                                        <Typography variant="body2">You're all caught up</Typography>
-                                    </Box>
-                                )}
-                            </>
-                        )}
+                        <>
+                            <Box ref={loadMoreRef} sx={classes.infiniteSentinel} />
+                            {isFetchingNextPage && (
+                                <Box sx={classes.infiniteLoaderContainer}>
+                                    <CircularProgress size={26} />
+                                </Box>
+                            )}
+                            {!hasNextPage && (
+                                <Box sx={{ textAlign: "center", py: 2, color: "text.secondary" }}>
+                                    <Typography variant="body2">You're all caught up</Typography>
+                                </Box>
+                            )}
+                        </>
                     </>
                 )}
             </Box>
