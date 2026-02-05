@@ -3,10 +3,10 @@ import {
     Typography,
     CircularProgress,
     Chip,
-    IconButton,
 } from "@mui/material";
 import { Close as CloseIcon } from "@mui/icons-material";
-import { usePosts } from "@/hooks/usePosts";
+import { useEffect, useMemo, useRef } from "react";
+import { useAllPostsInfinite, useAuthorPostsInfinite } from "@/hooks/usePosts";
 import { useStyles } from "./Feed.styles";
 import PostCard from "@/components/Feed/PostCard";
 import { useSearchParams } from "react-router-dom";
@@ -17,7 +17,61 @@ const Feed = () => {
     const authorId = searchParams.get("authorId");
     const authorName = searchParams.get("authorName");
 
-    const { data: posts, isLoading, error } = usePosts(authorId || undefined);
+    // How many posts to fetch per "page" when infinite-scrolling
+    const limit = 3;
+
+    // Always call both hooks, but enable only the one that matches the current filter.
+    const allQuery = useAllPostsInfinite({
+        limit,
+        enabled: !authorId,
+    });
+
+    const authorQuery = useAuthorPostsInfinite(authorId || undefined, {
+        limit,
+        enabled: !!authorId,
+    });
+
+    const activeQuery = authorId ? authorQuery : allQuery;
+
+    const posts = useMemo(() => {
+        return activeQuery.data?.pages.flatMap((p) => p.items) ?? [];
+    }, [activeQuery.data]);
+
+    const isLoading = activeQuery.isLoading;
+    const error = activeQuery.error;
+    const fetchNextPage = activeQuery.fetchNextPage;
+    const hasNextPage = activeQuery.hasNextPage;
+    const isFetchingNextPage = activeQuery.isFetchingNextPage;
+
+    const loadMoreRef = useRef<HTMLDivElement | null>(null);
+
+    useEffect(() => {
+        if (!loadMoreRef.current) return;
+
+        const el = loadMoreRef.current;
+        // Feed is rendered inside an overflowed scroll container (see Layout),
+        // so IntersectionObserver must use that element as the root.
+        const scrollRoot = document.getElementById("app-scroll-container");
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                const first = entries[0];
+                if (!first?.isIntersecting) return;
+                if (!hasNextPage) return;
+                if (isFetchingNextPage) return;
+                fetchNextPage();
+            },
+            {
+                root: scrollRoot,
+                // Start loading before the user reaches the very bottom
+                rootMargin: "800px",
+                threshold: 0,
+            },
+        );
+
+        observer.observe(el);
+        return () => observer.disconnect();
+    }, [authorId, fetchNextPage, hasNextPage, isFetchingNextPage]);
 
     const clearFilter = () => {
         setSearchParams({});
@@ -53,9 +107,25 @@ const Feed = () => {
                         <Typography>No posts yet. Be the first to share your workout!</Typography>
                     </Box>
                 ) : (
-                    posts?.map((post) => (
-                        <PostCard key={post._id} post={post} />
-                    ))
+                    <>
+                        {posts?.map((post) => (
+                            <PostCard key={post._id} post={post} />
+                        ))}
+
+                        <>
+                            <Box ref={loadMoreRef} sx={classes.infiniteSentinel} />
+                            {isFetchingNextPage && (
+                                <Box sx={classes.infiniteLoaderContainer}>
+                                    <CircularProgress size={26} />
+                                </Box>
+                            )}
+                            {!hasNextPage && (
+                                <Box sx={{ textAlign: "center", py: 2, color: "text.secondary" }}>
+                                    <Typography variant="body2">You're all caught up</Typography>
+                                </Box>
+                            )}
+                        </>
+                    </>
                 )}
             </Box>
         </Box>
