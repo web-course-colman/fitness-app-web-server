@@ -111,6 +111,36 @@ export function useAllPostsInfinite(params?: { limit?: number; enabled?: boolean
   });
 }
 
+/**
+ * Infinite scroll for a single author's posts (GET /posts/author/:userId).
+ */
+export function useAuthorPostsInfinite(authorId?: string, params?: { limit?: number; enabled?: boolean }) {
+  const limit = params?.limit ?? 3;
+
+  return useInfiniteQuery<PaginationResult<Post>>({
+    queryKey: ["posts", "author", authorId, "infinite", limit],
+    initialPageParam: 1,
+    queryFn: async ({ pageParam }) => {
+      if (!authorId) {
+        return { items: [], total: 0, page: 1, limit, totalPages: 1 };
+      }
+
+      const { data } = await api.get(`/api/posts/author/${authorId}`, {
+        params: {
+          page: pageParam,
+          limit,
+        },
+      });
+      return data;
+    },
+    getNextPageParam: (lastPage) => {
+      if (lastPage.page >= lastPage.totalPages) return undefined;
+      return lastPage.page + 1;
+    },
+    enabled: (params?.enabled ?? true) && !!authorId,
+  });
+}
+
 export function useCreatePost() {
   const queryClient = useQueryClient();
 

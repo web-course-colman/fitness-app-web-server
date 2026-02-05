@@ -32,8 +32,20 @@ export class PostsController {
     }
 
     @Get('author/:userId')
-    async findByAuthor(@Param('userId') userId: string) {
-        return this.postsService.findByAuthor(userId);
+    async findByAuthor(
+        @Param('userId') userId: string,
+        @Query('page') page?: string,
+        @Query('limit') limit?: string,
+    ) {
+        // Backwards compatible (same pattern as GET /posts):
+        // If pagination params are omitted -> return the full list
+        const hasPaginationParams = page !== undefined || limit !== undefined;
+
+        if (!hasPaginationParams) {
+            return this.postsService.findByAuthor(userId);
+        }
+
+        return this.postsService.findByAuthorPaginated(userId, { page, limit });
     }
 
     @Get(':id')

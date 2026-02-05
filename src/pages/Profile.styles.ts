@@ -168,4 +168,13 @@ export const useStyles = makeStyles((theme) => ({
         gap: theme.spacing(2),
         padding: { xs: theme.spacing(1, 0), sm: theme.spacing(1, 2), md: theme.spacing(1, 5) },
     },
+    infiniteSentinel: {
+        height: 1,
+    },
+    infiniteLoaderContainer: {
+        display: "flex",
+        justifyContent: "center",
+        paddingTop: theme.spacing(2),
+        paddingBottom: theme.spacing(1),
+    },
 }));

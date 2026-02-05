@@ -122,6 +122,40 @@ export class PostsService {
         return this.postModel.find({ author: new Types.ObjectId(authorId) }).populate('author', '-password').populate('comments.author', '-password').sort({ createdAt: -1 }).exec();
     }
 
+    async findByAuthorPaginated(authorId: string, params: { page?: string; limit?: string }): Promise<PaginationResult<PostDocument>> {
+        const rawPage = Number(params.page);
+        const rawLimit = Number(params.limit);
+
+        const page = Number.isFinite(rawPage) && rawPage > 0 ? Math.floor(rawPage) : 1;
+        const limit = Number.isFinite(rawLimit) && rawLimit > 0 ? Math.floor(rawLimit) : 10;
+        const safeLimit = Math.min(Math.max(limit, 1), 50);
+
+        const skip = (page - 1) * safeLimit;
+        const filter = { author: new Types.ObjectId(authorId) };
+
+        const [items, total] = await Promise.all([
+            this.postModel
+                .find(filter)
+                .populate('author', '-password')
+                .populate('comments.author', '-password')
+                .sort({ createdAt: -1 })
+                .skip(skip)
+                .limit(safeLimit)
+                .exec(),
+            this.postModel.countDocuments(filter).exec(),
+        ]);
+
+        const totalPages = Math.max(1, Math.ceil(total / safeLimit));
+
+        return {
+            items,
+            total,
+            page,
+            limit: safeLimit,
+            totalPages,
+        };
+    }
+
     async findOne(id: string): Promise<PostDocument | null> {
         return this.postModel.findById(id).populate('author', '-password').populate('comments.author', '-password').exec();
     }
