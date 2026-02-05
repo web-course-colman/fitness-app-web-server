@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import api from "../services/axios";
 import { useAuth, User } from "../components/Auth/AuthProvider";
 
@@ -41,7 +41,15 @@ export interface Post {
   updatedAt: string;
 }
 
-export function usePosts(authorId?: string) {
+export interface PaginationResult<T> {
+  items: T[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+export function usePosts(authorId?: string, options?: { enabled?: boolean }) {
   return useQuery<Post[]>({
     queryKey: authorId ? ["posts", "author", authorId] : ["posts"],
     queryFn: async () => {
@@ -49,6 +57,57 @@ export function usePosts(authorId?: string) {
       const { data } = await api.get(url);
       return data;
     },
+    enabled: options?.enabled ?? true,
+  });
+}
+
+/**
+ * Paginated version of GET /posts ("get all posts").
+ * Server is backwards compatible and returns the full list when pagination params are omitted.
+ */
+export function useAllPostsPaginated(params: { page: number; limit?: number; enabled?: boolean }) {
+  const limit = params.limit ?? 10;
+
+  return useQuery<PaginationResult<Post>>({
+    queryKey: ["posts", "all", "paginated", params.page, limit],
+    queryFn: async () => {
+      const { data } = await api.get(`/api/posts`, {
+        params: {
+          page: params.page,
+          limit,
+        },
+      });
+      return data;
+    },
+    // keep previous page data while fetching next page
+    placeholderData: (previous) => previous,
+    enabled: params.enabled ?? true,
+  });
+}
+
+/**
+ * Infinite scroll version of GET /posts ("get all posts").
+ */
+export function useAllPostsInfinite(params?: { limit?: number; enabled?: boolean }) {
+  const limit = params?.limit ?? 3;
+
+  return useInfiniteQuery<PaginationResult<Post>>({
+    queryKey: ["posts", "all", "infinite", limit],
+    initialPageParam: 1,
+    queryFn: async ({ pageParam }) => {
+      const { data } = await api.get(`/api/posts`, {
+        params: {
+          page: pageParam,
+          limit,
+        },
+      });
+      return data;
+    },
+    getNextPageParam: (lastPage) => {
+      if (lastPage.page >= lastPage.totalPages) return undefined;
+      return lastPage.page + 1;
+    },
+    enabled: params?.enabled ?? true,
   });
 }
 

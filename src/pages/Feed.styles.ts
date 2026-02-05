@@ -12,6 +12,15 @@ export const useStyles = makeStyles((theme) => ({
         gap: theme.spacing(3),
         marginTop: theme.spacing(3),
     },
+    infiniteSentinel: {
+        height: 1,
+    },
+    infiniteLoaderContainer: {
+        display: "flex",
+        justifyContent: "center",
+        paddingTop: theme.spacing(2),
+        paddingBottom: theme.spacing(1),
+    },
     card: {
         borderRadius: theme.spacing(2),
     },

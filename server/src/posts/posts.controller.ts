@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, UseGuards, Request, Param, NotFoundException, Put } from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards, Request, Param, NotFoundException, Put, Query } from '@nestjs/common';
 import { PostsService } from './posts.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { AddCommentDto } from './dto/add-comment.dto';
@@ -15,8 +15,20 @@ export class PostsController {
     }
 
     @Get()
-    async findAll() {
-        return this.postsService.findAll();
+    async findAll(
+        @Query('page') page?: string,
+        @Query('limit') limit?: string,
+    ) {
+        // Backwards compatible:
+        // - If no pagination params are provided, return the full list (old behavior)
+        // - If page and/or limit are provided, return a paginated response
+        const hasPaginationParams = page !== undefined || limit !== undefined;
+
+        if (!hasPaginationParams) {
+            return this.postsService.findAll();
+        }
+
+        return this.postsService.findAllPaginated({ page, limit });
     }
 
     @Get('author/:userId')

@@ -333,6 +333,7 @@ const Layout = () => {
       >
         <Toolbar /> {/* Spacer for fixed AppBar */}
         <Box
+          id="app-scroll-container"
           sx={{
             bgcolor: "background.paper",
             borderRadius: { xs: "24px 0 0 0", sm: "40px 0 0 0" },

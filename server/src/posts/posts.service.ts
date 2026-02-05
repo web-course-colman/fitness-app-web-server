@@ -6,6 +6,14 @@ import { Post, PostDocument } from './schemas/post.schema';
 import { CreatePostDto } from './dto/create-post.dto';
 import { User, UserDocument } from 'src/auth/schemas/user.schema';
 
+export interface PaginationResult<T> {
+    items: T[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+}
+
 @Injectable()
 export class PostsService {
     constructor(
@@ -75,6 +83,39 @@ export class PostsService {
 
     async findAll(): Promise<PostDocument[]> {
         return this.postModel.find().populate('author', '-password').populate('comments.author', '-password').sort({ createdAt: -1 }).exec();
+    }
+
+    async findAllPaginated(params: { page?: string; limit?: string }): Promise<PaginationResult<PostDocument>> {
+        const rawPage = Number(params.page);
+        const rawLimit = Number(params.limit);
+
+        const page = Number.isFinite(rawPage) && rawPage > 0 ? Math.floor(rawPage) : 1;
+        const limit = Number.isFinite(rawLimit) && rawLimit > 0 ? Math.floor(rawLimit) : 10;
+        const safeLimit = Math.min(Math.max(limit, 1), 50);
+
+        const skip = (page - 1) * safeLimit;
+
+        const [items, total] = await Promise.all([
+            this.postModel
+                .find()
+                .populate('author', '-password')
+                .populate('comments.author', '-password')
+                .sort({ createdAt: -1 })
+                .skip(skip)
+                .limit(safeLimit)
+                .exec(),
+            this.postModel.countDocuments().exec(),
+        ]);
+
+        const totalPages = Math.max(1, Math.ceil(total / safeLimit));
+
+        return {
+            items,
+            total,
+            page,
+            limit: safeLimit,
+            totalPages,
+        };
     }
 
     async findByAuthor(authorId: string): Promise<PostDocument[]> {

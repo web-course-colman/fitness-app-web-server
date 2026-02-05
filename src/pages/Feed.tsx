@@ -3,10 +3,10 @@ import {
     Typography,
     CircularProgress,
     Chip,
-    IconButton,
 } from "@mui/material";
 import { Close as CloseIcon } from "@mui/icons-material";
-import { usePosts } from "@/hooks/usePosts";
+import { useEffect, useMemo, useRef } from "react";
+import { useAllPostsInfinite, usePosts } from "@/hooks/usePosts";
 import { useStyles } from "./Feed.styles";
 import PostCard from "@/components/Feed/PostCard";
 import { useSearchParams } from "react-router-dom";
@@ -17,7 +17,65 @@ const Feed = () => {
     const authorId = searchParams.get("authorId");
     const authorName = searchParams.get("authorName");
 
-    const { data: posts, isLoading, error } = usePosts(authorId || undefined);
+    // How many posts to fetch per "page" when infinite-scrolling
+    const limit = 3;
+
+    // Author filter keeps existing (non-paginated) behavior.
+    const { data: authorPosts, isLoading: isLoadingAuthor, error: authorError } = usePosts(authorId || undefined, {
+        enabled: !!authorId,
+    });
+
+    // "All posts" uses infinite scrolling when no author filter is applied.
+    const {
+        data: allPostsInfinite,
+        isLoading: isLoadingAll,
+        error: allError,
+        fetchNextPage,
+        hasNextPage,
+        isFetchingNextPage,
+    } = useAllPostsInfinite({
+        limit,
+        enabled: !authorId,
+    });
+
+    const infinitePosts = useMemo(() => {
+        return allPostsInfinite?.pages.flatMap((p) => p.items) ?? [];
+    }, [allPostsInfinite]);
+
+    const posts = authorId ? authorPosts : infinitePosts;
+    const isLoading = authorId ? isLoadingAuthor : isLoadingAll;
+    const error = authorId ? authorError : allError;
+
+    const loadMoreRef = useRef<HTMLDivElement | null>(null);
+
+    useEffect(() => {
+        if (authorId) return;
+        if (!loadMoreRef.current) return;
+
+        const el = loadMoreRef.current;
+        // Feed is rendered inside an overflowed scroll container (see Layout),
+        // so IntersectionObserver must use that element as the root.
+        const scrollRoot = document.getElementById("app-scroll-container");
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                const first = entries[0];
+                if (!first?.isIntersecting) return;
+                if (!hasNextPage) return;
+                if (isFetchingNextPage) return;
+                fetchNextPage();
+            },
+            {
+                root: scrollRoot,
+                // Start loading before the user reaches the very bottom
+                rootMargin: "800px",
+                threshold: 0,
+            },
+        );
+
+        observer.observe(el);
+        return () => observer.disconnect();
+    }, [authorId, fetchNextPage, hasNextPage, isFetchingNextPage]);
 
     const clearFilter = () => {
         setSearchParams({});
@@ -53,9 +111,27 @@ const Feed = () => {
                         <Typography>No posts yet. Be the first to share your workout!</Typography>
                     </Box>
                 ) : (
-                    posts?.map((post) => (
-                        <PostCard key={post._id} post={post} />
-                    ))
+                    <>
+                        {posts?.map((post) => (
+                            <PostCard key={post._id} post={post} />
+                        ))}
+
+                        {!authorId && (
+                            <>
+                                <Box ref={loadMoreRef} sx={classes.infiniteSentinel} />
+                                {isFetchingNextPage && (
+                                    <Box sx={classes.infiniteLoaderContainer}>
+                                        <CircularProgress size={26} />
+                                    </Box>
+                                )}
+                                {!hasNextPage && (
+                                    <Box sx={{ textAlign: "center", py: 2, color: "text.secondary" }}>
+                                        <Typography variant="body2">You're all caught up</Typography>
+                                    </Box>
+                                )}
+                            </>
+                        )}
+                    </>
                 )}
             </Box>
         </Box>
