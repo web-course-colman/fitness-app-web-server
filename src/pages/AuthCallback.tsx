@@ -18,32 +18,29 @@ const AuthCallback = () => {
             const refreshToken = searchParams.get('refreshToken');
             const userId = searchParams.get('userId');
 
-            if (accessToken && refreshToken && userId) {
-                // Manually set cookies if needed, but optimally the backend should have set httpOnly cookies.
-                // However, since we are receiving tokens in the URL, we might need to store them.
-                // The backend implementation in AuthController sets cookies on the response.
-                // The client redirect receives them in query params too?
-                // Let's look at the backend code again.
-                // Backend: res.redirect(`${redirectUrl}?code=${tokens.access_token}&userId=${user._id}&refreshToken=${tokens.refresh_token}`);
-                // AND it sets cookies.
+            // 1. Always ensure Web Session is valid (for fallback or desktop)
+            try {
+                await refreshProfile();
+            } catch (error) {
+                console.error("Failed to refresh profile", error);
+                // If profile refresh fails, we might still want to try the app redirect if we have params?
+                // But for now let's assume if this fails, something is wrong.
+                // We'll continue to try redirecting to app if params exist.
+            }
 
-                // If the backend sets cookies, we might just need to trigger a profile refresh.
-                try {
-                    await refreshProfile();
-                    navigate('/feed');
-                } catch (error) {
-                    console.error("Failed to refresh profile during callback", error);
-                    navigate('/login?error=auth_failed');
-                }
+            // 2. Check for Mobile
+            const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+            if (isMobile && accessToken && userId && refreshToken) {
+                // Construct Intent URL with fallback
+                const fallbackUrl = encodeURIComponent(`${window.location.origin}/feed`);
+                const intentUrl = `intent://node86.cs.colman.ac.il/app/auth/callback?code=${accessToken}&userId=${userId}&refreshToken=${refreshToken}#Intent;scheme=https;package=com.fitness.app;S.browser_fallback_url=${fallbackUrl};end`;
+
+                // Redirect to Intent
+                window.location.href = intentUrl;
             } else {
-                // Even if params are missing, maybe cookies are set?
-                try {
-                    await refreshProfile();
-                    navigate('/feed');
-                } catch (error) {
-                    console.error("Failed to refresh profile with missing params", error);
-                    navigate('/login?error=missing_params');
-                }
+                // Desktop or missing params -> Go to Web Feed
+                navigate('/feed');
             }
         };
 
