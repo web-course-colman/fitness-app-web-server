@@ -61,11 +61,11 @@ export class AuthController {
             sameSite: 'lax',
             maxAge: 7 * 24 * 60 * 60 * 1000,
         });
-        if (process.env.NODE_ENV === 'production') {
-            res.redirect(`${process.env.SERVER_URL}/feed`);
-        } else {
-            res.redirect('http://localhost:8080/feed');
-        }
+        const redirectUrl = process.env.NODE_ENV === 'production'
+            ? `${process.env.SERVER_URL}/app/auth/callback`
+            : `http://localhost:8080/app/auth/callback`;
+
+        res.redirect(`${redirectUrl}?code=${tokens.access_token}&userId=${user._id}&refreshToken=${tokens.refresh_token}`);
     }
 
     @Get('profile')

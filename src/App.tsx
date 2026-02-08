@@ -20,6 +20,7 @@ import NotFound from "@/pages/NotFound";
 
 import WorkoutPost from "@/pages/WorkoutPost";
 import AiTips from "@/pages/AiTips";
+import AuthCallback from "@/pages/AuthCallback";
 
 const queryClient = new QueryClient();
 
@@ -34,6 +35,7 @@ const App = () => (
                         <Routes>
                             <Route path="/" element={<Index />} />
                             <Route path="/login" element={<Login />} />
+                            <Route path="/app/auth/callback" element={<AuthCallback />} />
                             <Route element={<ProtectedRoute />}>
                                 <Route element={<Layout />}>
                                     <Route path="/feed" element={<Feed />} />
