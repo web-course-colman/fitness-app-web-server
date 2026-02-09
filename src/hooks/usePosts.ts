@@ -26,6 +26,7 @@ export interface Post {
   };
   title: string;
   description?: string;
+  src?: string;
   workoutDetails?: {
     type?: string;
     duration?: number;

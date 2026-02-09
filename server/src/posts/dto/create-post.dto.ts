@@ -3,6 +3,7 @@ import { User } from "src/auth/schemas/user.schema";
 export class CreatePostDto {
     title: string;
     description?: string;
+    src?: string;
     pictures?: string[];
     workoutDetails?: {
         type?: string;

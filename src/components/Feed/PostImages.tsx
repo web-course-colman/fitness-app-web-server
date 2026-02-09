@@ -2,23 +2,26 @@ import { Box } from "@mui/material";
 import { useStyles } from "../../pages/Feed.styles";
 
 interface PostImagesProps {
+    src?: string;
     pictures: string[];
 }
 
-const PostImages = ({ pictures }: PostImagesProps) => {
+const PostImages = ({ src, pictures }: PostImagesProps) => {
     const classes = useStyles();
 
-    if (!pictures || pictures.length === 0) return null;
+    const imagesToDisplay = src ? [src] : pictures;
+
+    if (!imagesToDisplay || imagesToDisplay.length === 0) return null;
 
     return (
         <Box sx={classes.imageContainer}>
             <Box
                 sx={{
                     ...classes.imageGrid,
-                    gridTemplateColumns: pictures.length === 1 ? "1fr" : "repeat(auto-fit, minmax(200px, 1fr))"
+                    gridTemplateColumns: imagesToDisplay.length === 1 ? "1fr" : "repeat(auto-fit, minmax(200px, 1fr))"
                 }}
             >
-                {pictures.map((pic, idx) => (
+                {imagesToDisplay.map((pic, idx) => (
                     <Box
                         key={idx}
                         component="img"
