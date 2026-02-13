@@ -16,6 +16,7 @@ import {
   Share as ShareIcon,
   FavoriteBorder,
   Send,
+  Edit,
 } from "@mui/icons-material";
 import { formatDistanceToNow } from "date-fns";
 import { useStyles } from "../../pages/Feed.styles";
@@ -25,12 +26,14 @@ import PostWorkoutDetails from "./PostWorkoutDetails";
 import api from "@/services/axios";
 import { useAuth } from "../Auth/AuthProvider";
 import CommentItem from "./CommentItem";
+import EditPostModal from "./EditPostModal";
 
 interface PostCardProps {
   post: Post;
+  isProfile?: boolean;
 }
 
-const PostCard = ({ post }: PostCardProps) => {
+const PostCard = ({ post, isProfile = false }: PostCardProps) => {
   const classes = useStyles();
   const { loggedUser } = useAuth();
   const [postLikes, setPostLikes] = useState<number>(post.likeNumber);
@@ -48,6 +51,8 @@ const PostCard = ({ post }: PostCardProps) => {
   const [showComments, setShowComments] = useState(true);
   const [commentContent, setCommentContent] = useState("");
   const [displayCount, setDisplayCount] = useState(2);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+
   const addCommentMutation = useAddComment();
   const likePostMutation = useLikePost();
 
@@ -97,6 +102,8 @@ const PostCard = ({ post }: PostCardProps) => {
   const visibleComments = comments.slice(0, displayCount);
   const hasMoreComments = comments.length > displayCount;
 
+  const isAuthor = loggedUser?.userId === post.author._id;
+
   return (
     <Card elevation={1} sx={classes.card}>
       <CardHeader
@@ -111,6 +118,13 @@ const PostCard = ({ post }: PostCardProps) => {
               post.author ? `${post.author.name} ${post.author.lastName}` : null
             )}
           </Avatar>
+        }
+        action={
+          isProfile && isAuthor ? (
+            <IconButton onClick={() => setEditModalOpen(true)} size="small">
+              <Edit />
+            </IconButton>
+          ) : null
         }
         title={
           <Typography variant="subtitle1" sx={classes.authorName}>
@@ -236,6 +250,11 @@ const PostCard = ({ post }: PostCardProps) => {
           )}
         </Box>
       </CardContent>
+      <EditPostModal
+        open={editModalOpen}
+        onClose={() => setEditModalOpen(false)}
+        post={post}
+      />
     </Card>
   );
 };

@@ -41,6 +41,22 @@ export class PostsService {
         return post;
     }
 
+    async update(id: string, updatePostDto: any, userId: string): Promise<PostDocument | null> {
+        const post = await this.postModel.findById(id);
+        if (!post) {
+            return null;
+        }
+
+        if (post.author.toString() !== userId) {
+            return null; // Or throw specific forbidden exception
+        }
+
+        return this.postModel.findByIdAndUpdate(id, updatePostDto, { new: true })
+            .populate('author', '-password')
+            .populate('comments.author', '-password')
+            .exec();
+    }
+
     private async updateUserStreak(userId: string): Promise<void> {
         const user = await this.userModel.findById(userId).exec();
         if (!user) return;

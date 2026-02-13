@@ -199,3 +199,21 @@ export function useLikePost() {
   });
 }
 
+export function useUpdatePost() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ postId, formData }: { postId: string; formData: FormData }) => {
+      const { data } = await api.put(`/api/posts/${postId}`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["posts"] });
+    },
+  });
+}
+
