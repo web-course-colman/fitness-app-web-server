@@ -51,10 +51,19 @@ export class PostsService {
             return null; // Or throw specific forbidden exception
         }
 
-        return this.postModel.findByIdAndUpdate(id, updatePostDto, { new: true })
+        const updatedPost = await this.postModel.findByIdAndUpdate(id, updatePostDto, { new: true })
             .populate('author', '-password')
             .populate('comments.author', '-password')
             .exec();
+
+        if (updatedPost) {
+            this.eventEmitter.emit('workout.updated', {
+                postId: updatedPost._id.toString(),
+                userId: userId,
+            });
+        }
+
+        return updatedPost;
     }
 
     private async updateUserStreak(userId: string): Promise<void> {
