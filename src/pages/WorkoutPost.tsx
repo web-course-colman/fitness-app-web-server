@@ -25,6 +25,7 @@ const WorkoutPost = () => {
     useState("");
   const [personalGoals, setPersonalGoals] = useState("");
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const handlePhotoClick = () => {
     fileInputRef.current?.click();
@@ -34,13 +35,16 @@ const WorkoutPost = () => {
     const files = Array.from(event.target.files || []);
     const validFiles = files.filter((file) => file.type.startsWith("image/"));
 
-    validFiles.forEach((file) => {
+    if (validFiles.length > 0) {
+      const file = validFiles[0];
+      setSelectedFile(file);
+
       const reader = new FileReader();
       reader.onloadend = () => {
-        setImagePreviews((prev) => [...prev, reader.result as string]);
+        setImagePreviews([reader.result as string]);
       };
       reader.readAsDataURL(file);
-    });
+    }
 
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
@@ -49,7 +53,8 @@ const WorkoutPost = () => {
 
   const handleRemovePhoto = (index: number, e: React.MouseEvent) => {
     e.stopPropagation();
-    setImagePreviews((prev) => prev.filter((_, i) => i !== index));
+    setImagePreviews([]);
+    setSelectedFile(null);
   };
 
   const handleNext = () => {
@@ -75,21 +80,25 @@ const WorkoutPost = () => {
   };
 
   const handleShare = async () => {
-    const postData = {
-      title,
-      description,
-      pictures: imagePreviews,
-      workoutDetails: {
-        type: workoutType || undefined,
-        duration: duration ? parseInt(duration) : undefined,
-        calories: calories ? parseInt(calories) : undefined,
-        subjectiveFeedbackFeelings:
-          subjectiveFeedbackFeelings.trim() || undefined,
-        personalGoals: personalGoals.trim() || undefined,
-      },
+    const formData = new FormData();
+    formData.append("title", title);
+    formData.append("description", description);
+
+    if (selectedFile) {
+      formData.append("file", selectedFile);
+    }
+
+    const workoutDetails = {
+      type: workoutType || undefined,
+      duration: duration ? parseInt(duration) : undefined,
+      calories: calories ? parseInt(calories) : undefined,
+      subjectiveFeedbackFeelings: subjectiveFeedbackFeelings.trim() || undefined,
+      personalGoals: personalGoals.trim() || undefined,
     };
 
-    createPost.mutate(postData, {
+    formData.append("workoutDetails", JSON.stringify(workoutDetails));
+
+    createPost.mutate(formData as any, {
       onSuccess: () => {
         toast({
           title: "Success",
@@ -113,7 +122,6 @@ const WorkoutPost = () => {
       <input
         type="file"
         accept="image/*"
-        multiple
         style={{ display: "none" }}
         ref={fileInputRef}
         onChange={handleFileChange}

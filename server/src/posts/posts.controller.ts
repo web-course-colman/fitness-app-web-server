@@ -1,4 +1,7 @@
-import { Controller, Get, Post, Body, UseGuards, Request, Param, NotFoundException, Put, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards, Request, Param, NotFoundException, Put, Query, UseInterceptors, UploadedFile } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
 import { PostsService } from './posts.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { AddCommentDto } from './dto/add-comment.dto';
@@ -10,7 +13,40 @@ export class PostsController {
 
     @UseGuards(AuthGuard('jwt'))
     @Post()
-    async create(@Body() createPostDto: CreatePostDto, @Request() req) {
+    @UseInterceptors(FileInterceptor('file', {
+        storage: diskStorage({
+            destination: './uploads/posts',
+            filename: (req, file, cb) => {
+                const randomName = Array(32).fill(null).map(() => (Math.round(Math.random() * 16)).toString(16)).join('');
+                cb(null, `${randomName}${extname(file.originalname)}`);
+            },
+        }),
+        fileFilter: (req, file, cb) => {
+            if (!file.originalname.match(/\.(jpg|jpeg|png|gif|webp)$/)) {
+                return cb(new Error('Only image files are allowed!'), false);
+            }
+            cb(null, true);
+        },
+        limits: {
+            fileSize: 5 * 1024 * 1024, // 5MB limit
+        },
+    }))
+    async create(@Body() createPostDto: CreatePostDto, @Request() req, @UploadedFile() file: any) {
+        if (file) {
+            const port = process.env.PORT || '3002';
+            const serverUrl = process.env.SERVER_URL || `http://localhost:${port}`;
+            createPostDto.src = `${serverUrl}/uploads/posts/${file.filename}`;
+        }
+
+        // Handle workoutDetails if it comes as a string (multipart/form-data often sends objects as strings)
+        if (typeof createPostDto.workoutDetails === 'string') {
+            try {
+                createPostDto.workoutDetails = JSON.parse(createPostDto.workoutDetails);
+            } catch (e) {
+                // Keep as is or handle error
+            }
+        }
+
         return this.postsService.create(createPostDto, req.user.userId);
     }
 

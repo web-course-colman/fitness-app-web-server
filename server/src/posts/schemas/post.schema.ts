@@ -54,6 +54,9 @@ export class Post {
     @Prop({ required: false })
     description?: string;
 
+    @Prop({ required: false })
+    src?: string;
+
     @Prop({ type: [String], required: false })
     pictures?: string[];
 

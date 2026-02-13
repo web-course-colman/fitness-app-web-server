@@ -138,7 +138,7 @@ const PostCard = ({ post }: PostCardProps) => {
             </Typography>
           )}
 
-          <PostImages pictures={post.pictures || []} />
+          <PostImages src={post.src} pictures={post.pictures || []} />
 
           <PostWorkoutDetails
             type={post.workoutDetails?.type}
