@@ -1,13 +1,31 @@
-import { Box, Avatar, Typography } from "@mui/material";
+import { Box, Avatar, Typography, IconButton } from "@mui/material";
+import { Delete as DeleteIcon } from "@mui/icons-material";
+import { useAuth } from "../Auth/AuthProvider";
 import { formatDistanceToNow } from "date-fns";
-import { Comment } from "../../hooks/usePosts";
+import { Comment, useDeleteComment } from "../../hooks/usePosts";
 
 interface CommentItemProps {
   comment: Comment;
   classes: any;
+  postId: string;
 }
 
-const CommentItem = ({ comment, classes }: CommentItemProps) => {
+const CommentItem = ({ comment, classes, postId }: CommentItemProps) => {
+  const { loggedUser } = useAuth();
+  const deleteCommentMutation = useDeleteComment();
+
+  const isAuthor = loggedUser?.userId === comment.author._id;
+
+  const handleDelete = async () => {
+    try {
+      await deleteCommentMutation.mutateAsync({
+        postId,
+        commentId: comment._id,
+      });
+    } catch (error) {
+      console.error("Failed to delete comment:", error);
+    }
+  };
   const getInitials = (name: string | null) => {
     if (!name) return "U";
     return name
@@ -65,6 +83,16 @@ const CommentItem = ({ comment, classes }: CommentItemProps) => {
           {comment.content}
         </Typography>
       </Box>
+      {isAuthor && (
+        <IconButton
+          size="small"
+          onClick={handleDelete}
+          disabled={deleteCommentMutation.isPending}
+          sx={{ ml: "auto", alignSelf: "start", p: 0.5 }}
+        >
+          <DeleteIcon fontSize="small" sx={{ fontSize: "1rem" }} />
+        </IconButton>
+      )}
     </Box>
   );
 };

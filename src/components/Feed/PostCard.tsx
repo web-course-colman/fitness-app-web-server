@@ -195,6 +195,7 @@ const PostCard = ({ post, isProfile = false }: PostCardProps) => {
                   key={comment._id}
                   comment={comment}
                   classes={classes}
+                  postId={post._id}
                 />
               ))}
 

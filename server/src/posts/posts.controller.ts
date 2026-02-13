@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, UseGuards, Request, Param, NotFoundException, Put, Query, UseInterceptors, UploadedFile } from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards, Request, Param, NotFoundException, Put, Query, UseInterceptors, UploadedFile, Delete } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
@@ -152,6 +152,19 @@ export class PostsController {
         @Request() req,
     ) {
         const post = await this.postsService.addComment(id, req.user.userId, addCommentDto.content);
+        if (!post) {
+            throw new NotFoundException(`Post with ID ${id} not found`);
+        }
+        return post;
+    }
+    @UseGuards(AuthGuard('jwt'))
+    @Delete(':id/comments/:commentId')
+    async deleteComment(
+        @Param('id') id: string,
+        @Param('commentId') commentId: string,
+        @Request() req,
+    ) {
+        const post = await this.postsService.deleteComment(id, commentId, req.user.userId);
         if (!post) {
             throw new NotFoundException(`Post with ID ${id} not found`);
         }

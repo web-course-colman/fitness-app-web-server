@@ -230,4 +230,26 @@ export class PostsService {
             ).populate('author', '-password').populate('comments.author', '-password').exec();
         }
     }
+
+    async deleteComment(postId: string, commentId: string, userId: string): Promise<PostDocument | null> {
+        const post = await this.postModel.findById(postId);
+        if (!post) throw new NotFoundException(`Post ${postId} not found`);
+
+        const comment = post.comments.find(c => (c as any)._id.toString() === commentId);
+        if (!comment) throw new NotFoundException(`Comment ${commentId} not found`);
+
+        if (comment.author.toString() !== userId) {
+            throw new NotFoundException(`You are not authorized to delete this comment`);
+        }
+
+        return this.postModel.findByIdAndUpdate(
+            postId,
+            {
+                $pull: {
+                    comments: { _id: new Types.ObjectId(commentId) }
+                }
+            },
+            { new: true }
+        ).populate('author', '-password').populate('comments.author', '-password').exec();
+    }
 }
