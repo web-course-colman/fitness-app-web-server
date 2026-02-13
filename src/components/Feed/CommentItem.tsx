@@ -1,8 +1,9 @@
-import { Box, Avatar, Typography, IconButton } from "@mui/material";
-import { Delete as DeleteIcon } from "@mui/icons-material";
+import { Box, Avatar, Typography, IconButton, TextField, Button } from "@mui/material";
+import { Delete as DeleteIcon, Edit as EditIcon, Check as SaveIcon, Close as CancelIcon } from "@mui/icons-material";
 import { useAuth } from "../Auth/AuthProvider";
+import { useState } from "react";
 import { formatDistanceToNow } from "date-fns";
-import { Comment, useDeleteComment } from "../../hooks/usePosts";
+import { Comment, useDeleteComment, useUpdateComment } from "../../hooks/usePosts";
 
 interface CommentItemProps {
   comment: Comment;
@@ -13,6 +14,10 @@ interface CommentItemProps {
 const CommentItem = ({ comment, classes, postId }: CommentItemProps) => {
   const { loggedUser } = useAuth();
   const deleteCommentMutation = useDeleteComment();
+  const updateCommentMutation = useUpdateComment();
+
+  const [isEditing, setIsEditing] = useState(false);
+  const [editContent, setEditContent] = useState(comment.content);
 
   const isAuthor = loggedUser?.userId === comment.author._id;
 
@@ -24,6 +29,20 @@ const CommentItem = ({ comment, classes, postId }: CommentItemProps) => {
       });
     } catch (error) {
       console.error("Failed to delete comment:", error);
+    }
+  };
+
+  const handleUpdate = async () => {
+    if (!editContent.trim()) return;
+    try {
+      await updateCommentMutation.mutateAsync({
+        postId,
+        commentId: comment._id,
+        content: editContent,
+      });
+      setIsEditing(false);
+    } catch (error) {
+      console.error("Failed to update comment:", error);
     }
   };
   const getInitials = (name: string | null) => {
@@ -76,24 +95,66 @@ const CommentItem = ({ comment, classes, postId }: CommentItemProps) => {
             {formatDate(comment.createdAt)}
           </Typography>
         </Box>
-        <Typography
-          variant="body2"
-          sx={{ fontSize: "0.8125rem", lineHeight: 1.2 }}
-        >
-          {comment.content}
-        </Typography>
+        {isEditing ? (
+          <Box sx={{ width: "100%", mt: 1 }}>
+            <TextField
+              fullWidth
+              size="small"
+              value={editContent}
+              onChange={(e) => setEditContent(e.target.value)}
+              multiline
+              sx={{
+                "& .MuiInputBase-root": {
+                  fontSize: "0.8125rem",
+                  bgcolor: "background.paper"
+                }
+              }}
+            />
+            <Box sx={{ display: "flex", gap: 1, mt: 0.5, justifyContent: "flex-end" }}>
+              <IconButton size="small" onClick={() => setIsEditing(false)} color="inherit">
+                <CancelIcon fontSize="small" />
+              </IconButton>
+              <IconButton
+                size="small"
+                onClick={handleUpdate}
+                color="primary"
+                disabled={updateCommentMutation.isPending}
+              >
+                <SaveIcon fontSize="small" />
+              </IconButton>
+            </Box>
+          </Box>
+        ) : (
+          <Typography
+            variant="body2"
+            sx={{ fontSize: "0.8125rem", lineHeight: 1.2 }}
+          >
+            {comment.content}
+          </Typography>
+        )}
       </Box>
-      {isAuthor && (
-        <IconButton
-          size="small"
-          onClick={handleDelete}
-          disabled={deleteCommentMutation.isPending}
-          sx={{ ml: "auto", alignSelf: "start", p: 0.5 }}
-        >
-          <DeleteIcon fontSize="small" sx={{ fontSize: "1rem" }} />
-        </IconButton>
-      )}
-    </Box>
+      {
+        isAuthor && !isEditing && (
+          <Box sx={{ display: 'flex', ml: "auto", alignSelf: "start" }}>
+            <IconButton
+              size="small"
+              onClick={() => setIsEditing(true)}
+              sx={{ p: 0.5 }}
+            >
+              <EditIcon fontSize="small" sx={{ fontSize: "1rem" }} />
+            </IconButton>
+            <IconButton
+              size="small"
+              onClick={handleDelete}
+              disabled={deleteCommentMutation.isPending}
+              sx={{ p: 0.5 }}
+            >
+              <DeleteIcon fontSize="small" sx={{ fontSize: "1rem" }} />
+            </IconButton>
+          </Box>
+        )
+      }
+    </Box >
   );
 };
 

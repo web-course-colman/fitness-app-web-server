@@ -170,4 +170,19 @@ export class PostsController {
         }
         return post;
     }
+
+    @UseGuards(AuthGuard('jwt'))
+    @Put(':id/comments/:commentId')
+    async updateComment(
+        @Param('id') id: string,
+        @Param('commentId') commentId: string,
+        @Body() body: { content: string },
+        @Request() req,
+    ) {
+        const post = await this.postsService.updateComment(id, commentId, req.user.userId, body.content);
+        if (!post) {
+            throw new NotFoundException(`Post with ID ${id} not found`);
+        }
+        return post;
+    }
 }

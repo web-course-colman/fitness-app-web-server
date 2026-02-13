@@ -231,3 +231,17 @@ export function useDeleteComment() {
   });
 }
 
+export function useUpdateComment() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ postId, commentId, content }: { postId: string; commentId: string; content: string }) => {
+      const { data } = await api.put(`/api/posts/${postId}/comments/${commentId}`, { content });
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["posts"] });
+    },
+  });
+}
+
