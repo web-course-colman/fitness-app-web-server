@@ -20,6 +20,14 @@ export class EmbeddingsService {
         return createdEmbedding.save();
     }
 
+    async update(refType: string, refId: string, vector: number[], text: string): Promise<Embedding | null> {
+        return this.embeddingModel.findOneAndUpdate(
+            { refType, refId: new Types.ObjectId(refId) },
+            { vector, text },
+            { new: true }
+        ).exec();
+    }
+
     async findByUser(userId: string): Promise<Embedding[]> {
         return this.embeddingModel.find({ userId: new Types.ObjectId(userId) }).exec();
     }

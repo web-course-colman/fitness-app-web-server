@@ -82,7 +82,10 @@ const NavigationSidebar = ({
             minHeight: "64px !important",
           }}
         >
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          <Box
+            sx={{ display: "flex", alignItems: "center", gap: 1, cursor: "pointer" }}
+            onClick={() => handleNavigation("/feed")}
+          >
             <FitnessCenter sx={{ color: "primary.main", fontSize: 28 }} />
             {showFullContent && (
               <Typography variant="h6" component="div" fontWeight="bold" noWrap>

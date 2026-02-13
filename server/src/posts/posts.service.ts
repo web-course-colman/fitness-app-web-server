@@ -41,6 +41,31 @@ export class PostsService {
         return post;
     }
 
+    async update(id: string, updatePostDto: any, userId: string): Promise<PostDocument | null> {
+        const post = await this.postModel.findById(id);
+        if (!post) {
+            return null;
+        }
+
+        if (post.author.toString() !== userId) {
+            return null; // Or throw specific forbidden exception
+        }
+
+        const updatedPost = await this.postModel.findByIdAndUpdate(id, updatePostDto, { new: true })
+            .populate('author', '-password')
+            .populate('comments.author', '-password')
+            .exec();
+
+        if (updatedPost) {
+            this.eventEmitter.emit('workout.updated', {
+                postId: updatedPost._id.toString(),
+                userId: userId,
+            });
+        }
+
+        return updatedPost;
+    }
+
     private async updateUserStreak(userId: string): Promise<void> {
         const user = await this.userModel.findById(userId).exec();
         if (!user) return;
@@ -204,5 +229,49 @@ export class PostsService {
                 { new: true }
             ).populate('author', '-password').populate('comments.author', '-password').exec();
         }
+    }
+
+    async deleteComment(postId: string, commentId: string, userId: string): Promise<PostDocument | null> {
+        const post = await this.postModel.findById(postId);
+        if (!post) throw new NotFoundException(`Post ${postId} not found`);
+
+        const comment = post.comments.find(c => (c as any)._id.toString() === commentId);
+        if (!comment) throw new NotFoundException(`Comment ${commentId} not found`);
+
+        if (comment.author.toString() !== userId) {
+            throw new NotFoundException(`You are not authorized to delete this comment`);
+        }
+
+        return this.postModel.findByIdAndUpdate(
+            postId,
+            {
+                $pull: {
+                    comments: { _id: new Types.ObjectId(commentId) }
+                }
+            },
+            { new: true }
+        ).populate('author', '-password').populate('comments.author', '-password').exec();
+    }
+
+    async updateComment(postId: string, commentId: string, userId: string, content: string): Promise<PostDocument | null> {
+        const post = await this.postModel.findById(postId);
+        if (!post) throw new NotFoundException(`Post ${postId} not found`);
+
+        const comment = post.comments.find(c => (c as any)._id.toString() === commentId);
+        if (!comment) throw new NotFoundException(`Comment ${commentId} not found`);
+
+        if (comment.author.toString() !== userId) {
+            throw new NotFoundException(`You are not authorized to update this comment`);
+        }
+
+        return this.postModel.findOneAndUpdate(
+            { _id: postId, "comments._id": new Types.ObjectId(commentId) },
+            {
+                $set: {
+                    "comments.$.content": content
+                }
+            },
+            { new: true }
+        ).populate('author', '-password').populate('comments.author', '-password').exec();
     }
 }

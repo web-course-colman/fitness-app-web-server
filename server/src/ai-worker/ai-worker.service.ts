@@ -93,6 +93,64 @@ export class AiWorkerService {
         }
     }
 
+    @OnEvent('workout.updated')
+    async handleWorkoutUpdated(payload: { postId: string; userId: string }) {
+        this.logger.log(`Processing workout updated event for post ${payload.postId}`);
+
+        let summary;
+        try {
+            summary = await this.workoutSummariesService.findByWorkout(payload.postId);
+        } catch (e) {
+            this.logger.warn(`Workout summary for post ${payload.postId} not found during update, falling back to creation.`);
+            return this.handleWorkoutCreated(payload);
+        }
+
+        try {
+            const workout = await this.postsService.findOne(payload.postId);
+            if (!workout) {
+                this.logger.error(`Workout ${payload.postId} not found`);
+                return;
+            }
+
+            this.logger.log(`Regenerating AI summary for workout: ${workout.title}`);
+            const workoutDesc = `${workout.title}. ${workout.description || ''}. Details: ${JSON.stringify(workout.workoutDetails || {})}`;
+
+            let aiResult;
+            try {
+                aiResult = await this.openaiService.generateSummary(workoutDesc);
+            } catch (error) {
+                this.logger.error(`OpenAI summary generation failed: ${error.message}`);
+                await this.workoutSummariesService.updateStatus(summary['_id'].toString(), 'failed', {
+                    error: `AI processing failed: ${error.message}`
+                });
+                return;
+            }
+
+            const { summaryText, summaryJson } = aiResult;
+
+            await this.workoutSummariesService.updateStatus(summary['_id'].toString(), 'completed', {
+                summaryText,
+                summaryJson,
+                ...(workout.workoutDetails?.subjectiveFeedbackFeelings && {
+                    subjectiveFeedbackFeelings: workout.workoutDetails.subjectiveFeedbackFeelings,
+                }),
+                ...(workout.workoutDetails?.personalGoals && {
+                    personalGoals: workout.workoutDetails.personalGoals,
+                }),
+            });
+
+            this.logger.log(`Completed updated workout summary ${summary['_id']}`);
+
+            await Promise.all([
+                this.updateUserProfile(payload.userId, summaryText, summaryJson),
+                this.updateEmbedding(payload.userId, 'workout_summary', summary['_id'].toString(), summaryText)
+            ]);
+
+        } catch (error) {
+            this.logger.error(`Error processing workout updated: ${error.message}`, error.stack);
+        }
+    }
+
     private async updateUserProfile(userId: string, newSummaryText: string, newSummaryJson: any) {
         this.logger.log(`Updating user profile for user ${userId}`);
         try {
@@ -147,6 +205,36 @@ export class AiWorkerService {
             this.logger.log(`Embedding saved for ${refType} ${refId}`);
         } catch (error) {
             this.logger.error(`Error generating embedding: ${error.message}`);
+        }
+    }
+
+    private async updateEmbedding(userId: string, refType: 'workout_summary' | 'workout', refId: string, text: string) {
+        this.logger.log(`Updating embedding for ${refType} ${refId}`);
+        try {
+            let vector;
+            try {
+                vector = await this.openaiService.generateEmbedding(text);
+            } catch (error) {
+                this.logger.error(`OpenAI embedding generation failed: ${error.message}`);
+                return;
+            }
+
+            const updated = await this.embeddingsService.update(refType, refId, vector, text);
+
+            if (!updated) {
+                await this.embeddingsService.create({
+                    userId,
+                    refType,
+                    refId,
+                    vector,
+                    text,
+                });
+                this.logger.log(`Embedding created (fallback) for ${refType} ${refId}`);
+            } else {
+                this.logger.log(`Embedding updated for ${refType} ${refId}`);
+            }
+        } catch (error) {
+            this.logger.error(`Error updating embedding: ${error.message}`);
         }
     }
 }

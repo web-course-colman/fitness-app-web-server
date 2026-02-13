@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, UseGuards, Request, Param, NotFoundException, Put, Query, UseInterceptors, UploadedFile } from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards, Request, Param, NotFoundException, Put, Query, UseInterceptors, UploadedFile, Delete } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
@@ -48,6 +48,47 @@ export class PostsController {
         }
 
         return this.postsService.create(createPostDto, req.user.userId);
+    }
+
+    @UseGuards(AuthGuard('jwt'))
+    @Put(':id')
+    @UseInterceptors(FileInterceptor('file', {
+        storage: diskStorage({
+            destination: './uploads/posts',
+            filename: (req, file, cb) => {
+                const randomName = Array(32).fill(null).map(() => (Math.round(Math.random() * 16)).toString(16)).join('');
+                cb(null, `${randomName}${extname(file.originalname)}`);
+            },
+        }),
+        fileFilter: (req, file, cb) => {
+            if (!file.originalname.match(/\.(jpg|jpeg|png|gif|webp)$/)) {
+                return cb(new Error('Only image files are allowed!'), false);
+            }
+            cb(null, true);
+        },
+        limits: {
+            fileSize: 5 * 1024 * 1024, // 5MB limit
+        },
+    }))
+    async update(@Param('id') id: string, @Body() updatePostDto: any, @Request() req, @UploadedFile() file: any) {
+        if (file) {
+            const port = process.env.PORT || '3002';
+            const serverUrl = process.env.SERVER_URL || `http://localhost:${port}`;
+            updatePostDto.src = `${serverUrl}/uploads/posts/${file.filename}`;
+        }
+
+        if (typeof updatePostDto.workoutDetails === 'string') {
+            try {
+                updatePostDto.workoutDetails = JSON.parse(updatePostDto.workoutDetails);
+            } catch (e) {
+            }
+        }
+
+        const updatedPost = await this.postsService.update(id, updatePostDto, req.user.userId);
+        if (!updatedPost) {
+            throw new NotFoundException(`Post with ID ${id} not found or you are not authorized to update it`);
+        }
+        return updatedPost;
     }
 
     @Get()
@@ -111,6 +152,34 @@ export class PostsController {
         @Request() req,
     ) {
         const post = await this.postsService.addComment(id, req.user.userId, addCommentDto.content);
+        if (!post) {
+            throw new NotFoundException(`Post with ID ${id} not found`);
+        }
+        return post;
+    }
+    @UseGuards(AuthGuard('jwt'))
+    @Delete(':id/comments/:commentId')
+    async deleteComment(
+        @Param('id') id: string,
+        @Param('commentId') commentId: string,
+        @Request() req,
+    ) {
+        const post = await this.postsService.deleteComment(id, commentId, req.user.userId);
+        if (!post) {
+            throw new NotFoundException(`Post with ID ${id} not found`);
+        }
+        return post;
+    }
+
+    @UseGuards(AuthGuard('jwt'))
+    @Put(':id/comments/:commentId')
+    async updateComment(
+        @Param('id') id: string,
+        @Param('commentId') commentId: string,
+        @Body() body: { content: string },
+        @Request() req,
+    ) {
+        const post = await this.postsService.updateComment(id, commentId, req.user.userId, body.content);
         if (!post) {
             throw new NotFoundException(`Post with ID ${id} not found`);
         }
