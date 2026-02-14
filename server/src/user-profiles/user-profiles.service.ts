@@ -3,12 +3,14 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { UserProfile, UserProfileDocument } from './schemas/user-profile.schema';
 import { CreateUserProfileDto } from './dto/create-user-profile.dto';
+import { AchievementsService } from '../achievements/achievements.service';
 
 @Injectable()
 export class UserProfilesService {
     constructor(
         @InjectModel(UserProfile.name)
         private userProfileModel: Model<UserProfileDocument>,
+        private readonly achievementsService: AchievementsService,
     ) { }
 
     async upsert(createDto: CreateUserProfileDto): Promise<UserProfile> {
@@ -22,11 +24,19 @@ export class UserProfilesService {
         ).exec();
     }
 
-    async findByUser(userId: string): Promise<UserProfile> {
+    async findByUser(userId: string): Promise<any> {
         const profile = await this.userProfileModel.findOne({ userId: new Types.ObjectId(userId) }).exec();
         if (!profile) {
             throw new NotFoundException(`User profile for user ${userId} not found`);
         }
-        return profile;
+
+        const achievements = await this.achievementsService.findUserAchievements(userId);
+        const xpStats = await this.achievementsService.getXpAndLevel(userId);
+
+        return {
+            ...profile.toObject(),
+            achievements,
+            xpStats,
+        };
     }
 }

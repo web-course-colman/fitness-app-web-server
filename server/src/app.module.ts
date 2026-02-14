@@ -11,6 +11,8 @@ import { UserProfilesModule } from './user-profiles/user-profiles.module';
 import { EmbeddingsModule } from './embeddings/embeddings.module';
 import { AiWorkerModule } from './ai-worker/ai-worker.module';
 import { CoachModule } from './coach/coach.module';
+import { AchievementsModule } from './achievements/achievements.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
@@ -56,6 +58,8 @@ import { CoachModule } from './coach/coach.module';
     EmbeddingsModule,
     AiWorkerModule,
     CoachModule,
+    AchievementsModule,
+    NotificationsModule,
   ],
 })
 export class AppModule { }

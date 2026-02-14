@@ -1,15 +1,17 @@
 import { Box, Typography, CircularProgress } from "@mui/material";
-import { LocalFireDepartment as FireIcon, FitnessCenter as WorkoutIcon } from "@mui/icons-material";
+import { LocalFireDepartment as FireIcon, FitnessCenter as WorkoutIcon, EmojiEvents as TrophyIcon } from "@mui/icons-material";
 import { useEffect, useMemo, useRef } from "react";
 import { useStyles } from "./Profile.styles";
 import ProfileHeader from "../components/Profile/ProfileHeader";
 import { useAuth } from "../components/Auth/AuthProvider";
 import { useAuthorPostsInfinite } from "../hooks/usePosts";
+import { useUserProfile } from "../hooks/useUserProfile";
 import PostCard from "../components/Feed/PostCard";
 
 const Profile = () => {
     const classes = useStyles();
     const { loggedUser } = useAuth();
+    const { data: profileData, isLoading: isProfileLoading } = useUserProfile(loggedUser?.userId);
 
     const limit = 3;
     const userId = loggedUser?.userId;
@@ -74,14 +76,19 @@ const Profile = () => {
             value: isLoading ? "..." : (totalUserPosts ?? posts.length ?? 0),
             icon: <WorkoutIcon />
         },
+        {
+            label: "XP",
+            value: profileData?.xpStats.totalXp ?? 0,
+            icon: <TrophyIcon />
+        },
+        {
+            label: "Level",
+            value: profileData?.xpStats.level ?? 1,
+            icon: <TrophyIcon />
+        }
     ];
 
-    const achievements = [
-        { id: "1", name: "Early Bird", description: "Complete 10 morning workouts" },
-        { id: "2", name: "Iron Will", description: "30-day workout streak" },
-        { id: "3", name: "Calorie Crusher", description: "Burn 10,000 total calories" },
-        { id: "4", name: "Consistent", description: "Complete 50 workouts" },
-    ];
+    const realAchievements = profileData?.achievements || [];
 
     return (
         <Box sx={classes.container}>
@@ -92,7 +99,7 @@ const Profile = () => {
                 avatarUrl={user.avatarUrl}
                 initials={user.initials}
                 stats={stats}
-                achievements={achievements}
+                achievements={realAchievements}
             />
 
             <Box sx={classes.postsSection}>
