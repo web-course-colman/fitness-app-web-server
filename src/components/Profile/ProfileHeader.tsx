@@ -10,9 +10,13 @@ interface Stat {
 }
 
 interface Achievement {
-    id: string;
-    name: string;
-    description: string;
+    achievementId: string;
+    achievement: {
+        name: string;
+        description: string;
+        icon: string;
+    };
+    currentTier: string;
 }
 
 interface ProfileHeaderProps {
@@ -47,15 +51,6 @@ const ProfileHeader = ({ name, handle, bio, avatarUrl, initials, stats, achievem
                             {bio}
                         </Typography>
 
-                        <Box sx={classes.minimizedAchievementsRow}>
-                            {achievements.map((achievement) => (
-                                <Tooltip key={achievement.id} title={`${achievement.name}: ${achievement.description}`}>
-                                    <Avatar sx={classes.minimizedAchievementIcon}>
-                                        <TrophyIcon sx={{ fontSize: '1.2rem' }} />
-                                    </Avatar>
-                                </Tooltip>
-                            ))}
-                        </Box>
                     </Box>
                 </Box>
                 <Box sx={classes.minimizedStatsRow}>
@@ -72,6 +67,66 @@ const ProfileHeader = ({ name, handle, bio, avatarUrl, initials, stats, achievem
                         </>
                     ))}
                 </Box>
+            </Box>
+            <Box sx={classes.minimizedAchievementsRow}>
+                {achievements.map((ua) => {
+                    const isLocked = ua.currentTier === 'none';
+                    const tierColor =
+                        ua.currentTier === 'diamond' ? '#b9f2ff' :
+                            ua.currentTier === 'gold' ? '#ffd700' :
+                                ua.currentTier === 'silver' ? '#c0c0c0' :
+                                    ua.currentTier === 'bronze' ? '#cd7f32' : '#9ca3af';
+
+                    return (
+                        <Tooltip
+                            key={ua.achievementId?.toString() || Math.random()}
+                            title={ua.achievement ? `${ua.achievement.name} (${ua.currentTier}): ${ua.achievement.description}` : 'Unknown Achievement'}
+                        >
+                            <Avatar
+                                src={ua.achievement?.icon}
+                                sx={{
+                                    ...classes.minimizedAchievementIcon,
+                                    bgcolor: isLocked ? '#f3f4f6' : tierColor,
+                                    border: 'none',
+                                    filter: isLocked ? 'grayscale(100%)' : 'none',
+                                    opacity: isLocked ? 0.4 : 1,
+                                    position: 'relative',
+                                    overflow: 'hidden',
+                                    animation: isLocked ? 'none' : 'sparkle 3s infinite ease-in-out',
+                                    boxShadow: isLocked ? 'none' : `0 0 15px ${tierColor}66`,
+                                    '&::after': isLocked ? {} : {
+                                        content: '""',
+                                        position: 'absolute',
+                                        top: 0,
+                                        left: 0,
+                                        width: '100%',
+                                        height: '100%',
+                                        background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)',
+                                        animation: 'shimmer 4s infinite linear',
+                                    },
+                                    '& img': {
+                                        filter: isLocked ? 'grayscale(100%)' : `drop-shadow(0 2px 4px rgba(0,0,0,0.3)) contrast(1.1)`,
+                                        objectFit: 'contain',
+                                        padding: '4px',
+                                    },
+                                    '&:hover': {
+                                        transform: isLocked ? 'none' : 'scale(1.15)',
+                                        transition: 'all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+                                        boxShadow: isLocked ? 'none' : `0 0 25px ${tierColor}`,
+                                    },
+                                }}
+                            >
+                                <TrophyIcon sx={{
+                                    fontSize: '1.2rem',
+                                    color: isLocked || ua.currentTier === 'bronze' ? 'white' : 'rgba(0,0,0,0.8)',
+                                    stroke: isLocked || ua.currentTier === 'bronze' ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.2)',
+                                    strokeWidth: 0.5,
+                                    filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))'
+                                }} />
+                            </Avatar>
+                        </Tooltip>
+                    );
+                })}
             </Box>
 
 

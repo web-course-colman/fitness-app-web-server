@@ -33,6 +33,7 @@ import NavigationSidebar, {
 import { useAuth } from "./Auth/AuthProvider";
 import api from "../services/axios";
 import { debounce } from "lodash";
+import { useNotifications } from "../hooks/useNotifications";
 
 interface SearchUser {
   _id: string;
@@ -43,6 +44,7 @@ interface SearchUser {
 }
 
 const Layout = () => {
+  useNotifications();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(() => {
     const saved = localStorage.getItem("sidebar-collapsed");

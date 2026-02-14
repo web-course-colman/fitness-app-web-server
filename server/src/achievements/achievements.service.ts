@@ -1,5 +1,6 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Model, Types } from 'mongoose';
 import { Achievement, AchievementDocument } from './schemas/achievement.schema';
 import { UserAchievement, UserAchievementDocument } from './schemas/user-achievement.schema';
@@ -13,17 +14,42 @@ export class AchievementsService {
         @InjectModel(Achievement.name) private achievementModel: Model<AchievementDocument>,
         @InjectModel(UserAchievement.name) private userAchievementModel: Model<UserAchievementDocument>,
         @InjectModel(User.name) private userModel: Model<UserDocument>,
+        private eventEmitter: EventEmitter2,
     ) { }
+
+    emitUnlockEvent(userId: string, achievementName: string, tier: string, aiMessage?: string) {
+        this.eventEmitter.emit('achievement.unlocked', {
+            userId,
+            achievementName,
+            tier,
+            aiMessage,
+        });
+    }
 
     async findAll(): Promise<Achievement[]> {
         return this.achievementModel.find({ isActive: true }).exec();
     }
 
-    async findUserAchievements(userId: string): Promise<UserAchievement[]> {
-        return this.userAchievementModel
+    async findUserAchievements(userId: string): Promise<any[]> {
+        const allAchievements = await this.achievementModel.find({ isActive: true }).exec();
+        const userAchievements = await this.userAchievementModel
             .find({ userId: new Types.ObjectId(userId) })
-            .populate('achievementId')
             .exec();
+
+        return allAchievements.map(achievement => {
+            const userProgress = userAchievements.find(
+                ua => ua.achievementId.toString() === achievement._id.toString()
+            );
+
+            return {
+                achievementId: achievement._id,
+                achievement: achievement.toObject(),
+                currentTier: userProgress ? userProgress.currentTier : 'none',
+                progressValue: userProgress ? userProgress.progressValue : 0,
+                unlockedAt: userProgress ? userProgress.unlockedAt : null,
+                history: userProgress ? userProgress.history : [],
+            };
+        });
     }
 
     async getXpAndLevel(userId: string) {
@@ -48,6 +74,13 @@ export class AchievementsService {
             totalXp: currentXp,
             level: currentLevel,
         }).exec();
+
+        this.eventEmitter.emit('xp.earned', {
+            userId,
+            xp,
+            totalXp: currentXp,
+            level: currentLevel,
+        });
 
         this.logger.log(`User ${userId} earned ${xp} XP. Total XP: ${currentXp}, Level: ${currentLevel}`);
     }

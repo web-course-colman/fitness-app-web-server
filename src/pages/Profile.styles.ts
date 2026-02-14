@@ -177,4 +177,34 @@ export const useStyles = makeStyles((theme) => ({
         paddingTop: theme.spacing(2),
         paddingBottom: theme.spacing(1),
     },
+    "@keyframes pulse": {
+        "0%": {
+            boxShadow: "0 0 0 0px rgba(255, 255, 255, 0.4)",
+        },
+        "70%": {
+            boxShadow: "0 0 0 10px rgba(255, 255, 255, 0)",
+        },
+        "100%": {
+            boxShadow: "0 0 0 0px rgba(255, 255, 255, 0)",
+        },
+    },
+    "@keyframes shimmer": {
+        "0%": {
+            transform: "translateX(-150%) skewX(-20deg)",
+        },
+        "50%": {
+            transform: "translateX(150%) skewX(-20deg)",
+        },
+        "100%": {
+            transform: "translateX(150%) skewX(-20deg)",
+        },
+    },
+    "@keyframes sparkle": {
+        "0%, 100%": {
+            filter: "brightness(1) contrast(1)",
+        },
+        "50%": {
+            filter: "brightness(1.2) contrast(1.1)",
+        },
+    },
 }));

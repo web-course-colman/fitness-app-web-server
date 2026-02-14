@@ -101,16 +101,13 @@ export class AchievementTriggerService {
 
                 this.logger.log(`Achievement Unlocked! User: ${userAchievement.userId}, Achievement: ${achievement.name}, Tier: ${nextTier}`);
 
-                // 2. Create Social Feed Post
-                try {
-                    await this.postsService.create({
-                        title: `Unlocked ${achievement.name} - ${nextTier}!`,
-                        description: aiMessage || `I just unlocked the ${nextTier} tier of the ${achievement.name} achievement!`,
-                        src: achievement.icon,
-                    }, userAchievement.userId.toString());
-                } catch (err) {
-                    this.logger.error(`Failed to create achievement post: ${err.message}`);
-                }
+                // 2. Emit Notification Event
+                this.achievementsService.emitUnlockEvent(
+                    userAchievement.userId.toString(),
+                    achievement.name,
+                    nextTier,
+                    aiMessage
+                );
 
                 // 3. Bonus: Award XP
                 await this.achievementsService.addXp(userAchievement.userId.toString(), achievement.xpReward);
