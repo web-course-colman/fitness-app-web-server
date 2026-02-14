@@ -1,10 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { AchievementsService } from './achievements.service';
+import { OpenaiService } from '../openai/openai.service';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Achievement, AchievementDocument } from './schemas/achievement.schema';
 import { UserAchievement, UserAchievementDocument } from './schemas/user-achievement.schema';
+import { User, UserDocument } from '../auth/schemas/user.schema';
 
 @Injectable()
 export class AchievementTriggerService {
@@ -12,8 +14,10 @@ export class AchievementTriggerService {
 
     constructor(
         private readonly achievementsService: AchievementsService,
+        private readonly openaiService: OpenaiService,
         @InjectModel(Achievement.name) private achievementModel: Model<AchievementDocument>,
         @InjectModel(UserAchievement.name) private userAchievementModel: Model<UserAchievementDocument>,
+        @InjectModel(User.name) private userModel: Model<UserDocument>,
     ) { }
 
     @OnEvent('workout.summary.completed')
@@ -74,9 +78,23 @@ export class AchievementTriggerService {
             if (tierConfig && userAchievement.progressValue >= tierConfig.value) {
                 userAchievement.currentTier = nextTier;
                 userAchievement.unlockedAt = new Date();
+
+                // Fetch user for personalized message
+                const user = await this.userModel.findById(userAchievement.userId).exec();
+                const userName = user?.name || 'Athlete';
+
+                // Generate AI message asynchronously (don't block)
+                const aiMessage = await this.openaiService.generateAchievementMessage(
+                    userName,
+                    achievement.name,
+                    nextTier,
+                    `Progress: ${userAchievement.progressValue} reaching threshold ${tierConfig.value}`
+                );
+
                 userAchievement.history.push({
                     tier: nextTier,
                     unlockedAt: new Date(),
+                    aiMessage,
                 });
 
                 this.logger.log(`Achievement Unlocked! User: ${userAchievement.userId}, Achievement: ${achievement.name}, Tier: ${nextTier}`);

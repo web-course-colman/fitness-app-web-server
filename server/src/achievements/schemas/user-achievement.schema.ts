@@ -10,6 +10,9 @@ export class AchievementHistory {
 
     @Prop({ default: Date.now })
     unlockedAt: Date;
+
+    @Prop({ required: false })
+    aiMessage?: string;
 }
 
 const AchievementHistorySchema = SchemaFactory.createForClass(AchievementHistory);
