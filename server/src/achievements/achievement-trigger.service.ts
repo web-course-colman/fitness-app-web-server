@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { AchievementsService } from './achievements.service';
 import { OpenaiService } from '../openai/openai.service';
+import { PostsService } from '../posts/posts.service';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Achievement, AchievementDocument } from './schemas/achievement.schema';
@@ -15,6 +16,7 @@ export class AchievementTriggerService {
     constructor(
         private readonly achievementsService: AchievementsService,
         private readonly openaiService: OpenaiService,
+        private readonly postsService: PostsService,
         @InjectModel(Achievement.name) private achievementModel: Model<AchievementDocument>,
         @InjectModel(UserAchievement.name) private userAchievementModel: Model<UserAchievementDocument>,
         @InjectModel(User.name) private userModel: Model<UserDocument>,
@@ -99,11 +101,19 @@ export class AchievementTriggerService {
 
                 this.logger.log(`Achievement Unlocked! User: ${userAchievement.userId}, Achievement: ${achievement.name}, Tier: ${nextTier}`);
 
-                // Bonus: Award XP
-                await this.achievementsService.addXp(userAchievement.userId.toString(), achievement.xpReward);
+                // 2. Create Social Feed Post
+                try {
+                    await this.postsService.create({
+                        title: `Unlocked ${achievement.name} - ${nextTier}!`,
+                        description: aiMessage || `I just unlocked the ${nextTier} tier of the ${achievement.name} achievement!`,
+                        src: achievement.icon,
+                    }, userAchievement.userId.toString());
+                } catch (err) {
+                    this.logger.error(`Failed to create achievement post: ${err.message}`);
+                }
 
-                // TODO: Trigger Social Feed Event
-                // TODO: Trigger AI Personalized Message Job
+                // 3. Bonus: Award XP
+                await this.achievementsService.addXp(userAchievement.userId.toString(), achievement.xpReward);
             } else {
                 break; // Haven't reached this tier yet
             }

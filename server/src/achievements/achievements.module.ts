@@ -7,6 +7,7 @@ import { Achievement, AchievementSchema } from './schemas/achievement.schema';
 import { UserAchievement, UserAchievementSchema } from './schemas/user-achievement.schema';
 import { User, UserSchema } from '../auth/schemas/user.schema';
 import { OpenaiModule } from '../openai/openai.module';
+import { PostsModule } from '../posts/posts.module';
 
 @Module({
     imports: [
@@ -16,6 +17,7 @@ import { OpenaiModule } from '../openai/openai.module';
             { name: User.name, schema: UserSchema },
         ]),
         OpenaiModule,
+        PostsModule,
     ],
     controllers: [AchievementsController],
     providers: [AchievementsService, AchievementTriggerService],
