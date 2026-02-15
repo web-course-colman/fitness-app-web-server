@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Card,
   CardContent,
@@ -42,10 +43,12 @@ import EditPostModal from "./EditPostModal";
 interface PostCardProps {
   post: Post;
   isProfile?: boolean;
+  isDetailsPage?: boolean;
 }
 
-const PostCard = ({ post, isProfile = false }: PostCardProps) => {
+const PostCard = ({ post, isProfile = false, isDetailsPage = false }: PostCardProps) => {
   const classes = useStyles();
+  const navigate = useNavigate();
   const { loggedUser } = useAuth();
   const [postLikes, setPostLikes] = useState<number>(post.likeNumber);
   const [isLikedByUser, setIsLiked] = useState<boolean>(
@@ -61,7 +64,8 @@ const PostCard = ({ post, isProfile = false }: PostCardProps) => {
 
   const [showComments, setShowComments] = useState(true);
   const [commentContent, setCommentContent] = useState("");
-  const [displayCount, setDisplayCount] = useState(2);
+  // On details page, show all comments (or a large number) by default
+  const [displayCount, setDisplayCount] = useState(isDetailsPage ? 100 : 2);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
@@ -133,7 +137,11 @@ const PostCard = ({ post, isProfile = false }: PostCardProps) => {
   };
 
   const handleLoadMore = () => {
-    setDisplayCount((prev) => prev + 5);
+    if (!isDetailsPage) {
+      navigate(`/posts/${post._id}`);
+    } else {
+      setDisplayCount((prev) => prev + 5);
+    }
   };
 
   const comments = post.comments || [];
@@ -233,9 +241,15 @@ const PostCard = ({ post, isProfile = false }: PostCardProps) => {
                 size="small"
                 startIcon={<ChatBubbleOutline />}
                 sx={classes.actionButton}
-                onClick={() => setShowComments(!showComments)}
+                onClick={() => {
+                  if (isDetailsPage) {
+                    setShowComments(!showComments);
+                  } else {
+                    navigate(`/posts/${post._id}`);
+                  }
+                }}
               >
-                {comments.length}
+                {post.commentsNumber ?? comments.length}
               </Button>
               <Button
                 variant="text"
@@ -246,7 +260,7 @@ const PostCard = ({ post, isProfile = false }: PostCardProps) => {
             </Box>
           </Box>
 
-          {showComments && (
+          {isDetailsPage && showComments && (
             <Box sx={classes.commentsSection}>
               {visibleComments.map((comment) => (
                 <CommentItem

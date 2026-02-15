@@ -106,11 +106,22 @@ export class PostsService {
         }).exec();
     }
 
-    async findAll(): Promise<PostDocument[]> {
-        return this.postModel.find().populate('author', '-password').populate('comments.author', '-password').sort({ createdAt: -1 }).exec();
+    async findAll(userId?: string): Promise<PostDocument[]> {
+        let query: any = this.postModel.find().populate('author', '-password').select('-comments').sort({ createdAt: -1 });
+
+        if (userId) {
+            const user = await this.userModel.findById(userId);
+            if (user) {
+                query = query.select({ likes: { $elemMatch: { username: user.username } }, title: 1, description: 1, src: 1, pictures: 1, likeNumber: 1, commentsNumber: 1, workoutDetails: 1, author: 1, createdAt: 1, updatedAt: 1 });
+            }
+        } else {
+            query = query.select('-likes');
+        }
+
+        return query.exec();
     }
 
-    async findAllPaginated(params: { page?: string; limit?: string }): Promise<PaginationResult<PostDocument>> {
+    async findAllPaginated(params: { page?: string; limit?: string }, userId?: string): Promise<PaginationResult<PostDocument>> {
         const rawPage = Number(params.page);
         const rawLimit = Number(params.limit);
 
@@ -120,15 +131,25 @@ export class PostsService {
 
         const skip = (page - 1) * safeLimit;
 
+        let query: any = this.postModel
+            .find()
+            .populate('author', '-password')
+            .select('-comments')
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(safeLimit);
+
+        if (userId) {
+            const user = await this.userModel.findById(userId);
+            if (user) {
+                query = query.select({ likes: { $elemMatch: { username: user.username } }, title: 1, description: 1, src: 1, pictures: 1, likeNumber: 1, commentsNumber: 1, workoutDetails: 1, author: 1, createdAt: 1, updatedAt: 1 });
+            }
+        } else {
+            query = query.select('-likes');
+        }
+
         const [items, total] = await Promise.all([
-            this.postModel
-                .find()
-                .populate('author', '-password')
-                .populate('comments.author', '-password')
-                .sort({ createdAt: -1 })
-                .skip(skip)
-                .limit(safeLimit)
-                .exec(),
+            query.exec(),
             this.postModel.countDocuments().exec(),
         ]);
 
@@ -143,11 +164,22 @@ export class PostsService {
         };
     }
 
-    async findByAuthor(authorId: string): Promise<PostDocument[]> {
-        return this.postModel.find({ author: new Types.ObjectId(authorId) }).populate('author', '-password').populate('comments.author', '-password').sort({ createdAt: -1 }).exec();
+    async findByAuthor(authorId: string, viewersId?: string): Promise<PostDocument[]> {
+        let query: any = this.postModel.find({ author: new Types.ObjectId(authorId) }).populate('author', '-password').select('-comments').sort({ createdAt: -1 });
+
+        if (viewersId) {
+            const user = await this.userModel.findById(viewersId);
+            if (user) {
+                query = query.select({ likes: { $elemMatch: { username: user.username } }, title: 1, description: 1, src: 1, pictures: 1, likeNumber: 1, commentsNumber: 1, workoutDetails: 1, author: 1, createdAt: 1, updatedAt: 1 });
+            }
+        } else {
+            query = query.select('-likes');
+        }
+
+        return query.exec();
     }
 
-    async findByAuthorPaginated(authorId: string, params: { page?: string; limit?: string }): Promise<PaginationResult<PostDocument>> {
+    async findByAuthorPaginated(authorId: string, params: { page?: string; limit?: string }, viewersId?: string): Promise<PaginationResult<PostDocument>> {
         const rawPage = Number(params.page);
         const rawLimit = Number(params.limit);
 
@@ -158,15 +190,25 @@ export class PostsService {
         const skip = (page - 1) * safeLimit;
         const filter = { author: new Types.ObjectId(authorId) };
 
+        let query: any = this.postModel
+            .find(filter)
+            .populate('author', '-password')
+            .select('-comments')
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(safeLimit);
+
+        if (viewersId) {
+            const user = await this.userModel.findById(viewersId);
+            if (user) {
+                query = query.select({ likes: { $elemMatch: { username: user.username } }, title: 1, description: 1, src: 1, pictures: 1, likeNumber: 1, commentsNumber: 1, workoutDetails: 1, author: 1, createdAt: 1, updatedAt: 1 });
+            }
+        } else {
+            query = query.select('-likes');
+        }
+
         const [items, total] = await Promise.all([
-            this.postModel
-                .find(filter)
-                .populate('author', '-password')
-                .populate('comments.author', '-password')
-                .sort({ createdAt: -1 })
-                .skip(skip)
-                .limit(safeLimit)
-                .exec(),
+            query.exec(),
             this.postModel.countDocuments(filter).exec(),
         ]);
 
@@ -182,6 +224,9 @@ export class PostsService {
     }
 
     async findOne(id: string): Promise<PostDocument | null> {
+        if (!Types.ObjectId.isValid(id)) {
+            return null;
+        }
         return this.postModel.findById(id).populate('author', '-password').populate('comments.author', '-password').exec();
     }
 
@@ -195,6 +240,7 @@ export class PostsService {
                         author: new Types.ObjectId(userId),
                     },
                 },
+                $inc: { commentsNumber: 1 },
             },
             { new: true },
         ).populate('author', '-password').populate('comments.author', '-password').exec();
@@ -247,7 +293,8 @@ export class PostsService {
             {
                 $pull: {
                     comments: { _id: new Types.ObjectId(commentId) }
-                }
+                },
+                $inc: { commentsNumber: -1 },
             },
             { new: true }
         ).populate('author', '-password').populate('comments.author', '-password').exec();

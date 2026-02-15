@@ -1,4 +1,5 @@
 import { Controller, Get, Post, Body, UseGuards, Request, Param, NotFoundException, Put, Query, UseInterceptors, UploadedFiles, Delete } from '@nestjs/common';
+import { OptionalJwtAuthGuard } from '../auth/optional-jwt-auth.guard';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
@@ -51,6 +52,12 @@ export class PostsController {
         }
 
         return this.postsService.create(createPostDto, req.user.userId);
+    }
+
+    @UseGuards(AuthGuard('jwt'))
+    @Put('like')
+    async likeOrUnlikePost(@Body('_id') postId: string, @Request() req) {
+        return await this.postsService.likePost(postId, req.user.userId);
     }
 
     @UseGuards(AuthGuard('jwt'))
@@ -120,38 +127,39 @@ export class PostsController {
         return updatedPost;
     }
 
+    @UseGuards(OptionalJwtAuthGuard)
     @Get()
     async findAll(
         @Query('page') page?: string,
         @Query('limit') limit?: string,
+        @Request() req?,
     ) {
-        // Backwards compatible:
-        // - If no pagination params are provided, return the full list (old behavior)
-        // - If page and/or limit are provided, return a paginated response
+        const userId = req?.user?.userId;
         const hasPaginationParams = page !== undefined || limit !== undefined;
 
         if (!hasPaginationParams) {
-            return this.postsService.findAll();
+            return this.postsService.findAll(userId);
         }
 
-        return this.postsService.findAllPaginated({ page, limit });
+        return this.postsService.findAllPaginated({ page, limit }, userId);
     }
 
+    @UseGuards(OptionalJwtAuthGuard)
     @Get('author/:userId')
     async findByAuthor(
-        @Param('userId') userId: string,
+        @Param('userId') authorId: string,
         @Query('page') page?: string,
         @Query('limit') limit?: string,
+        @Request() req?,
     ) {
-        // Backwards compatible (same pattern as GET /posts):
-        // If pagination params are omitted -> return the full list
+        const viewersId = req?.user?.userId;
         const hasPaginationParams = page !== undefined || limit !== undefined;
 
         if (!hasPaginationParams) {
-            return this.postsService.findByAuthor(userId);
+            return this.postsService.findByAuthor(authorId, viewersId);
         }
 
-        return this.postsService.findByAuthorPaginated(userId, { page, limit });
+        return this.postsService.findByAuthorPaginated(authorId, { page, limit }, viewersId);
     }
 
     @Get(':id')
@@ -163,15 +171,7 @@ export class PostsController {
         return post;
     }
 
-    @UseGuards(AuthGuard('jwt'))
-    @Put('like')
-    async likeOrUnlikePost(@Body('_id') postId: string, @Request() req) {
-        try {
-            return await this.postsService.likePost(postId, req.user.userId);
-        } catch (err) {
-            return err;
-        }
-    }
+
 
     @UseGuards(AuthGuard('jwt'))
     @Post(':id/comments')

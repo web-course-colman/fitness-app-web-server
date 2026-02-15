@@ -35,8 +35,9 @@ export interface Post {
     personalGoals?: string;
   };
   pictures?: string[];
-  likes: { username: string; picture?: string }[];
+  likes?: { username: string; picture?: string }[];
   likeNumber: number;
+  commentsNumber?: number;
   comments?: Comment[];
   createdAt: string;
   updatedAt: string;
@@ -59,6 +60,17 @@ export function usePosts(authorId?: string, options?: { enabled?: boolean }) {
       return data;
     },
     enabled: options?.enabled ?? true,
+  });
+}
+
+export function usePost(postId: string) {
+  return useQuery<Post>({
+    queryKey: ["post", postId],
+    queryFn: async () => {
+      const { data } = await api.get(`/api/posts/${postId}`);
+      return data;
+    },
+    enabled: !!postId,
   });
 }
 
@@ -193,8 +205,9 @@ export function useLikePost() {
       const { data } = await api.put('/api/posts/like', { _id: postId });
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (_, postId) => {
       queryClient.invalidateQueries({ queryKey: ["posts"] });
+      queryClient.invalidateQueries({ queryKey: ["post", postId] });
     },
   });
 }
@@ -211,8 +224,9 @@ export function useUpdatePost() {
       });
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["posts"] });
+      queryClient.invalidateQueries({ queryKey: ["post", variables.postId] });
     },
   });
 }
@@ -227,6 +241,7 @@ export function useDeleteComment() {
     },
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["posts"] });
+      queryClient.invalidateQueries({ queryKey: ["post", variables.postId] });
     },
   });
 }
@@ -239,8 +254,9 @@ export function useUpdateComment() {
       const { data } = await api.put(`/api/posts/${postId}/comments/${commentId}`, { content });
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["posts"] });
+      queryClient.invalidateQueries({ queryKey: ["post", variables.postId] });
     },
   });
 }
