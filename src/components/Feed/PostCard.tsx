@@ -241,7 +241,13 @@ const PostCard = ({ post, isProfile = false, isDetailsPage = false }: PostCardPr
                 size="small"
                 startIcon={<ChatBubbleOutline />}
                 sx={classes.actionButton}
-                onClick={() => setShowComments(!showComments)}
+                onClick={() => {
+                  if (isDetailsPage) {
+                    setShowComments(!showComments);
+                  } else {
+                    navigate(`/posts/${post._id}`);
+                  }
+                }}
               >
                 {comments.length}
               </Button>
@@ -254,7 +260,7 @@ const PostCard = ({ post, isProfile = false, isDetailsPage = false }: PostCardPr
             </Box>
           </Box>
 
-          {showComments && (
+          {isDetailsPage && showComments && (
             <Box sx={classes.commentsSection}>
               {visibleComments.map((comment) => (
                 <CommentItem
