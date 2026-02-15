@@ -23,7 +23,6 @@ import {
 import {
   Favorite,
   ChatBubbleOutline,
-  Share as ShareIcon,
   FavoriteBorder,
   Send,
   Edit,
@@ -251,12 +250,6 @@ const PostCard = ({ post, isProfile = false, isDetailsPage = false }: PostCardPr
               >
                 {post.commentsNumber ?? comments.length}
               </Button>
-              <Button
-                variant="text"
-                size="small"
-                startIcon={<ShareIcon />}
-                sx={classes.actionButton}
-              />
             </Box>
           </Box>
 
