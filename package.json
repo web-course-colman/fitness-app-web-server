@@ -8,7 +8,7 @@
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
-    "server:build": "npm run build:prod --prefix server",
+    "server:build": "npm ci && npm run build:prod --prefix server",
     "server:start": "npm run start:prod --prefix server",
     "server:dev": "npm run start:dev --prefix server",
     "start": "npm run build && npm run server:build && npm run server:start",
