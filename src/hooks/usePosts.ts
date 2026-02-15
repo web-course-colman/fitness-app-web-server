@@ -62,6 +62,17 @@ export function usePosts(authorId?: string, options?: { enabled?: boolean }) {
   });
 }
 
+export function usePost(postId: string) {
+  return useQuery<Post>({
+    queryKey: ["post", postId],
+    queryFn: async () => {
+      const { data } = await api.get(`/api/posts/${postId}`);
+      return data;
+    },
+    enabled: !!postId,
+  });
+}
+
 /**
  * Paginated version of GET /posts ("get all posts").
  * Server is backwards compatible and returns the full list when pagination params are omitted.
