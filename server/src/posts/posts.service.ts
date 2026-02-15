@@ -4,7 +4,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Post, PostDocument } from './schemas/post.schema';
 import { CreatePostDto } from './dto/create-post.dto';
-import { User, UserDocument } from 'src/auth/schemas/user.schema';
+import { User, UserDocument } from '../auth/schemas/user.schema';
 
 export interface PaginationResult<T> {
     items: T[];
