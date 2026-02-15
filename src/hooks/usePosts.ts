@@ -205,8 +205,9 @@ export function useLikePost() {
       const { data } = await api.put('/api/posts/like', { _id: postId });
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (_, postId) => {
       queryClient.invalidateQueries({ queryKey: ["posts"] });
+      queryClient.invalidateQueries({ queryKey: ["post", postId] });
     },
   });
 }
@@ -223,8 +224,9 @@ export function useUpdatePost() {
       });
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["posts"] });
+      queryClient.invalidateQueries({ queryKey: ["post", variables.postId] });
     },
   });
 }
@@ -239,6 +241,7 @@ export function useDeleteComment() {
     },
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["posts"] });
+      queryClient.invalidateQueries({ queryKey: ["post", variables.postId] });
     },
   });
 }
@@ -251,8 +254,9 @@ export function useUpdateComment() {
       const { data } = await api.put(`/api/posts/${postId}/comments/${commentId}`, { content });
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["posts"] });
+      queryClient.invalidateQueries({ queryKey: ["post", variables.postId] });
     },
   });
 }
