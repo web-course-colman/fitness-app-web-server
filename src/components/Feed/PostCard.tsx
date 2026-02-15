@@ -22,7 +22,6 @@ import {
 import {
   Favorite,
   ChatBubbleOutline,
-  Share as ShareIcon,
   FavoriteBorder,
   Send,
   Edit,
@@ -237,12 +236,6 @@ const PostCard = ({ post, isProfile = false }: PostCardProps) => {
               >
                 {comments.length}
               </Button>
-              <Button
-                variant="text"
-                size="small"
-                startIcon={<ShareIcon />}
-                sx={classes.actionButton}
-              />
             </Box>
           </Box>
 
