@@ -1,12 +1,15 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { Box, CircularProgress, Typography, Button } from "@mui/material";
+import { Box, CircularProgress, Typography, Button, IconButton } from "@mui/material";
 import { ArrowBack } from "@mui/icons-material";
 import { usePost } from "@/hooks/usePosts";
 import PostCard from "@/components/Feed/PostCard";
 
+import { useStyles } from "./Feed.styles";
+
 const PostPage = () => {
     const { postId } = useParams();
     const navigate = useNavigate();
+    const classes = useStyles();
     const { data: post, isLoading, error } = usePost(postId || "");
 
     if (isLoading) {
@@ -31,15 +34,18 @@ const PostPage = () => {
     }
 
     return (
-        <Box sx={{ maxWidth: 600, mx: "auto", py: 2, px: 1 }}>
-            <Button
-                startIcon={<ArrowBack />}
-                onClick={() => navigate(-1)}
-                sx={{ mb: 2 }}
-            >
-                Back
-            </Button>
-            <PostCard post={post} isDetailsPage={true} />
+        <Box sx={classes.container}>
+            <Box sx={{ display: "flex", alignItems: "center", mb: 3 }}>
+                <IconButton onClick={() => navigate(-1)} edge="start" size="small" sx={{ mr: 1 }}>
+                    <ArrowBack />
+                </IconButton>
+                <Typography variant="h5" fontWeight="bold">
+                    Post
+                </Typography>
+            </Box>
+            <Box sx={classes.postsContainer}>
+                <PostCard post={post} isDetailsPage={true} />
+            </Box>
         </Box>
     );
 };
