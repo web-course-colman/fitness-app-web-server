@@ -25,7 +25,7 @@ const WorkoutPost = () => {
     useState("");
   const [personalGoals, setPersonalGoals] = useState("");
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
 
   const handlePhotoClick = () => {
     fileInputRef.current?.click();
@@ -36,14 +36,15 @@ const WorkoutPost = () => {
     const validFiles = files.filter((file) => file.type.startsWith("image/"));
 
     if (validFiles.length > 0) {
-      const file = validFiles[0];
-      setSelectedFile(file);
+      setSelectedFiles(prev => [...prev, ...validFiles]);
 
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreviews([reader.result as string]);
-      };
-      reader.readAsDataURL(file);
+      validFiles.forEach(file => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setImagePreviews(prev => [...prev, reader.result as string]);
+        };
+        reader.readAsDataURL(file);
+      });
     }
 
     if (fileInputRef.current) {
@@ -53,8 +54,8 @@ const WorkoutPost = () => {
 
   const handleRemovePhoto = (index: number, e: React.MouseEvent) => {
     e.stopPropagation();
-    setImagePreviews([]);
-    setSelectedFile(null);
+    setImagePreviews(prev => prev.filter((_, i) => i !== index));
+    setSelectedFiles(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleNext = () => {
@@ -84,8 +85,10 @@ const WorkoutPost = () => {
     formData.append("title", title);
     formData.append("description", description);
 
-    if (selectedFile) {
-      formData.append("file", selectedFile);
+    if (selectedFiles && selectedFiles.length > 0) {
+      selectedFiles.forEach(file => {
+        formData.append("files", file);
+      });
     }
 
     const workoutDetails = {

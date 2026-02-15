@@ -20,6 +20,14 @@ export class EmbeddingsService {
         return createdEmbedding.save();
     }
 
+    async update(refType: string, refId: string, vector: number[], text: string): Promise<Embedding | null> {
+        return this.embeddingModel.findOneAndUpdate(
+            { refType, refId: new Types.ObjectId(refId) },
+            { vector, text },
+            { new: true }
+        ).exec();
+    }
+
     async findByUser(userId: string): Promise<Embedding[]> {
         return this.embeddingModel.find({ userId: new Types.ObjectId(userId) }).exec();
     }
@@ -44,5 +52,12 @@ export class EmbeddingsService {
             .sort((a, b) => b.score - a.score)
             .slice(0, limit)
             .map(s => s.emb);
+    }
+
+    async deleteByReference(refType: string, refId: string): Promise<any> {
+        return this.embeddingModel.deleteMany({
+            refType,
+            refId: new Types.ObjectId(refId)
+        }).exec();
     }
 }

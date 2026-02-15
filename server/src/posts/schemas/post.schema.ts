@@ -74,6 +74,9 @@ export class Post {
 
     @Prop({ type: [CommentSchema], default: [] })
     comments: Comment[];
+
+    createdAt?: Date;
+    updatedAt?: Date;
 }
 
 export const PostSchema = SchemaFactory.createForClass(Post);

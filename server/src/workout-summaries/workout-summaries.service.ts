@@ -48,4 +48,8 @@ export class WorkoutSummariesService {
         }
         return summary;
     }
+
+    async deleteByWorkoutId(workoutId: string): Promise<any> {
+        return this.workoutSummaryModel.deleteMany({ workoutId: new Types.ObjectId(workoutId) }).exec();
+    }
 }
