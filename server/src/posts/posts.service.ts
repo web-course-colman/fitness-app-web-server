@@ -182,6 +182,9 @@ export class PostsService {
     }
 
     async findOne(id: string): Promise<PostDocument | null> {
+        if (!Types.ObjectId.isValid(id)) {
+            return null;
+        }
         return this.postModel.findById(id).populate('author', '-password').populate('comments.author', '-password').exec();
     }
 
