@@ -54,6 +54,12 @@ export class PostsController {
     }
 
     @UseGuards(AuthGuard('jwt'))
+    @Put('like')
+    async likeOrUnlikePost(@Body('_id') postId: string, @Request() req) {
+        return await this.postsService.likePost(postId, req.user.userId);
+    }
+
+    @UseGuards(AuthGuard('jwt'))
     @Put(':id')
     @UseInterceptors(FilesInterceptor('files', 10, {
         storage: diskStorage({
@@ -163,15 +169,7 @@ export class PostsController {
         return post;
     }
 
-    @UseGuards(AuthGuard('jwt'))
-    @Put('like')
-    async likeOrUnlikePost(@Body('_id') postId: string, @Request() req) {
-        try {
-            return await this.postsService.likePost(postId, req.user.userId);
-        } catch (err) {
-            return err;
-        }
-    }
+
 
     @UseGuards(AuthGuard('jwt'))
     @Post(':id/comments')
