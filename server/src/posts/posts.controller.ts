@@ -1,5 +1,5 @@
-import { Controller, Get, Post, Body, UseGuards, Request, Param, NotFoundException, Put, Query, UseInterceptors, UploadedFile, Delete } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { Controller, Get, Post, Body, UseGuards, Request, Param, NotFoundException, Put, Query, UseInterceptors, UploadedFiles, Delete } from '@nestjs/common';
+import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { PostsService } from './posts.service';
@@ -13,7 +13,7 @@ export class PostsController {
 
     @UseGuards(AuthGuard('jwt'))
     @Post()
-    @UseInterceptors(FileInterceptor('file', {
+    @UseInterceptors(FilesInterceptor('files', 10, { // Allow up to 10 files
         storage: diskStorage({
             destination: './uploads/posts',
             filename: (req, file, cb) => {
@@ -31,11 +31,14 @@ export class PostsController {
             fileSize: 5 * 1024 * 1024, // 5MB limit
         },
     }))
-    async create(@Body() createPostDto: CreatePostDto, @Request() req, @UploadedFile() file: any) {
-        if (file) {
+    async create(@Body() createPostDto: CreatePostDto, @Request() req, @UploadedFiles() files: Array<any>) {
+        if (files && files.length > 0) {
             const port = process.env.PORT || '3002';
             const serverUrl = process.env.SERVER_URL || `http://localhost:${port}`;
-            createPostDto.src = `${serverUrl}/uploads/posts/${file.filename}`;
+            const fileUrls = files.map(file => `${serverUrl}/uploads/posts/${file.filename}`);
+
+            createPostDto.src = fileUrls[0];
+            createPostDto.pictures = fileUrls;
         }
 
         // Handle workoutDetails if it comes as a string (multipart/form-data often sends objects as strings)
@@ -52,7 +55,7 @@ export class PostsController {
 
     @UseGuards(AuthGuard('jwt'))
     @Put(':id')
-    @UseInterceptors(FileInterceptor('file', {
+    @UseInterceptors(FilesInterceptor('files', 10, {
         storage: diskStorage({
             destination: './uploads/posts',
             filename: (req, file, cb) => {
@@ -70,12 +73,38 @@ export class PostsController {
             fileSize: 5 * 1024 * 1024, // 5MB limit
         },
     }))
-    async update(@Param('id') id: string, @Body() updatePostDto: any, @Request() req, @UploadedFile() file: any) {
-        if (file) {
+    async update(@Param('id') id: string, @Body() updatePostDto: any, @Request() req, @UploadedFiles() files: Array<any>) {
+        let newSrc = updatePostDto.src;
+        let newPictures = updatePostDto.pictures || [];
+
+        // Handle existingPictures from form-data (it comes as stringified JSON)
+        let existingPictures: string[] = [];
+        if (updatePostDto.existingPictures) {
+            try {
+                existingPictures = typeof updatePostDto.existingPictures === 'string'
+                    ? JSON.parse(updatePostDto.existingPictures)
+                    : updatePostDto.existingPictures;
+            } catch (e) {
+                existingPictures = [];
+            }
+        }
+
+        if (files && files.length > 0) {
             const port = process.env.PORT || '3002';
             const serverUrl = process.env.SERVER_URL || `http://localhost:${port}`;
-            updatePostDto.src = `${serverUrl}/uploads/posts/${file.filename}`;
+            const newFileUrls = files.map(file => `${serverUrl}/uploads/posts/${file.filename}`);
+
+            // Append new files to existing ones
+            newPictures = [...existingPictures, ...newFileUrls];
+            newSrc = newPictures[0];
+        } else {
+            // No new files, just use existing
+            newPictures = existingPictures;
+            newSrc = newPictures.length > 0 ? newPictures[0] : null;
         }
+
+        updatePostDto.src = newSrc;
+        updatePostDto.pictures = newPictures;
 
         if (typeof updatePostDto.workoutDetails === 'string') {
             try {

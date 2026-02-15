@@ -34,7 +34,17 @@ const EditPostModal = ({ open, onClose, post }: EditPostModalProps) => {
     const [calories, setCalories] = useState(post.workoutDetails?.calories?.toString() || "");
     const [subjectiveFeedbackFeelings, setSubjectiveFeedbackFeelings] = useState(post.workoutDetails?.subjectiveFeedbackFeelings || "");
     const [personalGoals, setPersonalGoals] = useState(post.workoutDetails?.personalGoals || "");
-    const [imagePreviews, setImagePreviews] = useState<string[]>(post.src ? [post.src] : []);
+    const [imagePreviews, setImagePreviews] = useState<string[]>(() => {
+        const imgs: string[] = [];
+        if (post.src) imgs.push(post.src);
+        if (post.pictures && Array.isArray(post.pictures)) {
+            post.pictures.forEach(pic => {
+                if (!imgs.includes(pic)) imgs.push(pic);
+            });
+        }
+        return imgs;
+    });
+    const [newFiles, setNewFiles] = useState<File[]>([]);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
     useEffect(() => {
@@ -46,8 +56,18 @@ const EditPostModal = ({ open, onClose, post }: EditPostModalProps) => {
             setCalories(post.workoutDetails?.calories?.toString() || "");
             setSubjectiveFeedbackFeelings(post.workoutDetails?.subjectiveFeedbackFeelings || "");
             setPersonalGoals(post.workoutDetails?.personalGoals || "");
-            setImagePreviews(post.src ? [post.src] : []);
-            setSelectedFile(null);
+
+            const existingImages: string[] = [];
+            if (post.src) existingImages.push(post.src);
+            if (post.pictures && Array.isArray(post.pictures)) {
+                post.pictures.forEach(pic => {
+                    if (!existingImages.includes(pic)) existingImages.push(pic);
+                });
+            }
+            setImagePreviews(existingImages);
+
+            setNewFiles([]);
+            setSelectedFile(null); // Keep for compatibility if used elsewhere, but ideally remove
         }
     }, [open, post]);
 
@@ -60,14 +80,15 @@ const EditPostModal = ({ open, onClose, post }: EditPostModalProps) => {
         const validFiles = files.filter((file) => file.type.startsWith("image/"));
 
         if (validFiles.length > 0) {
-            const file = validFiles[0];
-            setSelectedFile(file);
+            setNewFiles(prev => [...prev, ...validFiles]);
 
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setImagePreviews([reader.result as string]);
-            };
-            reader.readAsDataURL(file);
+            validFiles.forEach(file => {
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    setImagePreviews(prev => [...prev, reader.result as string]);
+                };
+                reader.readAsDataURL(file);
+            });
         }
 
         if (fileInputRef.current) {
@@ -77,8 +98,28 @@ const EditPostModal = ({ open, onClose, post }: EditPostModalProps) => {
 
     const handleRemovePhoto = (index: number, e: React.MouseEvent) => {
         e.stopPropagation();
-        setImagePreviews([]);
-        setSelectedFile(null);
+
+        // Remove from imagePreviews
+        const itemToRemove = imagePreviews[index];
+        setImagePreviews(prev => prev.filter((_, i) => i !== index));
+
+        // If it's a new file (not string URL), remove from newFiles
+        // We need to match the index in newFiles. 
+        // Strategy: count how many existing images are before this index?
+        // Simpler: Maintain a parallel structure? No.
+        // If itemToRemove starts with 'data:', it is likely a new file.
+        if (itemToRemove && itemToRemove.startsWith('data:')) {
+            // We need to find WHICH new file it is. 
+            // This is tricky without a direct mapping. 
+            // Assumption: newFiles are appended in order. 
+            // imagePreviews = [...existing, ...newFiles_previews]
+            // So if index >= existing.length, it's a new file at (index - existing.length).
+            const existingCount = imagePreviews.filter(img => !img.startsWith('data:')).length;
+            if (index >= existingCount) {
+                const newFileIndex = index - existingCount;
+                setNewFiles(prev => prev.filter((_, i) => i !== newFileIndex));
+            }
+        }
     };
 
     const handleSave = async () => {
@@ -95,8 +136,10 @@ const EditPostModal = ({ open, onClose, post }: EditPostModalProps) => {
         formData.append("title", title);
         formData.append("description", description);
 
-        if (selectedFile) {
-            formData.append("file", selectedFile);
+        if (newFiles && newFiles.length > 0) {
+            newFiles.forEach(file => {
+                formData.append("files", file);
+            });
         }
 
         const workoutDetails = {
@@ -106,6 +149,9 @@ const EditPostModal = ({ open, onClose, post }: EditPostModalProps) => {
             subjectiveFeedbackFeelings: subjectiveFeedbackFeelings.trim() || undefined,
             personalGoals: personalGoals.trim() || undefined,
         };
+
+        const existingPictures = imagePreviews.filter(img => typeof img === 'string' && !img.startsWith('data:'));
+        formData.append("existingPictures", JSON.stringify(existingPictures));
 
         formData.append("workoutDetails", JSON.stringify(workoutDetails));
 
