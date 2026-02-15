@@ -249,7 +249,7 @@ const PostCard = ({ post, isProfile = false, isDetailsPage = false }: PostCardPr
                   }
                 }}
               >
-                {comments.length}
+                {post.commentsNumber ?? comments.length}
               </Button>
               <Button
                 variant="text"

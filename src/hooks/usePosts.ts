@@ -35,8 +35,9 @@ export interface Post {
     personalGoals?: string;
   };
   pictures?: string[];
-  likes: { username: string; picture?: string }[];
+  likes?: { username: string; picture?: string }[];
   likeNumber: number;
+  commentsNumber?: number;
   comments?: Comment[];
   createdAt: string;
   updatedAt: string;
