@@ -199,3 +199,63 @@ export function useLikePost() {
   });
 }
 
+export function useUpdatePost() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ postId, formData }: { postId: string; formData: FormData }) => {
+      const { data } = await api.put(`/api/posts/${postId}`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["posts"] });
+    },
+  });
+}
+
+export function useDeleteComment() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ postId, commentId }: { postId: string; commentId: string }) => {
+      const { data } = await api.delete(`/api/posts/${postId}/comments/${commentId}`);
+      return data;
+    },
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["posts"] });
+    },
+  });
+}
+
+export function useUpdateComment() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ postId, commentId, content }: { postId: string; commentId: string; content: string }) => {
+      const { data } = await api.put(`/api/posts/${postId}/comments/${commentId}`, { content });
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["posts"] });
+    },
+  });
+}
+
+export function useDeletePost() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (postId: string) => {
+      const { data } = await api.delete(`/api/posts/${postId}`);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["posts"] });
+    },
+  });
+}
+

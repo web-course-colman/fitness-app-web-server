@@ -9,7 +9,10 @@ interface PostImagesProps {
 const PostImages = ({ src, pictures }: PostImagesProps) => {
     const classes = useStyles();
 
-    const imagesToDisplay = src ? [src] : pictures;
+    // Prioritize pictures array if it has valid images. 
+    // If pictures is empty/undefined, fall back to src.
+    // Note: In our new backend logic, pictures contains all URLs including the one in src.
+    const imagesToDisplay = (pictures && pictures.length > 0) ? pictures : (src ? [src] : []);
 
     if (!imagesToDisplay || imagesToDisplay.length === 0) return null;
 
