@@ -245,3 +245,17 @@ export function useUpdateComment() {
   });
 }
 
+export function useDeletePost() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (postId: string) => {
+      const { data } = await api.delete(`/api/posts/${postId}`);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["posts"] });
+    },
+  });
+}
+

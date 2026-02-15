@@ -9,6 +9,15 @@ import {
   Button,
   TextField,
   IconButton,
+  Menu,
+  MenuItem,
+  ListItemIcon,
+  ListItemText,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
 } from "@mui/material";
 import {
   Favorite,
@@ -17,10 +26,12 @@ import {
   FavoriteBorder,
   Send,
   Edit,
+  MoreVert,
+  Delete,
 } from "@mui/icons-material";
 import { formatDistanceToNow } from "date-fns";
 import { useStyles } from "../../pages/Feed.styles";
-import { Post, useAddComment, useLikePost } from "@/hooks/usePosts";
+import { Post, useAddComment, useLikePost, useDeletePost } from "@/hooks/usePosts";
 import PostImages from "./PostImages";
 import PostWorkoutDetails from "./PostWorkoutDetails";
 import api from "@/services/axios";
@@ -52,9 +63,36 @@ const PostCard = ({ post, isProfile = false }: PostCardProps) => {
   const [commentContent, setCommentContent] = useState("");
   const [displayCount, setDisplayCount] = useState(2);
   const [editModalOpen, setEditModalOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   const addCommentMutation = useAddComment();
   const likePostMutation = useLikePost();
+  const deletePostMutation = useDeletePost();
+
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const openMenu = Boolean(anchorEl);
+
+  const handleMenuClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleDeleteClick = () => {
+    handleMenuClose();
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    setDeleteDialogOpen(false);
+    try {
+      await deletePostMutation.mutateAsync(post._id);
+    } catch (error) {
+      console.error("Failed to delete post:", error);
+    }
+  };
 
   const handleLikePost = useCallback(async () => {
     if (likePostMutation.isPending) return;
@@ -121,9 +159,29 @@ const PostCard = ({ post, isProfile = false }: PostCardProps) => {
         }
         action={
           isProfile && isAuthor ? (
-            <IconButton onClick={() => setEditModalOpen(true)} size="small">
-              <Edit />
-            </IconButton>
+            <>
+              <IconButton onClick={handleMenuClick} size="small">
+                <MoreVert />
+              </IconButton>
+              <Menu
+                anchorEl={anchorEl}
+                open={openMenu}
+                onClose={handleMenuClose}
+              >
+                <MenuItem onClick={() => { handleMenuClose(); setEditModalOpen(true); }}>
+                  <ListItemIcon>
+                    <Edit fontSize="small" />
+                  </ListItemIcon>
+                  <ListItemText>Edit</ListItemText>
+                </MenuItem>
+                <MenuItem onClick={handleDeleteClick}>
+                  <ListItemIcon>
+                    <Delete fontSize="small" />
+                  </ListItemIcon>
+                  <ListItemText>Delete</ListItemText>
+                </MenuItem>
+              </Menu>
+            </>
           ) : null
         }
         title={
@@ -256,6 +314,23 @@ const PostCard = ({ post, isProfile = false }: PostCardProps) => {
         onClose={() => setEditModalOpen(false)}
         post={post}
       />
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+      >
+        <DialogTitle>Delete Post</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to delete this post? This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
+          <Button onClick={handleConfirmDelete} color="error" autoFocus>
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Card>
   );
 };

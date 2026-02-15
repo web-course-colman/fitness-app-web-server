@@ -274,4 +274,98 @@ export class PostsService {
             { new: true }
         ).populate('author', '-password').populate('comments.author', '-password').exec();
     }
+
+    async delete(id: string, userId: string): Promise<void> {
+        const post = await this.postModel.findById(id);
+        if (!post) throw new NotFoundException(`Post ${id} not found`);
+
+        if (post.author.toString() !== userId) {
+            throw new NotFoundException(`You are not authorized to delete this post`);
+        }
+
+        await this.postModel.findByIdAndDelete(id);
+
+        this.eventEmitter.emit('workout.deleted', {
+            postId: id,
+            userId: userId,
+        });
+
+        await this.recalculateUserStreak(userId);
+    }
+
+    private async recalculateUserStreak(userId: string): Promise<void> {
+        const user = await this.userModel.findById(userId);
+        if (!user) return;
+
+        const posts = await this.postModel.find({ author: new Types.ObjectId(userId) })
+            .sort({ createdAt: -1 })
+            .select('createdAt')
+            .exec();
+
+        if (posts.length === 0) {
+            await this.userModel.findByIdAndUpdate(userId, {
+                streak: 0,
+                lastPostDate: null
+            });
+            return;
+        }
+
+        let currentStreak = 0;
+        let lastDate: Date | null = null;
+
+        // Use a Set to track unique dates (YYYY-MM-DD) to handle multiple posts per day
+        const uniqueDates = new Set<string>();
+        const sortedUniqueDates: Date[] = [];
+
+        posts.forEach(post => {
+            if (!post.createdAt) return;
+            const date = new Date(post.createdAt);
+            const dateStr = `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
+            if (!uniqueDates.has(dateStr)) {
+                uniqueDates.add(dateStr);
+                // Create date object for midnight of that day to compare properly
+                sortedUniqueDates.push(new Date(date.getFullYear(), date.getMonth(), date.getDate()));
+            }
+        });
+
+        if (sortedUniqueDates.length === 0) return;
+
+        // Check if the most recent post was today or yesterday to maintain active streak
+        const now = new Date();
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const yesterday = new Date(today);
+        yesterday.setDate(yesterday.getDate() - 1);
+
+        const lastPostDate = sortedUniqueDates[0];
+        // If last post was older than yesterday, streak is broken (effectively 0 for "current" streak context, 
+        // but we might want to calculate the longest chain ending at lastPostDate)
+        // However, usually "streak" implies current active streak. 
+        // If the user deleted the only post from today, and has a post yesterday, streak should be preserved?
+        // Let's count backwards from the most recent post.
+
+        currentStreak = 1;
+        for (let i = 0; i < sortedUniqueDates.length - 1; i++) {
+            const current = sortedUniqueDates[i];
+            const next = sortedUniqueDates[i + 1]; // This is actually the "previous" day in time since we sorted DESC
+
+            const diffTime = Math.abs(current.getTime() - next.getTime());
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            if (diffDays === 1) {
+                currentStreak++;
+            } else {
+                break;
+            }
+        }
+
+        // If the last post is not today or yesterday, the "active" streak is actually 0
+        // But normally we store the streak value of the last chain.
+        // Let's stick to the logic: Streak is the count of consecutive days ending at lastPostDate.
+        // We also update lastPostDate to the actual last post's date.
+
+        await this.userModel.findByIdAndUpdate(userId, {
+            streak: currentStreak,
+            lastPostDate: posts[0].createdAt // Keep the timestamp of the actual last post
+        });
+    }
 }

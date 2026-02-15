@@ -185,4 +185,14 @@ export class PostsController {
         }
         return post;
     }
+
+    @UseGuards(AuthGuard('jwt'))
+    @Delete(':id')
+    async delete(
+        @Param('id') id: string,
+        @Request() req,
+    ) {
+        await this.postsService.delete(id, req.user.userId);
+        return { message: 'Post deleted successfully' };
+    }
 }

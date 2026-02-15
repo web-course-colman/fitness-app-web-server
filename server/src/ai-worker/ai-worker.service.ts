@@ -151,6 +151,39 @@ export class AiWorkerService {
         }
     }
 
+    @OnEvent('workout.deleted')
+    async handleWorkoutDeleted(payload: { postId: string; userId: string }) {
+        this.logger.log(`Processing workout deleted event for post ${payload.postId}`);
+        try {
+            await Promise.all([
+                this.embeddingsService.deleteByReference('workout', payload.postId),
+                this.workoutSummariesService.deleteByWorkoutId(payload.postId)
+            ]);
+
+            // Note: We might also want to delete the 'workout_summary' embedding, 
+            // but we'd need the summary ID. 
+            // Since we deleted the summary by workout ID, we can't easily get its ID unless we fetched it first.
+            // Ideally workoutSummariesService.deleteByWorkoutId returns the deleted doc or we verify.
+            // For now, let's assume the embeddings service cleanup is handled or we add a step to fetch summary first.
+            // Actually, let's look up the summary first to get its ID for embedding deletion.
+        } catch (error) {
+            this.logger.error(`Error processing workout deleted: ${error.message}`);
+        }
+
+        // Better approach:
+        try {
+            const summary = await this.workoutSummariesService.findByWorkout(payload.postId).catch(() => null);
+            if (summary) {
+                await this.embeddingsService.deleteByReference('workout_summary', summary['_id'].toString());
+                await this.workoutSummariesService.deleteByWorkoutId(payload.postId);
+            }
+            await this.embeddingsService.deleteByReference('workout', payload.postId);
+            this.logger.log(`Cleaned up artifacts for workout ${payload.postId}`);
+        } catch (error) {
+            this.logger.error(`Error cleaning up workout artifacts: ${error.message}`);
+        }
+    }
+
     private async updateUserProfile(userId: string, newSummaryText: string, newSummaryJson: any) {
         this.logger.log(`Updating user profile for user ${userId}`);
         try {

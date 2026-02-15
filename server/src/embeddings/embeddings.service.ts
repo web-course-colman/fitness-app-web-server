@@ -53,4 +53,11 @@ export class EmbeddingsService {
             .slice(0, limit)
             .map(s => s.emb);
     }
+
+    async deleteByReference(refType: string, refId: string): Promise<any> {
+        return this.embeddingModel.deleteMany({
+            refType,
+            refId: new Types.ObjectId(refId)
+        }).exec();
+    }
 }
