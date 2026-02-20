@@ -112,6 +112,7 @@ const Layout = () => {
       "/feed": "Feed",
       "/workouts": "New Workout",
       "/ai-tips": "AI Coacher",
+      "/achievements": "Achievements",
       "/profile": "Profile",
       "/edit-profile": "Edit Profile",
       "/preferences": "Settings",
