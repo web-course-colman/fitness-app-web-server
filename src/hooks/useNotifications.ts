@@ -1,26 +1,68 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { useAuth } from '../components/Auth/AuthProvider';
+import {
+    ACHIEVEMENT_ICON_BY_NAME,
+    getAchievementShareCopy,
+} from '@/constants/achievements';
 
-export const useNotifications = () => {
+export interface AchievementUnlockNotification {
+    achievementName: string;
+    tier: string;
+    aiCoachMessage?: string;
+    icon: string;
+    shareTitle: string;
+    shareDescription: string;
+}
+
+export const useNotifications = (
+    onShareAchievement?: (achievement: AchievementUnlockNotification) => void,
+) => {
     const { loggedUser, isAuthenticated } = useAuth();
+    const [reconnectTick, setReconnectTick] = useState(0);
 
     useEffect(() => {
         if (!isAuthenticated || !loggedUser?.userId) return;
 
         const url = `/api/notifications/stream`;
-        const eventSource = new EventSource(url);
+        const eventSource = new EventSource(url, { withCredentials: true });
+        let reconnectTimer: number | undefined;
 
         eventSource.onmessage = (event) => {
             try {
-                const notification = JSON.parse(event.data);
+                if (!event.data) return;
+
+                const parsed = JSON.parse(event.data);
+                const notification =
+                    parsed?.type ? parsed : parsed?.data?.type ? parsed.data : null;
+
+                if (!notification?.type) return;
 
                 if (notification.type === 'achievement_unlocked') {
                     const { title, message, aiCoachMessage, achievementName, tier } = notification.data;
+                    const icon =
+                        ACHIEVEMENT_ICON_BY_NAME[achievementName] || '/placeholder.svg';
+                    const shareCopy = getAchievementShareCopy(achievementName, tier);
+                    const achievementPayload: AchievementUnlockNotification = {
+                        achievementName,
+                        tier,
+                        aiCoachMessage,
+                        icon,
+                        shareTitle: shareCopy.title,
+                        shareDescription: shareCopy.description,
+                    };
 
                     toast.success(title, {
                         description: message,
-                        duration: 8000,
+                        duration: 12000,
+                        action: {
+                            label: 'Share as Post',
+                            onClick: () => onShareAchievement?.(achievementPayload),
+                        },
+                        cancel: {
+                            label: 'Later',
+                            onClick: () => { },
+                        },
                     });
 
                     if (aiCoachMessage) {
@@ -50,14 +92,16 @@ export const useNotifications = () => {
             console.error('SSE connection error:', err);
             eventSource.close();
 
-            // Attempt to reconnect after 5 seconds
-            setTimeout(() => {
-                // This will trigger the effect again because of dependencies
+            reconnectTimer = window.setTimeout(() => {
+                setReconnectTick((prev) => prev + 1);
             }, 5000);
         };
 
         return () => {
+            if (reconnectTimer) {
+                window.clearTimeout(reconnectTimer);
+            }
             eventSource.close();
         };
-    }, [isAuthenticated, loggedUser?.userId]);
+    }, [isAuthenticated, loggedUser?.userId, reconnectTick, onShareAchievement]);
 };

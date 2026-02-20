@@ -33,7 +33,10 @@ import NavigationSidebar, {
 import { useAuth } from "./Auth/AuthProvider";
 import api from "../services/axios";
 import { debounce } from "lodash";
-import { useNotifications } from "../hooks/useNotifications";
+import {
+  AchievementUnlockNotification,
+  useNotifications,
+} from "../hooks/useNotifications";
 
 interface SearchUser {
   _id: string;
@@ -44,7 +47,6 @@ interface SearchUser {
 }
 
 const Layout = () => {
-  useNotifications();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(() => {
     const saved = localStorage.getItem("sidebar-collapsed");
@@ -116,6 +118,23 @@ const Layout = () => {
     };
     return titles[pathname] || "FitTrack";
   };
+
+  const handleShareAchievementAsPost = useCallback((selected: AchievementUnlockNotification) => {
+
+    navigate("/workouts", {
+      state: {
+        prefillAchievementShare: {
+          icon: selected.icon,
+          title: selected.shareTitle,
+          description: selected.shareDescription,
+          achievementName: selected.achievementName,
+          tier: selected.tier,
+        },
+      },
+    });
+  }, [navigate]);
+
+  useNotifications(handleShareAchievementAsPost);
 
   return (
     <Box
@@ -387,6 +406,7 @@ const Layout = () => {
           </Fab>
         </Zoom>
       )}
+
     </Box>
   );
 };
