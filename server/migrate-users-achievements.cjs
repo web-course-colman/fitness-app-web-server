@@ -16,13 +16,15 @@ async function migrate() {
             {
                 $or: [
                     { totalXp: { $exists: false } },
-                    { level: { $exists: false } }
+                    { level: { $exists: false } },
+                    { aiUsage: { $exists: false } }
                 ]
             },
             {
                 $set: {
                     totalXp: 0,
-                    level: 1
+                    level: 1,
+                    aiUsage: 0
                 }
             }
         );
@@ -54,7 +56,7 @@ async function migrate() {
                     { level: 'bronze', value: 3 },
                     { level: 'silver', value: 7 },
                     { level: 'gold', value: 30 },
-                    { level: 'diamond', value: 100 }
+                    { level: 'diamond', value: 50 }
                 ],
                 icon: '/workout-streak.png',
                 xpReward: 250,
@@ -66,10 +68,10 @@ async function migrate() {
                 category: 'consistency',
                 type: 'cumulative',
                 tiers: [
-                    { level: 'bronze', value: 10 },
-                    { level: 'silver', value: 50 },
-                    { level: 'gold', value: 100 },
-                    { level: 'diamond', value: 500 }
+                    { level: 'bronze', value: 70 },
+                    { level: 'silver', value: 150 },
+                    { level: 'gold', value: 320 },
+                    { level: 'diamond', value: 600 }
                 ],
                 icon: '/volume-king.png',
                 xpReward: 500,
@@ -84,7 +86,7 @@ async function migrate() {
                     { level: 'bronze', value: 5 },
                     { level: 'silver', value: 20 },
                     { level: 'gold', value: 50 },
-                    { level: 'diamond', value: 200 }
+                    { level: 'diamond', value: 70 }
                 ],
                 icon: '/pain-free.png',
                 xpReward: 300,
@@ -99,7 +101,7 @@ async function migrate() {
                     { level: 'bronze', value: 3 },
                     { level: 'silver', value: 10 },
                     { level: 'gold', value: 25 },
-                    { level: 'diamond', value: 100 }
+                    { level: 'diamond', value: 40 }
                 ],
                 icon: '/early-bird.png',
                 xpReward: 200,
