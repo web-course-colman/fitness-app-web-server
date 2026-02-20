@@ -41,7 +41,7 @@ async function migrate() {
                     { level: 'gold', value: 10 },
                     { level: 'diamond', value: 50 }
                 ],
-                icon: 'https://cdn-icons-png.flaticon.com/512/1611/1611179.png',
+                icon: '/first-steps.png',
                 xpReward: 100,
                 isActive: true
             },
@@ -56,7 +56,7 @@ async function migrate() {
                     { level: 'gold', value: 30 },
                     { level: 'diamond', value: 100 }
                 ],
-                icon: 'https://cdn-icons-png.flaticon.com/512/3208/3208630.png',
+                icon: '/workout-streak.png',
                 xpReward: 250,
                 isActive: true
             },
@@ -71,7 +71,7 @@ async function migrate() {
                     { level: 'gold', value: 100 },
                     { level: 'diamond', value: 500 }
                 ],
-                icon: 'https://cdn-icons-png.flaticon.com/512/2548/2548437.png',
+                icon: '/volume-king.png',
                 xpReward: 500,
                 isActive: true
             },
@@ -86,7 +86,7 @@ async function migrate() {
                     { level: 'gold', value: 50 },
                     { level: 'diamond', value: 200 }
                 ],
-                icon: 'https://cdn-icons-png.flaticon.com/512/2966/2966334.png',
+                icon: '/pain-free.png',
                 xpReward: 300,
                 isActive: true
             },
@@ -101,7 +101,7 @@ async function migrate() {
                     { level: 'gold', value: 25 },
                     { level: 'diamond', value: 100 }
                 ],
-                icon: 'https://cdn-icons-png.flaticon.com/512/3073/3073390.png',
+                icon: '/early-bird.png',
                 xpReward: 200,
                 isActive: true
             },
@@ -116,7 +116,7 @@ async function migrate() {
                     { level: 'gold', value: 40 },
                     { level: 'diamond', value: 100 }
                 ],
-                icon: 'https://cdn-icons-png.flaticon.com/512/2103/2103633.png',
+                icon: '/ai-focused.png',
                 xpReward: 150,
                 isActive: true
             },
@@ -131,7 +131,7 @@ async function migrate() {
                     { level: 'gold', value: 12 },
                     { level: 'diamond', value: 52 }
                 ],
-                icon: 'https://cdn-icons-png.flaticon.com/512/2618/2618245.png',
+                icon: '/consistency-master.png',
                 xpReward: 1000,
                 isActive: true
             }

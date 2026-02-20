@@ -1,5 +1,97 @@
 import { makeStyles } from "@/hooks/makeStyles";
 
+export const getTierColor = (tier: string) =>
+    tier === "diamond"
+        ? "#b9f2ff"
+        : tier === "gold"
+            ? "#ffd700"
+            : tier === "silver"
+                ? "#c0c0c0"
+                : tier === "bronze"
+                    ? "#cd7f32"
+                    : "#9ca3af";
+
+export const getAchievementAvatarSx = (baseStyle: any, tierColor: string, isLocked: boolean) => ({
+    ...baseStyle,
+    bgcolor: isLocked ? "#f3f4f6" : tierColor,
+    border: "none",
+    filter: isLocked ? "grayscale(100%)" : "none",
+    opacity: isLocked ? 0.5 : 1,
+    position: "relative",
+    overflow: "hidden",
+    animation: isLocked ? "none" : "sparkle 4s infinite ease-in-out",
+    boxShadow: isLocked ? "none" : `0 0 20px ${tierColor}44`,
+    "&::after": isLocked
+        ? {}
+        : {
+            content: '""',
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            background:
+                "linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)",
+            animation: "shimmer 3s infinite linear",
+        },
+    "& img": {
+        filter: isLocked
+            ? "grayscale(100%)"
+            : "drop-shadow(0 4px 6px rgba(0,0,0,0.4)) contrast(1.2)",
+        transform: "scale(0.97)",
+    },
+});
+
+export const getAchievementTrophyIconSx = (tier: string, isLocked: boolean) => ({
+    color: isLocked || tier === "bronze" ? "white" : "rgba(0,0,0,0.8)",
+    stroke: isLocked || tier === "bronze" ? "rgba(0,0,0,0.1)" : "rgba(255,255,255,0.2)",
+    strokeWidth: 0.8,
+    filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))",
+});
+
+export const getMinimizedAchievementAvatarSx = (baseStyle: any, tierColor: string, isLocked: boolean) => ({
+    ...baseStyle,
+    bgcolor: isLocked ? "#f3f4f6" : tierColor,
+    border: "none",
+    filter: isLocked ? "grayscale(100%)" : "none",
+    opacity: isLocked ? 0.4 : 1,
+    position: "relative",
+    overflow: "hidden",
+    animation: isLocked ? "none" : "sparkle 3s infinite ease-in-out",
+    boxShadow: isLocked ? "none" : `0 0 15px ${tierColor}66`,
+    "&::after": isLocked
+        ? {}
+        : {
+            content: '""',
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            animation: "shimmer 4s infinite linear",
+        },
+    "& img": {
+        filter: isLocked
+            ? "grayscale(100%)"
+            : "drop-shadow(0 2px 4px rgba(0,0,0,0.3)) contrast(1.1)",
+        objectFit: "contain",
+        padding: "0.1px",
+    },
+    "&:hover": {
+        transform: isLocked ? "none" : "scale(1.15)",
+        transition: "all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
+        boxShadow: isLocked ? "none" : `0 0 25px ${tierColor}`,
+    },
+});
+
+export const getMinimizedAchievementTrophyIconSx = (tier: string, isLocked: boolean) => ({
+    fontSize: "1.2rem",
+    color: isLocked || tier === "bronze" ? "white" : "rgba(0,0,0,0.8)",
+    stroke: isLocked || tier === "bronze" ? "rgba(0,0,0,0.2)" : "rgba(255,255,255,0.2)",
+    strokeWidth: 0.5,
+    filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.3))",
+});
+
 export const useStyles = makeStyles((theme) => ({
     container: {
         padding: theme.spacing(2),
@@ -37,6 +129,13 @@ export const useStyles = makeStyles((theme) => ({
     details: {
         display: "flex",
         flexDirection: "column",
+    },
+    userInfoMain: {
+        display: "flex",
+        flexDirection: { xs: "column", md: "row" },
+        alignItems: "center",
+        gap: 3,
+        width: { xs: "100%", md: "auto" },
     },
     userName: {
         fontWeight: "bold",
@@ -78,8 +177,8 @@ export const useStyles = makeStyles((theme) => ({
         justifyContent: { xs: "center", md: "flex-start" },
     },
     minimizedAchievementIcon: {
-        width: 32,
-        height: 32,
+        width: 40,
+        height: 40,
         bgcolor: theme.palette.primary.light,
         color: theme.palette.primary.contrastText,
     },
@@ -126,6 +225,9 @@ export const useStyles = makeStyles((theme) => ({
         flexDirection: "column",
         gap: theme.spacing(2),
     },
+    achievementsTitle: {
+        fontWeight: "bold",
+    },
     achievementItem: {
         padding: theme.spacing(2),
         display: "flex",
@@ -137,8 +239,8 @@ export const useStyles = makeStyles((theme) => ({
         },
     },
     achievementIcon: {
-        width: 48,
-        height: 48,
+        width: 60,
+        height: 60,
         bgcolor: "#e5e7eb",
         color: "#9ca3af",
     },
@@ -146,8 +248,17 @@ export const useStyles = makeStyles((theme) => ({
         display: "flex",
         flexDirection: "column",
     },
+    achievementInfoLocked: {
+        opacity: 0.6,
+    },
     achievementName: {
         fontWeight: "medium",
+    },
+    achievementTier: {
+        fontSize: "0.75rem",
+        fontWeight: "bold",
+        textTransform: "uppercase",
+        marginLeft: theme.spacing(1),
     },
     achievementDescription: {
         color: theme.palette.text.secondary,

@@ -6,6 +6,16 @@ import { Achievement, AchievementDocument } from './schemas/achievement.schema';
 import { UserAchievement, UserAchievementDocument } from './schemas/user-achievement.schema';
 import { User, UserDocument } from '../auth/schemas/user.schema';
 
+const ACHIEVEMENT_ICON_BY_NAME: Record<string, string> = {
+    'First Steps': '/first-steps.png',
+    'Workout Streak': '/workout-streak.png',
+    'Volume King': '/volume-king.png',
+    'Pain Free': '/pain-free.png',
+    'Early Bird': '/early-bird.png',
+    'AI Focused': '/ai-focused.png',
+    'Consistency Master': '/consistency-master.png',
+};
+
 @Injectable()
 export class AchievementsService {
     private readonly logger = new Logger(AchievementsService.name);
@@ -26,8 +36,16 @@ export class AchievementsService {
         });
     }
 
+    private resolveAchievementIcon(name: string, fallbackIcon: string): string {
+        return ACHIEVEMENT_ICON_BY_NAME[name] ?? fallbackIcon;
+    }
+
     async findAll(): Promise<Achievement[]> {
-        return this.achievementModel.find({ isActive: true }).exec();
+        const achievements = await this.achievementModel.find({ isActive: true }).exec();
+        achievements.forEach((achievement) => {
+            achievement.icon = this.resolveAchievementIcon(achievement.name, achievement.icon);
+        });
+        return achievements;
     }
 
     async findUserAchievements(userId: string): Promise<any[]> {
@@ -43,7 +61,10 @@ export class AchievementsService {
 
             return {
                 achievementId: achievement._id,
-                achievement: achievement.toObject(),
+                achievement: {
+                    ...achievement.toObject(),
+                    icon: this.resolveAchievementIcon(achievement.name, achievement.icon),
+                },
                 currentTier: userProgress ? userProgress.currentTier : 'none',
                 progressValue: userProgress ? userProgress.progressValue : 0,
                 unlockedAt: userProgress ? userProgress.unlockedAt : null,
