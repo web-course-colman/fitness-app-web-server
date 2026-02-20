@@ -1,16 +1,27 @@
-import { useState, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Box, Typography, TextField, Button, IconButton, Stepper, Step, StepLabel } from "@mui/material";
 import { ArrowBack, Send } from "@mui/icons-material";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useStyles } from "./WorkoutPost.styles";
 import { useCreatePost } from "../hooks/usePosts";
 import { useToast } from "../hooks/use-toast";
 import PhotoUploadArea from "@/components/Workouts/PhotoUploadArea";
 import WorkoutDetailsSection from "@/components/Workouts/WorkoutDetailsSection";
 
+interface AchievementShareState {
+  prefillAchievementShare?: {
+    icon: string;
+    title: string;
+    description: string;
+    achievementName: string;
+    tier: string;
+  };
+}
+
 const WorkoutPost = () => {
   const styles = useStyles();
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   const createPost = useCreatePost();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -26,6 +37,39 @@ const WorkoutPost = () => {
   const [personalGoals, setPersonalGoals] = useState("");
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+
+  useEffect(() => {
+    const state = location.state as AchievementShareState | null;
+    const prefill = state?.prefillAchievementShare;
+
+    if (!prefill) return;
+
+    setTitle(prefill.title);
+    setDescription(prefill.description);
+
+    const attachAchievementIcon = async () => {
+      try {
+        const response = await fetch(prefill.icon);
+        if (!response.ok) return;
+
+        const blob = await response.blob();
+        const file = new File(
+          [blob],
+          `${prefill.achievementName.toLowerCase().replace(/\s+/g, "-")}.png`,
+          { type: blob.type || "image/png" }
+        );
+
+        setSelectedFiles([file]);
+        setImagePreviews([prefill.icon]);
+      } catch (error) {
+        console.error("Failed to attach achievement icon as image:", error);
+      } finally {
+        navigate(location.pathname, { replace: true, state: null });
+      }
+    };
+
+    void attachAchievementIcon();
+  }, [location.pathname, location.state, navigate]);
 
   const handlePhotoClick = () => {
     fileInputRef.current?.click();

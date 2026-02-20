@@ -5,6 +5,7 @@ import { UserProfilesService } from '../user-profiles/user-profiles.service';
 import { OpenaiService } from '../openai/openai.service';
 import { UserProfile } from '../user-profiles/schemas/user-profile.schema';
 import { Observable } from 'rxjs';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 function buildProfileContext(profile: UserProfile): string {
     const parts: string[] = [];
@@ -39,10 +40,12 @@ export class CoachService {
         private readonly workoutSummariesService: WorkoutSummariesService,
         private readonly userProfilesService: UserProfilesService,
         private readonly openaiService: OpenaiService,
+        private readonly eventEmitter: EventEmitter2,
     ) { }
 
     async ask(userId: string, question: string) {
         this.logger.log(`Coach query from user ${userId}: "${question}"`);
+        this.eventEmitter.emit('coach.interaction', { userId, source: 'ask' });
 
         // 1. Smart Routing (Mocked)
         // If question is very simple, we could answer directly. 
@@ -116,6 +119,7 @@ export class CoachService {
             (async () => {
                 try {
                     this.logger.log(`Coach query (stream) from user ${userId}: "${question}"`);
+                    this.eventEmitter.emit('coach.interaction', { userId, source: 'ask_stream' });
 
                     // 1. Generate embedding
                     let queryVector;

@@ -29,6 +29,15 @@ export class User {
     @Prop({ required: false, default: 0 })
     streak?: number;
 
+    @Prop({ required: false, default: 0 })
+    totalXp?: number;
+
+    @Prop({ required: false, default: 1 })
+    level?: number;
+
+    @Prop({ required: false, default: 0 })
+    aiUsage?: number;
+
     @Prop({ required: false })
     lastPostDate?: Date;
 

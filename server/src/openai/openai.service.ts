@@ -132,4 +132,26 @@ export class OpenaiService {
 
         return stream;
     }
+
+    async generateAchievementMessage(userName: string, achievementName: string, tier: string, reason: string) {
+        this.logger.log(`Generating AI Achievement message for ${userName}...`);
+        const response = await this.openai.chat.completions.create({
+            model: 'gpt-4o-mini',
+            messages: [
+                {
+                    role: 'system',
+                    content: `You are a motivating fitness coach. Generate a personalized, short (1-2 sentences) message for a user who just unlocked an achievement.
+                    
+                    User Name: ${userName}
+                    Achievement: ${achievementName}
+                    Tier: ${tier}
+                    Reason for unlock: ${reason}
+                    
+                    Respond ONLY with the message text.`
+                }
+            ],
+        });
+
+        return response.choices[0].message.content?.trim();
+    }
 }

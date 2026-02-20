@@ -33,6 +33,10 @@ import NavigationSidebar, {
 import { useAuth } from "./Auth/AuthProvider";
 import api from "../services/axios";
 import { debounce } from "lodash";
+import {
+  AchievementUnlockNotification,
+  useNotifications,
+} from "../hooks/useNotifications";
 
 interface SearchUser {
   _id: string;
@@ -108,12 +112,30 @@ const Layout = () => {
       "/feed": "Feed",
       "/workouts": "New Workout",
       "/ai-tips": "AI Coacher",
+      "/achievements": "Achievements",
       "/profile": "Profile",
       "/edit-profile": "Edit Profile",
       "/preferences": "Settings",
     };
     return titles[pathname] || "FitTrack";
   };
+
+  const handleShareAchievementAsPost = useCallback((selected: AchievementUnlockNotification) => {
+
+    navigate("/workouts", {
+      state: {
+        prefillAchievementShare: {
+          icon: selected.icon,
+          title: selected.shareTitle,
+          description: selected.shareDescription,
+          achievementName: selected.achievementName,
+          tier: selected.tier,
+        },
+      },
+    });
+  }, [navigate]);
+
+  useNotifications(handleShareAchievementAsPost);
 
   return (
     <Box
@@ -385,6 +407,7 @@ const Layout = () => {
           </Fab>
         </Zoom>
       )}
+
     </Box>
   );
 };
