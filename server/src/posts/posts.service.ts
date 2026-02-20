@@ -29,6 +29,8 @@ export class PostsService {
         });
         const post = await createdPost.save();
 
+        await this.syncUserPostCount(userId);
+
         // Update user streak
         await this.updateUserStreak(userId);
 
@@ -340,6 +342,14 @@ export class PostsService {
         await this.recalculateUserStreak(userId);
     }
 
+    private async syncUserPostCount(userId: string): Promise<void> {
+        const postsCount = await this.postModel
+            .countDocuments({ author: new Types.ObjectId(userId) })
+            .exec();
+
+        await this.userModel.findByIdAndUpdate(userId, { postsCount }).exec();
+    }
+
     private async recalculateUserStreak(userId: string): Promise<void> {
         const user = await this.userModel.findById(userId);
         if (!user) return;
@@ -352,7 +362,8 @@ export class PostsService {
         if (posts.length === 0) {
             await this.userModel.findByIdAndUpdate(userId, {
                 streak: 0,
-                lastPostDate: null
+                lastPostDate: null,
+                postsCount: 0,
             });
             return;
         }
@@ -412,7 +423,8 @@ export class PostsService {
 
         await this.userModel.findByIdAndUpdate(userId, {
             streak: currentStreak,
-            lastPostDate: posts[0].createdAt // Keep the timestamp of the actual last post
+            lastPostDate: posts[0].createdAt, // Keep the timestamp of the actual last post
+            postsCount: posts.length,
         });
     }
 }

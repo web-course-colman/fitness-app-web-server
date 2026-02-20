@@ -40,6 +40,7 @@ describe('PostsService', () => {
         MockPostModel.findById.mockReturnValue(mockQuery);
         MockPostModel.findByIdAndUpdate.mockReturnValue(mockQuery);
         MockPostModel.findOneAndUpdate.mockReturnValue(mockQuery);
+        MockPostModel.countDocuments.mockReturnValue({ exec: jest.fn().mockResolvedValue(1) });
 
         const module: TestingModule = await Test.createTestingModule({
             providers: [
