@@ -35,8 +35,9 @@ export interface Post {
     personalGoals?: string;
   };
   pictures?: string[];
-  likes: { username: string; picture?: string }[];
+  likes?: { username: string; picture?: string }[];
   likeNumber: number;
+  commentsNumber?: number;
   comments?: Comment[];
   createdAt: string;
   updatedAt: string;
@@ -59,6 +60,17 @@ export function usePosts(authorId?: string, options?: { enabled?: boolean }) {
       return data;
     },
     enabled: options?.enabled ?? true,
+  });
+}
+
+export function usePost(postId: string) {
+  return useQuery<Post>({
+    queryKey: ["post", postId],
+    queryFn: async () => {
+      const { data } = await api.get(`/api/posts/${postId}`);
+      return data;
+    },
+    enabled: !!postId,
   });
 }
 
@@ -191,6 +203,70 @@ export function useLikePost() {
   return useMutation({
     mutationFn: async (postId: string) => {
       const { data } = await api.put('/api/posts/like', { _id: postId });
+      return data;
+    },
+    onSuccess: (_, postId) => {
+      queryClient.invalidateQueries({ queryKey: ["posts"] });
+      queryClient.invalidateQueries({ queryKey: ["post", postId] });
+    },
+  });
+}
+
+export function useUpdatePost() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ postId, formData }: { postId: string; formData: FormData }) => {
+      const { data } = await api.put(`/api/posts/${postId}`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      return data;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["posts"] });
+      queryClient.invalidateQueries({ queryKey: ["post", variables.postId] });
+    },
+  });
+}
+
+export function useDeleteComment() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ postId, commentId }: { postId: string; commentId: string }) => {
+      const { data } = await api.delete(`/api/posts/${postId}/comments/${commentId}`);
+      return data;
+    },
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["posts"] });
+      queryClient.invalidateQueries({ queryKey: ["post", variables.postId] });
+    },
+  });
+}
+
+export function useUpdateComment() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ postId, commentId, content }: { postId: string; commentId: string; content: string }) => {
+      const { data } = await api.put(`/api/posts/${postId}/comments/${commentId}`, { content });
+      return data;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["posts"] });
+      queryClient.invalidateQueries({ queryKey: ["post", variables.postId] });
+    },
+  });
+}
+
+export function useDeletePost() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (postId: string) => {
+      const { data } = await api.delete(`/api/posts/${postId}`);
       return data;
     },
     onSuccess: () => {

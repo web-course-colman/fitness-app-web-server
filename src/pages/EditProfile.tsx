@@ -1,6 +1,9 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
+import { useForm, Controller, type Resolver } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { editProfileSchema, EditProfileFormValues, EditProfileFormOutput } from "./EditProfile.schema";
 import {
   Box,
   Button,
@@ -21,40 +24,6 @@ import { toast } from "sonner";
 import { useStyles } from "./EditProfile.styles";
 import { useUserProfileForEdit } from "@/hooks/useAi";
 
-interface EditProfileState {
-  username: string;
-  email: string;
-  picture: string;
-  description: string;
-  sportType: string;
-}
-
-interface FitnessFormState {
-  height: string;
-  currentWeight: string;
-  age: string;
-  sex: string;
-  bodyFatPercentage: string;
-  vo2max: string;
-  oneRmSquat: string;
-  oneRmBench: string;
-  oneRmDeadlift: string;
-  workoutsPerWeek: string;
-}
-
-const emptyFitness: FitnessFormState = {
-  height: "",
-  currentWeight: "",
-  age: "",
-  sex: "",
-  bodyFatPercentage: "",
-  vo2max: "",
-  oneRmSquat: "",
-  oneRmBench: "",
-  oneRmDeadlift: "",
-  workoutsPerWeek: "",
-};
-
 const EditProfile = () => {
   const classes = useStyles();
   const { loggedUser, refreshProfile, isLoading: authLoading } = useAuth();
@@ -63,77 +32,70 @@ const EditProfile = () => {
   const { data: userProfile } = useUserProfileForEdit();
   const [isLoading, setIsLoading] = useState(false);
 
-  const [formData, setFormData] = useState<EditProfileState>({
-    username: "",
-    email: "",
-    picture: "",
-    description: "",
-    sportType: "Athlete",
-  });
-  const [fitnessData, setFitnessData] =
-    useState<FitnessFormState>(emptyFitness);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string>("");
 
+  const {
+    register,
+    handleSubmit,
+    control,
+    reset,
+    watch,
+    formState: { errors },
+  } = useForm<EditProfileFormValues, any, EditProfileFormOutput>({
+    resolver: zodResolver(editProfileSchema) as Resolver<EditProfileFormValues> as any,
+    defaultValues: {
+      username: "",
+      email: "",
+      picture: "",
+      description: "",
+      sportType: "Athlete",
+      height: "",
+      currentWeight: "",
+      age: "",
+      sex: "",
+      bodyFatPercentage: "",
+      vo2max: "",
+      oneRmSquat: "",
+      oneRmBench: "",
+      oneRmDeadlift: "",
+      workoutsPerWeek: "",
+    },
+  });
+
+  // Watch picture field for preview fallback
+  const pictureUrl = watch("picture");
+
   useEffect(() => {
     if (loggedUser) {
-      setFormData({
+      reset((formValues) => ({
+        ...formValues,
         username: loggedUser.username || "",
         email: loggedUser.email || "",
         picture: loggedUser.picture || "",
         description: loggedUser.description || "",
-        sportType: loggedUser.sportType || "",
-      });
+        sportType: loggedUser.sportType || "Athlete",
+      }));
     }
-  }, [loggedUser]);
+  }, [loggedUser, reset]);
 
   useEffect(() => {
     if (userProfile !== undefined && userProfile !== null) {
-      setFitnessData({
+      reset((formValues) => ({
+        ...formValues,
         height: userProfile.height != null ? String(userProfile.height) : "",
-        currentWeight:
-          userProfile.currentWeight != null
-            ? String(userProfile.currentWeight)
-            : "",
+        currentWeight: userProfile.currentWeight != null ? String(userProfile.currentWeight) : "",
         age: userProfile.age != null ? String(userProfile.age) : "",
         sex: userProfile.sex || "",
-        bodyFatPercentage:
-          userProfile.bodyFatPercentage != null
-            ? String(userProfile.bodyFatPercentage)
-            : "",
+        bodyFatPercentage: userProfile.bodyFatPercentage != null ? String(userProfile.bodyFatPercentage) : "",
         vo2max: userProfile.vo2max != null ? String(userProfile.vo2max) : "",
-        oneRmSquat:
-          userProfile.oneRm?.squat != null
-            ? String(userProfile.oneRm.squat)
-            : "",
-        oneRmBench:
-          userProfile.oneRm?.bench != null
-            ? String(userProfile.oneRm.bench)
-            : "",
-        oneRmDeadlift:
-          userProfile.oneRm?.deadlift != null
-            ? String(userProfile.oneRm.deadlift)
-            : "",
-        workoutsPerWeek:
-          userProfile.workoutsPerWeek != null
-            ? String(userProfile.workoutsPerWeek)
-            : "",
-      });
-    } else if (userProfile === null) {
-      setFitnessData(emptyFitness);
+        oneRmSquat: userProfile.oneRm?.squat != null ? String(userProfile.oneRm.squat) : "",
+        oneRmBench: userProfile.oneRm?.bench != null ? String(userProfile.oneRm.bench) : "",
+        oneRmDeadlift: userProfile.oneRm?.deadlift != null ? String(userProfile.oneRm.deadlift) : "",
+        workoutsPerWeek: userProfile.workoutsPerWeek != null ? String(userProfile.workoutsPerWeek) : "",
+      }));
     }
-  }, [userProfile]);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleFitnessChange =
-    (field: keyof FitnessFormState) =>
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      setFitnessData((prev) => ({ ...prev, [field]: e.target.value }));
-    };
+  }, [userProfile, reset]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -148,32 +110,20 @@ const EditProfile = () => {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    // Basic validation
-    if (!formData.username.trim() || formData.username.length < 3) {
-      toast.error("Username must be at least 3 characters");
-      return;
-    }
-    if (!formData.email.trim() || !formData.email.includes("@")) {
-      toast.error("Please enter a valid email");
-      return;
-    }
-
+  const onSubmit = async (data: EditProfileFormOutput) => {
     try {
       setIsLoading(true);
 
       // Create FormData for multipart upload
       const formDataToSend = new FormData();
-      formDataToSend.append("username", formData.username);
-      formDataToSend.append("email", formData.email);
-      formDataToSend.append("description", formData.description);
-      formDataToSend.append("sportType", formData.sportType);
+      formDataToSend.append("username", data.username);
+      formDataToSend.append("email", data.email);
+      formDataToSend.append("description", data.description || "");
+      formDataToSend.append("sportType", data.sportType || "");
 
       // Only append picture URL if no file is selected
-      if (!selectedFile && formData.picture) {
-        formDataToSend.append("picture", formData.picture);
+      if (!selectedFile && data.picture) {
+        formDataToSend.append("picture", data.picture);
       }
 
       // Append file if selected
@@ -181,7 +131,7 @@ const EditProfile = () => {
         formDataToSend.append("file", selectedFile);
       }
 
-      const response = await api.post("/api/auth/profile", formDataToSend, {
+      await api.post("/api/auth/profile", formDataToSend, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
@@ -189,51 +139,33 @@ const EditProfile = () => {
 
       // Upsert user-profiles (fitness & stats)
       if (loggedUser?.userId) {
-        const parseNum = (s: string) => {
-          const t = s.trim();
-          if (t === "") return undefined;
-          const n = Number(t);
-          return isNaN(n) ? undefined : n;
-        };
-        const oneRmSquat = parseNum(fitnessData.oneRmSquat);
-        const oneRmBench = parseNum(fitnessData.oneRmBench);
-        const oneRmDeadlift = parseNum(fitnessData.oneRmDeadlift);
+        // Determine if any 1RM values are set
+        const hasOneRm =
+          data.oneRmSquat != null ||
+          data.oneRmBench != null ||
+          data.oneRmDeadlift != null;
+
+        const oneRm = hasOneRm ? {
+          ...(data.oneRmSquat != null && { squat: Number(data.oneRmSquat) }),
+          ...(data.oneRmBench != null && { bench: Number(data.oneRmBench) }),
+          ...(data.oneRmDeadlift != null && { deadlift: Number(data.oneRmDeadlift) }),
+        } : undefined;
+
         await api.post("/api/user-profiles", {
           userId: loggedUser.userId,
           profileSummaryText: userProfile?.profileSummaryText ?? "",
           profileSummaryJson: userProfile?.profileSummaryJson ?? {},
           version: userProfile?.version ?? 1,
-          ...(parseNum(fitnessData.height) != null && {
-            height: parseNum(fitnessData.height),
-          }),
-          ...(parseNum(fitnessData.currentWeight) != null && {
-            currentWeight: parseNum(fitnessData.currentWeight),
-          }),
-          ...(parseNum(fitnessData.age) != null && {
-            age: parseNum(fitnessData.age),
-          }),
-          ...(fitnessData.sex && {
-            sex: fitnessData.sex as "male" | "female" | "other",
-          }),
-          ...(parseNum(fitnessData.bodyFatPercentage) != null && {
-            bodyFatPercentage: parseNum(fitnessData.bodyFatPercentage),
-          }),
-          ...(parseNum(fitnessData.vo2max) != null && {
-            vo2max: parseNum(fitnessData.vo2max),
-          }),
-          ...((oneRmSquat != null ||
-            oneRmBench != null ||
-            oneRmDeadlift != null) && {
-            oneRm: {
-              ...(oneRmSquat != null && { squat: oneRmSquat }),
-              ...(oneRmBench != null && { bench: oneRmBench }),
-              ...(oneRmDeadlift != null && { deadlift: oneRmDeadlift }),
-            },
-          }),
-          ...(parseNum(fitnessData.workoutsPerWeek) != null && {
-            workoutsPerWeek: parseNum(fitnessData.workoutsPerWeek),
-          }),
+          ...(data.height != null && { height: Number(data.height) }),
+          ...(data.currentWeight != null && { currentWeight: Number(data.currentWeight) }),
+          ...(data.age != null && { age: Number(data.age) }),
+          ...(data.sex && { sex: data.sex as "male" | "female" | "other" }),
+          ...(data.bodyFatPercentage != null && { bodyFatPercentage: Number(data.bodyFatPercentage) }),
+          ...(data.vo2max != null && { vo2max: Number(data.vo2max) }),
+          ...(oneRm && { oneRm }),
+          ...(data.workoutsPerWeek != null && { workoutsPerWeek: Number(data.workoutsPerWeek) }),
         });
+
         queryClient.invalidateQueries({
           queryKey: ["user-profile-edit", loggedUser.userId],
         });
@@ -242,7 +174,6 @@ const EditProfile = () => {
         });
       }
 
-      console.log("Profile update response:", response.data);
       toast.success("Profile updated successfully");
       await refreshProfile();
       navigate("/profile");
@@ -264,11 +195,11 @@ const EditProfile = () => {
 
   return (
     <Box sx={classes.container}>
-      <Box component="form" onSubmit={handleSubmit} sx={classes.form}>
+      <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={classes.form}>
         <Box sx={classes.contentRow}>
           <Box sx={classes.leftColumn}>
             <Avatar
-              src={previewUrl || formData.picture || loggedUser?.picture}
+              src={previewUrl || pictureUrl || loggedUser?.picture}
               sx={classes.avatar}
             >
               {loggedUser?.username?.charAt(0).toUpperCase()}
@@ -295,71 +226,61 @@ const EditProfile = () => {
           <Stack spacing={3} sx={classes.rightColumn}>
             <TextField
               label="Username"
-              name="username"
               fullWidth
-              value={formData.username}
-              onChange={handleChange}
+              {...register("username")}
               required
-              helperText={
-                formData.username.length < 3 ? "Minimum 3 characters" : ""
-              }
-              error={
-                formData.username.length > 0 && formData.username.length < 3
-              }
+              helperText={errors.username?.message}
+              error={!!errors.username}
             />
 
             <TextField
               label="Email"
-              name="email"
               fullWidth
-              value={formData.email}
-              onChange={handleChange}
+              {...register("email")}
               required
               type="email"
+              helperText={errors.email?.message}
+              error={!!errors.email}
             />
 
             <TextField
               label="Bio / Description"
-              name="description"
               fullWidth
               multiline
               rows={3}
-              value={formData.description}
-              onChange={handleChange}
+              {...register("description")}
               placeholder="Tell us about yourself..."
               helperText="Share your fitness journey, goals, or interests"
             />
 
             <FormControl fullWidth>
               <InputLabel id="sport-type-label">Sport Type</InputLabel>
-              <Select
-                labelId="sport-type-label"
-                id="sport-type"
+              <Controller
                 name="sportType"
-                value={formData.sportType}
-                label="Sport Type"
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    sportType: e.target.value,
-                  }))
-                }
-              >
-                <MenuItem value="Athlete">Athlete</MenuItem>
-                <MenuItem value="Runner">Runner</MenuItem>
-                <MenuItem value="Cyclist">Cyclist</MenuItem>
-                <MenuItem value="Swimmer">Swimmer</MenuItem>
-                <MenuItem value="Weightlifter">Weightlifter</MenuItem>
-                <MenuItem value="Bodybuilder">Bodybuilder</MenuItem>
-                <MenuItem value="CrossFit">CrossFit</MenuItem>
-                <MenuItem value="Yoga Practitioner">Yoga Practitioner</MenuItem>
-                <MenuItem value="Martial Artist">Martial Artist</MenuItem>
-                <MenuItem value="Climber">Climber</MenuItem>
-                <MenuItem value="Dancer">Dancer</MenuItem>
-                <MenuItem value="Fitness Enthusiast">
-                  Fitness Enthusiast
-                </MenuItem>
-              </Select>
+                control={control}
+                render={({ field }) => (
+                  <Select
+                    {...field}
+                    labelId="sport-type-label"
+                    label="Sport Type"
+                  >
+                    <MenuItem value="Athlete">Athlete</MenuItem>
+                    <MenuItem value="Runner">Runner</MenuItem>
+                    <MenuItem value="Cyclist">Cyclist</MenuItem>
+                    <MenuItem value="Swimmer">Swimmer</MenuItem>
+                    <MenuItem value="Weightlifter">Weightlifter</MenuItem>
+                    <MenuItem value="Bodybuilder">Bodybuilder</MenuItem>
+                    <MenuItem value="CrossFit">CrossFit</MenuItem>
+                    <MenuItem value="Yoga Practitioner">Yoga Practitioner</MenuItem>
+                    <MenuItem value="Martial Artist">Martial Artist</MenuItem>
+                    <MenuItem value="Climber">Climber</MenuItem>
+                    <MenuItem value="Dancer">Dancer</MenuItem>
+                    <MenuItem value="Fitness Enthusiast">
+                      Fitness Enthusiast
+                    </MenuItem>
+                  </Select>
+                )}
+              />
             </FormControl>
           </Stack>
         </Box>
@@ -374,16 +295,18 @@ const EditProfile = () => {
             type="number"
             inputProps={{ min: 50, max: 250, step: 1 }}
             fullWidth
-            value={fitnessData.height}
-            onChange={handleFitnessChange("height")}
+            {...register("height")}
+            error={!!errors.height}
+            helperText={errors.height?.message}
           />
           <TextField
             label="Current weight (kg)"
             type="number"
             inputProps={{ min: 20, max: 500, step: 0.1 }}
             fullWidth
-            value={fitnessData.currentWeight}
-            onChange={handleFitnessChange("currentWeight")}
+            {...register("currentWeight")}
+            error={!!errors.currentWeight}
+            helperText={errors.currentWeight?.message}
           />
         </Stack>
         <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
@@ -392,24 +315,24 @@ const EditProfile = () => {
             type="number"
             inputProps={{ min: 1, max: 120 }}
             fullWidth
-            value={fitnessData.age}
-            onChange={handleFitnessChange("age")}
+            {...register("age")}
+            error={!!errors.age}
+            helperText={errors.age?.message}
           />
           <FormControl fullWidth>
             <InputLabel id="sex-label">Sex</InputLabel>
-            <Select
-              labelId="sex-label"
-              label="Sex"
-              value={fitnessData.sex}
-              onChange={(e) =>
-                setFitnessData((prev) => ({ ...prev, sex: e.target.value }))
-              }
-            >
-              <MenuItem value="">—</MenuItem>
-              <MenuItem value="male">Male</MenuItem>
-              <MenuItem value="female">Female</MenuItem>
-              <MenuItem value="other">Other</MenuItem>
-            </Select>
+            <Controller
+              name="sex"
+              control={control}
+              render={({ field }) => (
+                <Select {...field} labelId="sex-label" label="Sex">
+                  <MenuItem value="">—</MenuItem>
+                  <MenuItem value="male">Male</MenuItem>
+                  <MenuItem value="female">Female</MenuItem>
+                  <MenuItem value="other">Other</MenuItem>
+                </Select>
+              )}
+            />
           </FormControl>
         </Stack>
         <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
@@ -418,16 +341,18 @@ const EditProfile = () => {
             type="number"
             inputProps={{ min: 0, max: 100, step: 0.1 }}
             fullWidth
-            value={fitnessData.bodyFatPercentage}
-            onChange={handleFitnessChange("bodyFatPercentage")}
+            {...register("bodyFatPercentage")}
+            error={!!errors.bodyFatPercentage}
+            helperText={errors.bodyFatPercentage?.message}
           />
           <TextField
             label="VO₂max (ml/kg/min)"
             type="number"
             inputProps={{ min: 10, max: 100, step: 0.1 }}
             fullWidth
-            value={fitnessData.vo2max}
-            onChange={handleFitnessChange("vo2max")}
+            {...register("vo2max")}
+            error={!!errors.vo2max}
+            helperText={errors.vo2max?.message}
           />
         </Stack>
         <Typography variant="subtitle2" color="text.secondary" sx={{ mt: 1 }}>
@@ -439,24 +364,21 @@ const EditProfile = () => {
             type="number"
             inputProps={{ min: 0, step: 0.5 }}
             fullWidth
-            value={fitnessData.oneRmSquat}
-            onChange={handleFitnessChange("oneRmSquat")}
+            {...register("oneRmSquat")}
           />
           <TextField
             label="Bench"
             type="number"
             inputProps={{ min: 0, step: 0.5 }}
             fullWidth
-            value={fitnessData.oneRmBench}
-            onChange={handleFitnessChange("oneRmBench")}
+            {...register("oneRmBench")}
           />
           <TextField
             label="Deadlift"
             type="number"
             inputProps={{ min: 0, step: 0.5 }}
             fullWidth
-            value={fitnessData.oneRmDeadlift}
-            onChange={handleFitnessChange("oneRmDeadlift")}
+            {...register("oneRmDeadlift")}
           />
         </Stack>
         <TextField
@@ -464,8 +386,9 @@ const EditProfile = () => {
           type="number"
           inputProps={{ min: 0, max: 14 }}
           fullWidth
-          value={fitnessData.workoutsPerWeek}
-          onChange={handleFitnessChange("workoutsPerWeek")}
+          {...register("workoutsPerWeek")}
+          error={!!errors.workoutsPerWeek}
+          helperText={errors.workoutsPerWeek?.message}
         />
         <Box sx={classes.actions}>
           <Button

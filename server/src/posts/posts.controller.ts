@@ -1,5 +1,6 @@
-import { Controller, Get, Post, Body, UseGuards, Request, Param, NotFoundException, Put, Query, UseInterceptors, UploadedFile } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { Controller, Get, Post, Body, UseGuards, Request, Param, NotFoundException, Put, Query, UseInterceptors, UploadedFiles, Delete } from '@nestjs/common';
+import { OptionalJwtAuthGuard } from '../auth/optional-jwt-auth.guard';
+import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { PostsService } from './posts.service';
@@ -13,7 +14,7 @@ export class PostsController {
 
     @UseGuards(AuthGuard('jwt'))
     @Post()
-    @UseInterceptors(FileInterceptor('file', {
+    @UseInterceptors(FilesInterceptor('files', 10, { // Allow up to 10 files
         storage: diskStorage({
             destination: './uploads/posts',
             filename: (req, file, cb) => {
@@ -31,11 +32,14 @@ export class PostsController {
             fileSize: 5 * 1024 * 1024, // 5MB limit
         },
     }))
-    async create(@Body() createPostDto: CreatePostDto, @Request() req, @UploadedFile() file: any) {
-        if (file) {
+    async create(@Body() createPostDto: CreatePostDto, @Request() req, @UploadedFiles() files: Array<any>) {
+        if (files && files.length > 0) {
             const port = process.env.PORT || '3002';
             const serverUrl = process.env.SERVER_URL || `http://localhost:${port}`;
-            createPostDto.src = `${serverUrl}/uploads/posts/${file.filename}`;
+            const fileUrls = files.map(file => `${serverUrl}/uploads/posts/${file.filename}`);
+
+            createPostDto.src = fileUrls[0];
+            createPostDto.pictures = fileUrls;
         }
 
         // Handle workoutDetails if it comes as a string (multipart/form-data often sends objects as strings)
@@ -50,38 +54,112 @@ export class PostsController {
         return this.postsService.create(createPostDto, req.user.userId);
     }
 
+    @UseGuards(AuthGuard('jwt'))
+    @Put('like')
+    async likeOrUnlikePost(@Body('_id') postId: string, @Request() req) {
+        return await this.postsService.likePost(postId, req.user.userId);
+    }
+
+    @UseGuards(AuthGuard('jwt'))
+    @Put(':id')
+    @UseInterceptors(FilesInterceptor('files', 10, {
+        storage: diskStorage({
+            destination: './uploads/posts',
+            filename: (req, file, cb) => {
+                const randomName = Array(32).fill(null).map(() => (Math.round(Math.random() * 16)).toString(16)).join('');
+                cb(null, `${randomName}${extname(file.originalname)}`);
+            },
+        }),
+        fileFilter: (req, file, cb) => {
+            if (!file.originalname.match(/\.(jpg|jpeg|png|gif|webp)$/)) {
+                return cb(new Error('Only image files are allowed!'), false);
+            }
+            cb(null, true);
+        },
+        limits: {
+            fileSize: 5 * 1024 * 1024, // 5MB limit
+        },
+    }))
+    async update(@Param('id') id: string, @Body() updatePostDto: any, @Request() req, @UploadedFiles() files: Array<any>) {
+        let newSrc = updatePostDto.src;
+        let newPictures = updatePostDto.pictures || [];
+
+        // Handle existingPictures from form-data (it comes as stringified JSON)
+        let existingPictures: string[] = [];
+        if (updatePostDto.existingPictures) {
+            try {
+                existingPictures = typeof updatePostDto.existingPictures === 'string'
+                    ? JSON.parse(updatePostDto.existingPictures)
+                    : updatePostDto.existingPictures;
+            } catch (e) {
+                existingPictures = [];
+            }
+        }
+
+        if (files && files.length > 0) {
+            const port = process.env.PORT || '3002';
+            const serverUrl = process.env.SERVER_URL || `http://localhost:${port}`;
+            const newFileUrls = files.map(file => `${serverUrl}/uploads/posts/${file.filename}`);
+
+            // Append new files to existing ones
+            newPictures = [...existingPictures, ...newFileUrls];
+            newSrc = newPictures[0];
+        } else {
+            // No new files, just use existing
+            newPictures = existingPictures;
+            newSrc = newPictures.length > 0 ? newPictures[0] : null;
+        }
+
+        updatePostDto.src = newSrc;
+        updatePostDto.pictures = newPictures;
+
+        if (typeof updatePostDto.workoutDetails === 'string') {
+            try {
+                updatePostDto.workoutDetails = JSON.parse(updatePostDto.workoutDetails);
+            } catch (e) {
+            }
+        }
+
+        const updatedPost = await this.postsService.update(id, updatePostDto, req.user.userId);
+        if (!updatedPost) {
+            throw new NotFoundException(`Post with ID ${id} not found or you are not authorized to update it`);
+        }
+        return updatedPost;
+    }
+
+    @UseGuards(OptionalJwtAuthGuard)
     @Get()
     async findAll(
         @Query('page') page?: string,
         @Query('limit') limit?: string,
+        @Request() req?,
     ) {
-        // Backwards compatible:
-        // - If no pagination params are provided, return the full list (old behavior)
-        // - If page and/or limit are provided, return a paginated response
+        const userId = req?.user?.userId;
         const hasPaginationParams = page !== undefined || limit !== undefined;
 
         if (!hasPaginationParams) {
-            return this.postsService.findAll();
+            return this.postsService.findAll(userId);
         }
 
-        return this.postsService.findAllPaginated({ page, limit });
+        return this.postsService.findAllPaginated({ page, limit }, userId);
     }
 
+    @UseGuards(OptionalJwtAuthGuard)
     @Get('author/:userId')
     async findByAuthor(
-        @Param('userId') userId: string,
+        @Param('userId') authorId: string,
         @Query('page') page?: string,
         @Query('limit') limit?: string,
+        @Request() req?,
     ) {
-        // Backwards compatible (same pattern as GET /posts):
-        // If pagination params are omitted -> return the full list
+        const viewersId = req?.user?.userId;
         const hasPaginationParams = page !== undefined || limit !== undefined;
 
         if (!hasPaginationParams) {
-            return this.postsService.findByAuthor(userId);
+            return this.postsService.findByAuthor(authorId, viewersId);
         }
 
-        return this.postsService.findByAuthorPaginated(userId, { page, limit });
+        return this.postsService.findByAuthorPaginated(authorId, { page, limit }, viewersId);
     }
 
     @Get(':id')
@@ -93,15 +171,7 @@ export class PostsController {
         return post;
     }
 
-    @UseGuards(AuthGuard('jwt'))
-    @Put('like')
-    async likeOrUnlikePost(@Body('_id') postId: string, @Request() req) {
-        try {
-            return await this.postsService.likePost(postId, req.user.userId);
-        } catch (err) {
-            return err;
-        }
-    }
+
 
     @UseGuards(AuthGuard('jwt'))
     @Post(':id/comments')
@@ -115,5 +185,43 @@ export class PostsController {
             throw new NotFoundException(`Post with ID ${id} not found`);
         }
         return post;
+    }
+    @UseGuards(AuthGuard('jwt'))
+    @Delete(':id/comments/:commentId')
+    async deleteComment(
+        @Param('id') id: string,
+        @Param('commentId') commentId: string,
+        @Request() req,
+    ) {
+        const post = await this.postsService.deleteComment(id, commentId, req.user.userId);
+        if (!post) {
+            throw new NotFoundException(`Post with ID ${id} not found`);
+        }
+        return post;
+    }
+
+    @UseGuards(AuthGuard('jwt'))
+    @Put(':id/comments/:commentId')
+    async updateComment(
+        @Param('id') id: string,
+        @Param('commentId') commentId: string,
+        @Body() body: { content: string },
+        @Request() req,
+    ) {
+        const post = await this.postsService.updateComment(id, commentId, req.user.userId, body.content);
+        if (!post) {
+            throw new NotFoundException(`Post with ID ${id} not found`);
+        }
+        return post;
+    }
+
+    @UseGuards(AuthGuard('jwt'))
+    @Delete(':id')
+    async delete(
+        @Param('id') id: string,
+        @Request() req,
+    ) {
+        await this.postsService.delete(id, req.user.userId);
+        return { message: 'Post deleted successfully' };
     }
 }

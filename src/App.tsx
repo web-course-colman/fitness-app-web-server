@@ -19,6 +19,7 @@ import Preferences from "@/pages/Preferences";
 import NotFound from "@/pages/NotFound";
 
 import WorkoutPost from "@/pages/WorkoutPost";
+import PostPage from "@/pages/PostPage";
 import AiTips from "@/pages/AiTips";
 import AuthCallback from "@/pages/AuthCallback";
 
@@ -42,6 +43,7 @@ const App = () => (
                                     <Route path="/profile" element={<Profile />} />
                                     <Route path="/edit-profile" element={<EditProfile />} />
                                     <Route path="/workouts" element={<WorkoutPost />} />
+                                    <Route path="/posts/:postId" element={<PostPage />} />
                                     <Route path="/ai-tips" element={<AiTips />} />
                                     <Route path="/preferences" element={<Preferences />} />
                                 </Route>

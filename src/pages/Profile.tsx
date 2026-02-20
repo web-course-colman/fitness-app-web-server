@@ -114,7 +114,7 @@ const Profile = () => {
                     ) : (
                         <>
                             {posts.map((post) => (
-                                <PostCard key={post._id} post={post} />
+                                <PostCard key={post._id} post={post} isProfile={true} />
                             ))}
                             {posts.length === 0 && (
                                 <Typography sx={{ color: 'text.secondary', textAlign: 'center', py: 4 }}>

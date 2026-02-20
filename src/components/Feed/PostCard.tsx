@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Card,
   CardContent,
@@ -9,29 +10,44 @@ import {
   Button,
   TextField,
   IconButton,
+  Menu,
+  MenuItem,
+  ListItemIcon,
+  ListItemText,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
 } from "@mui/material";
 import {
   Favorite,
   ChatBubbleOutline,
-  Share as ShareIcon,
   FavoriteBorder,
   Send,
+  Edit,
+  MoreVert,
+  Delete,
 } from "@mui/icons-material";
 import { formatDistanceToNow } from "date-fns";
 import { useStyles } from "../../pages/Feed.styles";
-import { Post, useAddComment, useLikePost } from "@/hooks/usePosts";
+import { Post, useAddComment, useLikePost, useDeletePost } from "@/hooks/usePosts";
 import PostImages from "./PostImages";
 import PostWorkoutDetails from "./PostWorkoutDetails";
 import api from "@/services/axios";
 import { useAuth } from "../Auth/AuthProvider";
 import CommentItem from "./CommentItem";
+import EditPostModal from "./EditPostModal";
 
 interface PostCardProps {
   post: Post;
+  isProfile?: boolean;
+  isDetailsPage?: boolean;
 }
 
-const PostCard = ({ post }: PostCardProps) => {
+const PostCard = ({ post, isProfile = false, isDetailsPage = false }: PostCardProps) => {
   const classes = useStyles();
+  const navigate = useNavigate();
   const { loggedUser } = useAuth();
   const [postLikes, setPostLikes] = useState<number>(post.likeNumber);
   const [isLikedByUser, setIsLiked] = useState<boolean>(
@@ -47,9 +63,39 @@ const PostCard = ({ post }: PostCardProps) => {
 
   const [showComments, setShowComments] = useState(true);
   const [commentContent, setCommentContent] = useState("");
-  const [displayCount, setDisplayCount] = useState(2);
+  // On details page, show all comments (or a large number) by default
+  const [displayCount, setDisplayCount] = useState(isDetailsPage ? 100 : 2);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+
   const addCommentMutation = useAddComment();
   const likePostMutation = useLikePost();
+  const deletePostMutation = useDeletePost();
+
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const openMenu = Boolean(anchorEl);
+
+  const handleMenuClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleDeleteClick = () => {
+    handleMenuClose();
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    setDeleteDialogOpen(false);
+    try {
+      await deletePostMutation.mutateAsync(post._id);
+    } catch (error) {
+      console.error("Failed to delete post:", error);
+    }
+  };
 
   const handleLikePost = useCallback(async () => {
     if (likePostMutation.isPending) return;
@@ -90,12 +136,18 @@ const PostCard = ({ post }: PostCardProps) => {
   };
 
   const handleLoadMore = () => {
-    setDisplayCount((prev) => prev + 5);
+    if (!isDetailsPage) {
+      navigate(`/posts/${post._id}`);
+    } else {
+      setDisplayCount((prev) => prev + 5);
+    }
   };
 
   const comments = post.comments || [];
   const visibleComments = comments.slice(0, displayCount);
   const hasMoreComments = comments.length > displayCount;
+
+  const isAuthor = loggedUser?.userId === post.author._id;
 
   return (
     <Card elevation={1} sx={classes.card}>
@@ -111,6 +163,33 @@ const PostCard = ({ post }: PostCardProps) => {
               post.author ? `${post.author.name} ${post.author.lastName}` : null
             )}
           </Avatar>
+        }
+        action={
+          isProfile && isAuthor ? (
+            <>
+              <IconButton onClick={handleMenuClick} size="small">
+                <MoreVert />
+              </IconButton>
+              <Menu
+                anchorEl={anchorEl}
+                open={openMenu}
+                onClose={handleMenuClose}
+              >
+                <MenuItem onClick={() => { handleMenuClose(); setEditModalOpen(true); }}>
+                  <ListItemIcon>
+                    <Edit fontSize="small" />
+                  </ListItemIcon>
+                  <ListItemText>Edit</ListItemText>
+                </MenuItem>
+                <MenuItem onClick={handleDeleteClick}>
+                  <ListItemIcon>
+                    <Delete fontSize="small" />
+                  </ListItemIcon>
+                  <ListItemText>Delete</ListItemText>
+                </MenuItem>
+              </Menu>
+            </>
+          ) : null
         }
         title={
           <Typography variant="subtitle1" sx={classes.authorName}>
@@ -161,26 +240,27 @@ const PostCard = ({ post }: PostCardProps) => {
                 size="small"
                 startIcon={<ChatBubbleOutline />}
                 sx={classes.actionButton}
-                onClick={() => setShowComments(!showComments)}
+                onClick={() => {
+                  if (isDetailsPage) {
+                    setShowComments(!showComments);
+                  } else {
+                    navigate(`/posts/${post._id}`);
+                  }
+                }}
               >
-                {comments.length}
+                {post.commentsNumber ?? comments.length}
               </Button>
-              <Button
-                variant="text"
-                size="small"
-                startIcon={<ShareIcon />}
-                sx={classes.actionButton}
-              />
             </Box>
           </Box>
 
-          {showComments && (
+          {isDetailsPage && showComments && (
             <Box sx={classes.commentsSection}>
               {visibleComments.map((comment) => (
                 <CommentItem
                   key={comment._id}
                   comment={comment}
                   classes={classes}
+                  postId={post._id}
                 />
               ))}
 
@@ -236,6 +316,28 @@ const PostCard = ({ post }: PostCardProps) => {
           )}
         </Box>
       </CardContent>
+      <EditPostModal
+        open={editModalOpen}
+        onClose={() => setEditModalOpen(false)}
+        post={post}
+      />
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+      >
+        <DialogTitle>Delete Post</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to delete this post? This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
+          <Button onClick={handleConfirmDelete} color="error" autoFocus>
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Card>
   );
 };

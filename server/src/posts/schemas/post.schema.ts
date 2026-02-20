@@ -66,6 +66,9 @@ export class Post {
     @Prop({ type: Number, required: false, default: 0 })
     likeNumber: number;
 
+    @Prop({ type: Number, required: false, default: 0 })
+    commentsNumber: number;
+
     @Prop({ type: WorkoutDetailsSchema, required: false })
     workoutDetails?: WorkoutDetails;
 
@@ -74,6 +77,9 @@ export class Post {
 
     @Prop({ type: [CommentSchema], default: [] })
     comments: Comment[];
+
+    createdAt?: Date;
+    updatedAt?: Date;
 }
 
 export const PostSchema = SchemaFactory.createForClass(Post);
