@@ -10,11 +10,13 @@ import * as bcrypt from 'bcrypt';
 import { User, UserDocument } from './schemas/user.schema';
 import { LoginDto } from './dto/login.dto';
 import { SigninDto } from './dto/signin.dto';
+import { Post, PostDocument } from '../posts/schemas/post.schema';
 
 @Injectable()
 export class AuthService {
     constructor(
         @InjectModel(User.name) private userModel: Model<UserDocument>,
+        @InjectModel(Post.name) private postModel: Model<PostDocument>,
         private jwtService: JwtService,
     ) { }
 
@@ -201,7 +203,16 @@ export class AuthService {
     }
 
     async getUserById(userId: string) {
-        return this.userModel.findById(userId).exec();
+        const user = await this.userModel.findById(userId).exec();
+        if (!user) return null;
+
+        if (user.postsCount == null) {
+            const postsCount = await this.postModel.countDocuments({ author: user._id }).exec();
+            user.postsCount = postsCount;
+            await user.save();
+        }
+
+        return user;
     }
 
     async searchUsers(query: string) {

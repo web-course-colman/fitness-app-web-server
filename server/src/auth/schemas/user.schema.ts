@@ -30,6 +30,9 @@ export class User {
     streak?: number;
 
     @Prop({ required: false, default: 0 })
+    postsCount?: number;
+
+    @Prop({ required: false, default: 0 })
     totalXp?: number;
 
     @Prop({ required: false, default: 1 })

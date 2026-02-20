@@ -156,14 +156,16 @@ export function useAuthorPostsInfinite(authorId?: string, params?: { limit?: num
 
 export function useCreatePost() {
   const queryClient = useQueryClient();
+  const { refreshProfile } = useAuth();
 
   return useMutation({
     mutationFn: async (post: Partial<Post>) => {
       const { data } = await api.post("/api/posts", post);
       return data;
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       queryClient.invalidateQueries({ queryKey: ["posts"] });
+      await refreshProfile();
     },
   });
 }
@@ -263,14 +265,16 @@ export function useUpdateComment() {
 
 export function useDeletePost() {
   const queryClient = useQueryClient();
+  const { refreshProfile } = useAuth();
 
   return useMutation({
     mutationFn: async (postId: string) => {
       const { data } = await api.delete(`/api/posts/${postId}`);
       return data;
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       queryClient.invalidateQueries({ queryKey: ["posts"] });
+      await refreshProfile();
     },
   });
 }

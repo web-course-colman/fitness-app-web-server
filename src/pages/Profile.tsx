@@ -31,8 +31,6 @@ const Profile = () => {
         return infinite?.pages.flatMap((p) => p.items) ?? [];
     }, [infinite]);
 
-    const totalUserPosts = infinite?.pages?.[0]?.total;
-
     const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
     useEffect(() => {
@@ -73,7 +71,7 @@ const Profile = () => {
         { label: "Streak", value: `${loggedUser?.streak || 0} days`, icon: <FireIcon /> },
         {
             label: "Workouts",
-            value: isLoading ? "..." : (totalUserPosts ?? posts.length ?? 0),
+            value: loggedUser?.postsCount ?? 0,
             icon: <WorkoutIcon />
         },
         {

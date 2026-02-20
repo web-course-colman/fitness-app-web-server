@@ -25,6 +25,7 @@ export type User = {
     email?: string;
     description?: string;
     streak?: number;
+    postsCount?: number;
     sportType?: string;
     preferences: {
         pushNotifications: boolean;
@@ -61,6 +62,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 email: data.email,
                 description: data.description,
                 streak: data.streak,
+                postsCount: data.postsCount ?? 0,
                 sportType: data.sportType,
                 preferences: data.preferences,
                 loggedInAt: Date.now(),

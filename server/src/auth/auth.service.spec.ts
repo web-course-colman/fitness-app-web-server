@@ -5,6 +5,7 @@ import { JwtService } from '@nestjs/jwt';
 import { User } from './schemas/user.schema';
 import { UnauthorizedException, ConflictException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
+import { Post } from '../posts/schemas/post.schema';
 
 // Mock bcrypt globally
 jest.mock('bcrypt', () => ({
@@ -54,6 +55,12 @@ describe('AuthService', () => {
                 {
                     provide: getModelToken(User.name),
                     useValue: MockUserModel,
+                },
+                {
+                    provide: getModelToken(Post.name),
+                    useValue: {
+                        countDocuments: jest.fn(),
+                    },
                 },
                 {
                     provide: JwtService,
