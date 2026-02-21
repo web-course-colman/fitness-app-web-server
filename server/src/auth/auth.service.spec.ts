@@ -6,6 +6,8 @@ import { User } from './schemas/user.schema';
 import { UnauthorizedException, ConflictException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { Post } from '../posts/schemas/post.schema';
+import { AchievementsService } from '../achievements/achievements.service';
+import { UserProfilesService } from '../user-profiles/user-profiles.service';
 
 // Mock bcrypt globally
 jest.mock('bcrypt', () => ({
@@ -48,6 +50,15 @@ describe('AuthService', () => {
         decode: jest.fn(),
     };
 
+    const mockAchievementsService = {
+        findUserAchievements: jest.fn(),
+        getXpAndLevel: jest.fn(),
+    };
+
+    const mockUserProfilesService = {
+        findByUser: jest.fn(),
+    };
+
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
             providers: [
@@ -65,6 +76,14 @@ describe('AuthService', () => {
                 {
                     provide: JwtService,
                     useValue: mockJwtService,
+                },
+                {
+                    provide: AchievementsService,
+                    useValue: mockAchievementsService,
+                },
+                {
+                    provide: UserProfilesService,
+                    useValue: mockUserProfilesService,
                 },
             ],
         }).compile();

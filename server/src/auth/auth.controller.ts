@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Body, HttpCode, HttpStatus, Res, UseGuards, Req, UnauthorizedException, UseInterceptors, UploadedFile } from '@nestjs/common';
+import { Controller, Post, Get, Body, HttpCode, HttpStatus, Res, UseGuards, Req, UnauthorizedException, UseInterceptors, UploadedFile, Param } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
@@ -73,6 +73,12 @@ export class AuthController {
     async getProfile(@Req() req: any) {
         const user = await this.authService.getUserById(req.user.userId);
         return user;
+    }
+
+    @Get('profile/:userId')
+    @UseGuards(AuthGuard('jwt'))
+    async getPublicProfile(@Param('userId') userId: string) {
+        return this.authService.getPublicUserProfile(userId);
     }
 
     @Post('profile')

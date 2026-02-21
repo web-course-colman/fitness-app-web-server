@@ -9,12 +9,16 @@ import { JwtStrategy } from './jwt.strategy';
 import { GoogleStrategy } from './google.strategy';
 import { User, UserSchema } from './schemas/user.schema';
 import { Post, PostSchema } from '../posts/schemas/post.schema';
+import { AchievementsModule } from '../achievements/achievements.module';
+import { UserProfilesModule } from '../user-profiles/user-profiles.module';
 
 @Module({
     imports: [
         PassportModule,
         MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
         MongooseModule.forFeature([{ name: Post.name, schema: PostSchema }]),
+        AchievementsModule,
+        UserProfilesModule,
         JwtModule.registerAsync({
             imports: [ConfigModule],
             useFactory: async (configService: ConfigService) => ({
