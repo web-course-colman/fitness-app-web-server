@@ -1,7 +1,7 @@
 import {
-    Injectable,
-    UnauthorizedException,
-    ConflictException,
+  Injectable,
+  UnauthorizedException,
+  ConflictException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -14,217 +14,247 @@ import { Post, PostDocument } from '../posts/schemas/post.schema';
 
 @Injectable()
 export class AuthService {
-    constructor(
-        @InjectModel(User.name) private userModel: Model<UserDocument>,
-        @InjectModel(Post.name) private postModel: Model<PostDocument>,
-        private jwtService: JwtService,
-    ) { }
+  constructor(
+    @InjectModel(User.name) private userModel: Model<UserDocument>,
+    @InjectModel(Post.name) private postModel: Model<PostDocument>,
+    private jwtService: JwtService,
+  ) {}
 
-    async signin(signinDto: SigninDto): Promise<{ message: string }> {
-        const { username, password, name, lastName, email } = signinDto;
+  async signin(signinDto: SigninDto): Promise<{ message: string }> {
+    const { username, password, name, lastName, email } = signinDto;
 
-        // Check if user already exists
-        const existingUser = await this.userModel.findOne({ username }).exec();
-        if (existingUser) {
-            throw new ConflictException('Username already exists');
-        }
-
-        // Hash password
-        const saltRounds = 10;
-        const hashedPassword = await bcrypt.hash(password, saltRounds);
-
-        // Create new user
-        const newUser = new this.userModel({
-            username,
-            password: hashedPassword,
-            name,
-            lastName,
-            email,
-        });
-
-        await newUser.save();
-
-        return { message: 'User registered successfully' };
+    // Check if user already exists
+    const existingUser = await this.userModel.findOne({ username }).exec();
+    if (existingUser) {
+      throw new ConflictException('Username already exists');
     }
 
-    async login(loginDto: LoginDto): Promise<{
-        access_token: string;
-        refresh_token: string;
-        user: { name: string; lastName: string; username: string; picture?: string; email?: string; preferences: any };
-    }> {
-        const { username, password } = loginDto;
+    // Hash password
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-        // Find user by username
-        const user = await this.userModel.findOne({ username }).exec();
-        if (!user) {
-            throw new UnauthorizedException('Invalid credentials');
-        }
+    // Create new user
+    const newUser = new this.userModel({
+      username,
+      password: hashedPassword,
+      name,
+      lastName,
+      email,
+    });
 
-        // Validate password
-        const isPasswordValid = await bcrypt.compare(password, user.password);
-        if (!isPasswordValid) {
-            throw new UnauthorizedException('Invalid credentials');
-        }
+    await newUser.save();
 
-        const tokens = await this.getTokens(user);
-        await this.updateRefreshToken(user._id.toString(), tokens.refresh_token);
+    return { message: 'User registered successfully' };
+  }
 
-        return {
-            ...tokens,
-            user: {
-                name: user.name,
-                lastName: user.lastName,
-                username: user.username,
-                picture: user.picture,
-                email: user.email,
-                preferences: user.preferences,
-            },
-        };
+  async login(loginDto: LoginDto): Promise<{
+    access_token: string;
+    refresh_token: string;
+    user: {
+      name: string;
+      lastName: string;
+      username: string;
+      picture?: string;
+      email?: string;
+      preferences: any;
+    };
+  }> {
+    const { username, password } = loginDto;
+
+    // Find user by username
+    const user = await this.userModel.findOne({ username }).exec();
+    if (!user) {
+      throw new UnauthorizedException('Invalid credentials');
     }
 
-    async validateGoogleUser(details: { email: string; firstName: string; lastName: string; picture?: string }) {
-        const { email, firstName, lastName, picture } = details;
-
-        // Check if user exists
-        let user = await this.userModel.findOne({ username: email }).exec();
-
-        if (user) {
-            // Optional: Update picture if it changed?
-            if (picture && user.picture !== picture) {
-                user.picture = picture;
-                await user.save();
-            }
-            return user;
-        }
-
-        // Create new user
-        const placeholderPassword = await bcrypt.hash(Math.random().toString(36), 10);
-
-        const newUser = new this.userModel({
-            username: email,
-            password: placeholderPassword,
-            name: firstName,
-            lastName: lastName,
-            email,
-            picture,
-        });
-
-        const savedUser = await newUser.save();
-        return savedUser;
+    // Validate password
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('Invalid credentials');
     }
 
-    async getTokens(user: UserDocument) {
-        const payload = {
-            sub: user._id,
-            username: user.username,
-            name: user.name,
-            lastName: user.lastName,
-            picture: user.picture,
-        };
+    const tokens = await this.getTokens(user);
+    await this.updateRefreshToken(user._id.toString(), tokens.refresh_token);
 
-        const [at, rt] = await Promise.all([
-            this.jwtService.signAsync(payload, {
-                expiresIn: '15m',
-            }),
-            this.jwtService.signAsync(payload, {
-                expiresIn: '7d',
-            }),
-        ]);
+    return {
+      ...tokens,
+      user: {
+        name: user.name,
+        lastName: user.lastName,
+        username: user.username,
+        picture: user.picture,
+        email: user.email,
+        preferences: user.preferences,
+      },
+    };
+  }
 
-        return {
-            access_token: at,
-            refresh_token: rt,
-        };
+  async validateGoogleUser(details: {
+    email: string;
+    firstName: string;
+    lastName: string;
+    picture?: string;
+  }) {
+    const { email, firstName, lastName, picture } = details;
+
+    // Check if user exists
+    const user = await this.userModel.findOne({ username: email }).exec();
+
+    if (user) {
+      // Optional: Update picture if it changed?
+      if (picture && user.picture !== picture) {
+        user.picture = picture;
+        await user.save();
+      }
+      return user;
     }
 
-    async refreshTokens(userId: string, refreshToken: string) {
-        const user = await this.userModel.findById(userId).exec();
-        if (!user || !user.refreshToken) {
-            throw new UnauthorizedException('Access Denied');
-        }
+    // Create new user
+    const placeholderPassword = await bcrypt.hash(
+      Math.random().toString(36),
+      10,
+    );
 
-        const refreshTokenMatches = await bcrypt.compare(refreshToken, user.refreshToken);
-        if (!refreshTokenMatches) {
-            throw new UnauthorizedException('Access Denied');
-        }
+    const newUser = new this.userModel({
+      username: email,
+      password: placeholderPassword,
+      name: firstName,
+      lastName: lastName,
+      email,
+      picture,
+    });
 
-        const tokens = await this.getTokens(user);
-        await this.updateRefreshToken(user._id.toString(), tokens.refresh_token);
-        return tokens;
+    const savedUser = await newUser.save();
+    return savedUser;
+  }
+
+  async getTokens(user: UserDocument) {
+    const payload = {
+      sub: user._id,
+      username: user.username,
+      name: user.name,
+      lastName: user.lastName,
+      picture: user.picture,
+    };
+
+    const [at, rt] = await Promise.all([
+      this.jwtService.signAsync(payload, {
+        expiresIn: '15m',
+      }),
+      this.jwtService.signAsync(payload, {
+        expiresIn: '7d',
+      }),
+    ]);
+
+    return {
+      access_token: at,
+      refresh_token: rt,
+    };
+  }
+
+  async refreshTokens(userId: string, refreshToken: string) {
+    const user = await this.userModel.findById(userId).exec();
+    if (!user || !user.refreshToken) {
+      throw new UnauthorizedException('Access Denied');
     }
 
-    async updateRefreshToken(userId: string, refreshToken: string) {
-        const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
-        await this.userModel.findByIdAndUpdate(userId, {
-            refreshToken: hashedRefreshToken,
-        });
+    const refreshTokenMatches = await bcrypt.compare(
+      refreshToken,
+      user.refreshToken,
+    );
+    if (!refreshTokenMatches) {
+      throw new UnauthorizedException('Access Denied');
     }
 
-    decodeToken(token: string) {
-        return this.jwtService.decode(token);
-    }
+    const tokens = await this.getTokens(user);
+    await this.updateRefreshToken(user._id.toString(), tokens.refresh_token);
+    return tokens;
+  }
 
-    generateJwt(user: UserDocument) {
-        const payload = {
-            sub: user._id,
-            username: user.username,
-            name: user.name,
-            lastName: user.lastName,
-            picture: user.picture,
-        };
-        return this.jwtService.sign(payload);
-    }
+  async updateRefreshToken(userId: string, refreshToken: string) {
+    const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
+    await this.userModel.findByIdAndUpdate(userId, {
+      refreshToken: hashedRefreshToken,
+    });
+  }
 
-    async updatePreferences(userId: string, preferences: any) {
-        return this.userModel.findByIdAndUpdate(
-            userId,
-            { $set: { preferences } },
-            { new: true },
-        ).exec();
-    }
+  decodeToken(token: string) {
+    return this.jwtService.decode(token);
+  }
 
-    async updateUser(userId: string, updateDto: { username?: string; picture?: string; email?: string; description?: string; sportType?: string }) {
-        if (updateDto.username) {
-            const existingUser = await this.userModel.findOne({
-                username: updateDto.username,
-                _id: { $ne: userId }
-            }).exec();
+  generateJwt(user: UserDocument) {
+    const payload = {
+      sub: user._id,
+      username: user.username,
+      name: user.name,
+      lastName: user.lastName,
+      picture: user.picture,
+    };
+    return this.jwtService.sign(payload);
+  }
 
-            if (existingUser) {
-                throw new ConflictException('Username already taken');
-            }
-        }
+  async updatePreferences(userId: string, preferences: any) {
+    return this.userModel
+      .findByIdAndUpdate(userId, { $set: { preferences } }, { new: true })
+      .exec();
+  }
 
-        return this.userModel.findByIdAndUpdate(
-            userId,
-            { $set: updateDto },
-            { new: true }
-        ).exec();
-    }
-
-    async getUserById(userId: string) {
-        const user = await this.userModel.findById(userId).exec();
-        if (!user) return null;
-
-        if (user.postsCount == null) {
-            const postsCount = await this.postModel.countDocuments({ author: user._id }).exec();
-            user.postsCount = postsCount;
-            await user.save();
-        }
-
-        return user;
-    }
-
-    async searchUsers(query: string) {
-        return this.userModel.find({
-            $or: [
-                { name: { $regex: query, $options: 'i' } },
-                { lastName: { $regex: query, $options: 'i' } },
-                { username: { $regex: query, $options: 'i' } },
-            ],
+  async updateUser(
+    userId: string,
+    updateDto: {
+      username?: string;
+      picture?: string;
+      email?: string;
+      description?: string;
+      sportType?: string;
+    },
+  ) {
+    if (updateDto.username) {
+      const existingUser = await this.userModel
+        .findOne({
+          username: updateDto.username,
+          _id: { $ne: userId },
         })
-            .select('name lastName username picture')
-            .limit(10)
-            .exec();
+        .exec();
+
+      if (existingUser) {
+        throw new ConflictException('Username already taken');
+      }
     }
+
+    return this.userModel
+      .findByIdAndUpdate(userId, { $set: updateDto }, { new: true })
+      .exec();
+  }
+
+  async getUserById(userId: string) {
+    const user = await this.userModel.findById(userId).exec();
+    if (!user) return null;
+
+    if (user.postsCount == null) {
+      const postsCount = await this.postModel
+        .countDocuments({ author: user._id })
+        .exec();
+      user.postsCount = postsCount;
+      await user.save();
+    }
+
+    return user;
+  }
+
+  async searchUsers(query: string) {
+    return this.userModel
+      .find({
+        $or: [
+          { name: { $regex: query, $options: 'i' } },
+          { lastName: { $regex: query, $options: 'i' } },
+          { username: { $regex: query, $options: 'i' } },
+        ],
+      })
+      .select(
+        'name lastName username picture description sportType totalXp level streak',
+      )
+      .limit(10)
+      .exec();
+  }
 }
