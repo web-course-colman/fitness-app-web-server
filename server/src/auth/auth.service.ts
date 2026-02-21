@@ -2,6 +2,7 @@ import {
   Injectable,
   UnauthorizedException,
   ConflictException,
+  NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -11,6 +12,8 @@ import { User, UserDocument } from './schemas/user.schema';
 import { LoginDto } from './dto/login.dto';
 import { SigninDto } from './dto/signin.dto';
 import { Post, PostDocument } from '../posts/schemas/post.schema';
+import { AchievementsService } from '../achievements/achievements.service';
+import { UserProfilesService } from '../user-profiles/user-profiles.service';
 
 @Injectable()
 export class AuthService {
@@ -18,6 +21,8 @@ export class AuthService {
     @InjectModel(User.name) private userModel: Model<UserDocument>,
     @InjectModel(Post.name) private postModel: Model<PostDocument>,
     private jwtService: JwtService,
+    private readonly achievementsService: AchievementsService,
+    private readonly userProfilesService: UserProfilesService,
   ) {}
 
   async signin(signinDto: SigninDto): Promise<{ message: string }> {
@@ -243,7 +248,7 @@ export class AuthService {
   }
 
   async searchUsers(query: string) {
-    return this.userModel
+    const users = await this.userModel
       .find({
         $or: [
           { name: { $regex: query, $options: 'i' } },
@@ -255,6 +260,79 @@ export class AuthService {
         'name lastName username picture description sportType totalXp level streak',
       )
       .limit(10)
+      .lean()
       .exec();
+
+    return Promise.all(
+      users.map(async (user) => {
+        const userId = String(user._id);
+        let profile: any = null;
+        let achievements: any[] = [];
+        let xpStats: any = null;
+
+        try {
+          const profileData = await this.userProfilesService.findByUser(userId);
+          const { achievements: profileAchievements, xpStats: profileXpStats, ...profilePayload } =
+            profileData;
+          profile = profilePayload;
+          achievements = profileAchievements;
+          xpStats = profileXpStats;
+        } catch (error) {
+          if (!(error instanceof NotFoundException)) {
+            throw error;
+          }
+          [achievements, xpStats] = await Promise.all([
+            this.achievementsService.findUserAchievements(userId),
+            this.achievementsService.getXpAndLevel(userId),
+          ]);
+        }
+
+        return {
+          ...user,
+          profile,
+          achievements,
+          xpStats,
+        };
+      }),
+    );
+  }
+
+  async getPublicUserProfile(userId: string) {
+    const user = await this.userModel
+      .findById(userId)
+      .select(
+        'name lastName username picture description sportType totalXp level streak postsCount',
+      )
+      .exec();
+
+    if (!user) return null;
+
+    let profile: any = null;
+    let achievements: any[] = [];
+    let xpStats: any = null;
+
+    try {
+      const profileData = await this.userProfilesService.findByUser(userId);
+      const { achievements: profileAchievements, xpStats: profileXpStats, ...profilePayload } =
+        profileData;
+      profile = profilePayload;
+      achievements = profileAchievements;
+      xpStats = profileXpStats;
+    } catch (error) {
+      if (!(error instanceof NotFoundException)) {
+        throw error;
+      }
+      [achievements, xpStats] = await Promise.all([
+        this.achievementsService.findUserAchievements(userId),
+        this.achievementsService.getXpAndLevel(userId),
+      ]);
+    }
+
+    return {
+      ...user.toObject(),
+      profile,
+      achievements,
+      xpStats,
+    };
   }
 }

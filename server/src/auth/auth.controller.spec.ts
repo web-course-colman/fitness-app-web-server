@@ -18,6 +18,7 @@ describe('AuthController', () => {
         decodeToken: jest.fn(),
         updatePreferences: jest.fn(),
         searchUsers: jest.fn(),
+        getPublicUserProfile: jest.fn(),
     };
 
     const mockResponse = {
