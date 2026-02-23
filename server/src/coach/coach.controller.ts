@@ -9,12 +9,6 @@ export class CoachController {
     constructor(private readonly coachService: CoachService) { }
 
     @UseGuards(AuthGuard('jwt'))
-    @Post('ask')
-    async ask(@Body() askCoachDto: AskCoachDto, @Request() req) {
-        return this.coachService.ask(req.user.userId, askCoachDto.question);
-    }
-
-    @UseGuards(AuthGuard('jwt'))
     @Post('ask-stream')
     @Sse('ask-stream')
     askStream(@Body() askCoachDto: AskCoachDto, @Request() req): Observable<MessageEvent> {
