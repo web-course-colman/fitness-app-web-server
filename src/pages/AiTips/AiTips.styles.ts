@@ -2,7 +2,7 @@ import { makeStyles } from "@/hooks/makeStyles";
 
 export const useStyles = makeStyles((theme) => ({
   container: {
-    width: "80vw",
+    width: { xs: "100%", sm: "80vw" },
     margin: "0 auto",
     display: "flex",
     flexDirection: "column",
