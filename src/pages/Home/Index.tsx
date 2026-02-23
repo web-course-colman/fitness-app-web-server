@@ -1,8 +1,10 @@
 import { useAuth } from "@/components/Auth/AuthProvider";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useStyles } from "./Index.styles";
 
 const Index = () => {
+    useStyles();
     const navigate = useNavigate();
     const { isAuthenticated } = useAuth();
 

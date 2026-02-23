@@ -7,7 +7,7 @@ import {
   MenuItem,
   Autocomplete,
 } from "@mui/material";
-import { useStyles } from "../../pages/WorkoutPost.styles";
+import { useStyles } from "../../pages/WorkoutPost/WorkoutPost.styles";
 
 const personalGoalOptions = [
   // 🎯 Performance goals

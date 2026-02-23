@@ -2,11 +2,11 @@ import { Box, Typography, CircularProgress } from "@mui/material";
 import { LocalFireDepartment as FireIcon, FitnessCenter as WorkoutIcon, EmojiEvents as TrophyIcon } from "@mui/icons-material";
 import { useEffect, useMemo, useRef } from "react";
 import { useStyles } from "./Profile.styles";
-import ProfileHeader from "../components/Profile/ProfileHeader";
-import { useAuth } from "../components/Auth/AuthProvider";
-import { useAuthorPostsInfinite } from "../hooks/usePosts";
-import { useUserProfile } from "../hooks/useUserProfile";
-import PostCard from "../components/Feed/PostCard";
+import ProfileHeader from "@/components/Profile/ProfileHeader";
+import { useAuth } from "@/components/Auth/AuthProvider";
+import { useAuthorPostsInfinite } from "@/hooks/usePosts";
+import { useUserProfile } from "@/hooks/useUserProfile";
+import PostCard from "@/components/Feed/PostCard";
 
 const Profile = () => {
     const classes = useStyles();

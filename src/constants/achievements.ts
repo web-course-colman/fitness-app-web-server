@@ -47,7 +47,7 @@ export function formatAchievementTierRequirement(
     case "Early Bird":
       return `${value} early workouts (05:00-07:59)`;
     case "Consistency Master":
-      return `${value} consecutive qualified week${value === 1 ? "" : "s"} (4+ workouts/week)`;
+      return `${value} consecutive qualified week${value === 1 ? "" : "s"}`;
     case "AI Focused":
       return `${value} AI coach tip request${value === 1 ? "" : "s"}`;
     default:

@@ -15,7 +15,7 @@ import {
   getTierColor,
   getMinimizedAchievementAvatarSx,
   getMinimizedAchievementTrophyIconSx,
-} from "../../pages/Profile.styles";
+} from "../../pages/Profile/Profile.styles";
 
 interface Stat {
   label: string;

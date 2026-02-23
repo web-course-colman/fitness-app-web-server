@@ -2,8 +2,10 @@ import { useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/components/Auth/AuthProvider';
 import { CircularProgress, Box, Typography } from '@mui/material';
+import { useStyles } from './AuthCallback.styles';
 
 const AuthCallback = () => {
+    const classes = useStyles();
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
     const { refreshProfile } = useAuth();
@@ -48,15 +50,9 @@ const AuthCallback = () => {
     }, [searchParams, navigate, refreshProfile]);
 
     return (
-        <Box
-            display="flex"
-            flexDirection="column"
-            justifyContent="center"
-            alignItems="center"
-            minHeight="100vh"
-        >
+        <Box sx={classes.container}>
             <CircularProgress />
-            <Typography variant="body1" sx={{ mt: 2 }}>
+            <Typography variant="body1" sx={classes.message}>
                 Completing login...
             </Typography>
         </Box>

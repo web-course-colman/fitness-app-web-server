@@ -1,5 +1,5 @@
 import { Card, Typography, Box } from "@mui/material";
-import { useStyles } from "../../pages/Profile.styles";
+import { useStyles } from "../../pages/Profile/Profile.styles";
 
 interface StatsCardProps {
     value: string | number;

@@ -141,7 +141,7 @@ const Layout = () => {
     <Box
       sx={{
         display: "flex",
-        minHeight: "100vh",
+        minHeight: "100dvh",
         bgcolor: (theme) =>
           theme.palette.mode === "dark" ? "#0f172a" : "#f1f5f9",
         overflow: "hidden",
@@ -151,11 +151,15 @@ const Layout = () => {
         position="fixed"
         elevation={0}
         sx={{
+          top: 0,
           width: { md: `calc(100% - ${currentDrawerWidth}px)` },
           ml: { md: `${currentDrawerWidth}px` },
           bgcolor: "transparent",
           color: "text.primary",
           borderBottom: "none",
+          pt: { xs: "env(safe-area-inset-top)", md: 0 },
+          transform: "translateZ(0)",
+          backfaceVisibility: "hidden",
           transition: theme.transitions.create(["width", "margin"], {
             easing: theme.transitions.easing.sharp,
             duration: theme.transitions.duration.enteringScreen,
@@ -344,7 +348,7 @@ const Layout = () => {
           flexGrow: 1,
           width: { md: `calc(100% - ${currentDrawerWidth}px)` },
           ml: { md: `${currentDrawerWidth}px` },
-          height: "100vh",
+          height: "100dvh",
           display: "flex",
           flexDirection: "column",
           transition: theme.transitions.create(["width", "margin"], {
