@@ -4,7 +4,7 @@ import { ArrowBack } from "@mui/icons-material";
 import { usePost } from "@/hooks/usePosts";
 import PostCard from "@/components/Feed/PostCard";
 
-import { useStyles } from "./Feed.styles";
+import { useStyles } from "./PostPage.styles";
 
 const PostPage = () => {
     const { postId } = useParams();
@@ -14,7 +14,7 @@ const PostPage = () => {
 
     if (isLoading) {
         return (
-            <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
+            <Box sx={classes.loadingContainer}>
                 <CircularProgress />
             </Box>
         );
@@ -22,11 +22,11 @@ const PostPage = () => {
 
     if (error || !post) {
         return (
-            <Box sx={{ textAlign: "center", mt: 4 }}>
+            <Box sx={classes.errorContainer}>
                 <Typography variant="h6" color="error">
                     Post not found
                 </Typography>
-                <Button startIcon={<ArrowBack />} onClick={() => navigate(-1)} sx={{ mt: 2 }}>
+                <Button startIcon={<ArrowBack />} onClick={() => navigate(-1)} sx={classes.errorBackButton}>
                     Go Back
                 </Button>
             </Box>
@@ -35,8 +35,8 @@ const PostPage = () => {
 
     return (
         <Box sx={classes.container}>
-            <Box sx={{ display: "flex", alignItems: "center", mb: 3 }}>
-                <IconButton onClick={() => navigate(-1)} edge="start" size="small" sx={{ mr: 1 }}>
+            <Box sx={classes.header}>
+                <IconButton onClick={() => navigate(-1)} edge="start" size="small" sx={classes.backIconButton}>
                     <ArrowBack />
                 </IconButton>
                 <Typography variant="h5" fontWeight="bold">

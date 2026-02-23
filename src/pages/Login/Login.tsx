@@ -17,10 +17,12 @@ import {
   FitnessCenter,
   Google,
 } from "@mui/icons-material";
-import { useAuth } from "../components/Auth/AuthProvider";
+import { useAuth } from "@/components/Auth/AuthProvider";
 import { toast } from "@/hooks/use-toast";
+import { useStyles } from "./Login.styles";
 
 const Login = () => {
+  const classes = useStyles();
   const navigate = useNavigate();
   const { login, register, isAuthenticated, isLoading } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
@@ -105,48 +107,12 @@ const Login = () => {
   };
 
   return (
-    <Box
-      sx={{
-        minHeight: "100vh",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        p: 2,
-      }}
-    >
-      <Box
-        sx={{
-          width: "100%",
-          maxWidth: 400,
-          display: "flex",
-          flexDirection: "column",
-          gap: 3,
-        }}
-      >
+    <Box sx={classes.page}>
+      <Box sx={classes.content}>
         {/* Logo */}
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: 1,
-          }}
-        >
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              width: 64,
-              height: 64,
-              background: "linear-gradient(90deg, #6366f1 0%, #a855f7 100%)",
-              borderRadius: "50%",
-            }}
-          >
-            <FitnessCenter
-              sx={{ fontSize: 32, color: "primary.contrastText" }}
-            />
+        <Box sx={classes.logoSection}>
+          <Box sx={classes.logoCircle}>
+            <FitnessCenter sx={classes.logoIcon} />
           </Box>
           <Typography variant="h3" component="h1" fontWeight="bold">
             FitTrack
@@ -157,8 +123,8 @@ const Login = () => {
         </Box>
 
         <Card>
-          <CardContent sx={{ p: 3 }}>
-            <Box sx={{ mb: 3, textAlign: "center" }}>
+          <CardContent sx={classes.cardContent}>
+            <Box sx={classes.formHeader}>
               <Typography variant="h5" component="h2" gutterBottom>
                 {isLogin ? "Welcome back" : "Create account"}
               </Typography>
@@ -172,7 +138,7 @@ const Login = () => {
             <Box
               component="form"
               onSubmit={handleSubmit}
-              sx={{ display: "flex", flexDirection: "column", gap: 2 }}
+              sx={classes.form}
             >
               {!isLogin && (
                 <TextField
@@ -230,7 +196,7 @@ const Login = () => {
                 variant="contained"
                 fullWidth
                 disabled={loading}
-                sx={{ mt: 1 }}
+                sx={classes.submitButton}
                 startIcon={
                   loading ? (
                     <CircularProgress size={20} color="inherit" />
@@ -255,14 +221,14 @@ const Login = () => {
                   window.location.href = `${serverUrl}/api/auth/google`;
                 }}
                 startIcon={<Google />}
-                sx={{ mt: 2 }}
+                sx={classes.googleButton}
                 disabled={loading}
               >
                 Sign in with Google
               </Button>
             </Box>
 
-            <Box sx={{ mt: 3, textAlign: "center" }}>
+            <Box sx={classes.footer}>
               <Button
                 type="button"
                 variant="text"

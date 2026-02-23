@@ -3,8 +3,8 @@ import { Box, Typography, TextField, Button, IconButton, Stepper, Step, StepLabe
 import { ArrowBack, Send } from "@mui/icons-material";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useStyles } from "./WorkoutPost.styles";
-import { useCreatePost } from "../hooks/usePosts";
-import { useToast } from "../hooks/use-toast";
+import { useCreatePost } from "@/hooks/usePosts";
+import { useToast } from "@/hooks/use-toast";
 import PhotoUploadArea from "@/components/Workouts/PhotoUploadArea";
 import WorkoutDetailsSection from "@/components/Workouts/WorkoutDetailsSection";
 

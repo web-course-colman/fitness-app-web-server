@@ -5,7 +5,7 @@ import {
   getTierColor,
   getAchievementAvatarSx,
   getAchievementTrophyIconSx,
-} from "../../pages/Profile.styles";
+} from "../../pages/Profile/Profile.styles";
 
 interface Achievement {
   achievementId: string;

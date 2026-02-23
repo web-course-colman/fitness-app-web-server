@@ -1,5 +1,5 @@
 import { Box, Typography } from "@mui/material";
-import { useStyles } from "../../pages/Feed.styles";
+import { useStyles } from "../../pages/Feed/Feed.styles";
 
 interface PostWorkoutDetailsProps {
     type?: string;

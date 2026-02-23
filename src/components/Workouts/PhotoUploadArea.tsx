@@ -1,6 +1,6 @@
 import { Box, Typography, IconButton } from "@mui/material";
 import { Image as ImageIcon, Close as CloseIcon } from "@mui/icons-material";
-import { useStyles } from "../../pages/WorkoutPost.styles";
+import { useStyles } from "../../pages/WorkoutPost/WorkoutPost.styles";
 
 interface PhotoUploadAreaProps {
     imagePreviews: string[];

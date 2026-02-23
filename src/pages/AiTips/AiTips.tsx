@@ -15,7 +15,7 @@ import {
     History,
 } from "@mui/icons-material";
 import { useStyles } from "./AiTips.styles";
-import { CoachResponse } from "../hooks/useAi";
+import { CoachResponse } from "@/hooks/useAi";
 
 const quickQuestions = [
     "When was my last heavy squat?",

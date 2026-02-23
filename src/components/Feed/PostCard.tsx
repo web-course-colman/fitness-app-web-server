@@ -30,7 +30,7 @@ import {
   Delete,
 } from "@mui/icons-material";
 import { formatDistanceToNow } from "date-fns";
-import { useStyles } from "../../pages/Feed.styles";
+import { useStyles } from "../../pages/Feed/Feed.styles";
 import { Post, useAddComment, useLikePost, useDeletePost } from "@/hooks/usePosts";
 import PostImages from "./PostImages";
 import PostWorkoutDetails from "./PostWorkoutDetails";
