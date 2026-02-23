@@ -1,4 +1,4 @@
-import { Controller, Sse, MessageEvent, Request, UseGuards, Get } from '@nestjs/common';
+import { Controller, Sse, MessageEvent, Request, UseGuards } from '@nestjs/common';
 import { NotificationsService } from './notifications.service';
 import { Observable } from 'rxjs';
 import { AuthGuard } from '@nestjs/passport';
@@ -11,11 +11,5 @@ export class NotificationsController {
     @Sse('stream')
     stream(@Request() req): Observable<MessageEvent> {
         return this.notificationsService.stream(req.user.userId);
-    }
-
-    // Optional: a test endpoint to verify notifications
-    @Get('test')
-    test(@Request() req) {
-        return { message: 'Notification stream is active for user ' + req.user.userId };
     }
 }
