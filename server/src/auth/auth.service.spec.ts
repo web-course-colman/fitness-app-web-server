@@ -10,10 +10,7 @@ import { AchievementsService } from '../achievements/achievements.service';
 import { UserProfilesService } from '../user-profiles/user-profiles.service';
 
 // Mock bcrypt globally
-jest.mock('bcrypt', () => ({
-    hash: jest.fn(),
-    compare: jest.fn(),
-}));
+jest.mock('bcrypt');
 
 describe('AuthService', () => {
     let service: AuthService;
@@ -103,7 +100,7 @@ describe('AuthService', () => {
     describe('signin', () => {
         it('should register a new user', async () => {
             (MockUserModel.findOne as jest.Mock).mockReturnValue({ exec: jest.fn().mockResolvedValue(null) });
-            (bcrypt.hash as jest.Mock).mockResolvedValue('hashedpassword');
+            (bcrypt.hash as any).mockResolvedValue('hashedpassword');
 
             const result = await service.signin({
                 username: 'newuser',
@@ -134,7 +131,7 @@ describe('AuthService', () => {
     describe('login', () => {
         it('should return tokens on successful login', async () => {
             (MockUserModel.findOne as jest.Mock).mockReturnValue({ exec: jest.fn().mockResolvedValue(mockUser) });
-            (bcrypt.compare as jest.Mock).mockResolvedValue(true);
+            (bcrypt.compare as any).mockResolvedValue(true);
             mockJwtService.signAsync.mockResolvedValue('token');
             // Mock updateRefreshToken to avoid actual logic which also uses bcrypt
             jest.spyOn(service, 'updateRefreshToken').mockResolvedValue(undefined);

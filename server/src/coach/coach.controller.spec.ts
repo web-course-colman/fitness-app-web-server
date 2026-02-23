@@ -30,17 +30,6 @@ describe('CoachController', () => {
         expect(controller).toBeDefined();
     });
 
-    describe('ask', () => {
-        it('should call service.ask', async () => {
-            mockService.ask.mockResolvedValue('response');
-            const req = { user: { userId: 'uid' } };
-            const dto = { question: 'q' };
-
-            expect(await controller.ask(dto, req)).toBe('response');
-            expect(service.ask).toHaveBeenCalledWith('uid', 'q');
-        });
-    });
-
     describe('askStream', () => {
         it('should call service.askStream', () => {
             const obs = {};

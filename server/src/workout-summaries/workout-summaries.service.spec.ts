@@ -3,6 +3,7 @@ import { WorkoutSummariesService } from './workout-summaries.service';
 import { getModelToken } from '@nestjs/mongoose';
 import { WorkoutSummary } from './schemas/workout-summary.schema';
 import { NotFoundException } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 // Mock class for the model
 class MockWorkoutSummaryModel {
@@ -35,6 +36,12 @@ describe('WorkoutSummariesService', () => {
                 {
                     provide: getModelToken(WorkoutSummary.name),
                     useValue: MockWorkoutSummaryModel,
+                },
+                {
+                    provide: EventEmitter2,
+                    useValue: {
+                        emit: jest.fn(),
+                    },
                 },
             ],
         }).compile();
