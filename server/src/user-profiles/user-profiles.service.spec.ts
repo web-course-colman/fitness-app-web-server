@@ -3,6 +3,7 @@ import { UserProfilesService } from './user-profiles.service';
 import { getModelToken } from '@nestjs/mongoose';
 import { UserProfile } from './schemas/user-profile.schema';
 import { NotFoundException } from '@nestjs/common';
+import { AchievementsService } from '../achievements/achievements.service';
 
 describe('UserProfilesService', () => {
     let service: UserProfilesService;
@@ -35,6 +36,13 @@ describe('UserProfilesService', () => {
                 {
                     provide: getModelToken(UserProfile.name),
                     useValue: mockModel,
+                },
+                {
+                    provide: AchievementsService,
+                    useValue: {
+                        findUserAchievements: jest.fn(),
+                        getXpAndLevel: jest.fn(),
+                    },
                 },
             ],
         }).compile();
