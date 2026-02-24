@@ -14,6 +14,12 @@ describe('UserProfilesService', () => {
         age: 25,
         height: 180,
         weight: 75,
+        toObject: jest.fn().mockReturnValue({
+            userId: 'userId',
+            age: 25,
+            height: 180,
+            weight: 75,
+        }),
         save: jest.fn(),
     };
 
@@ -40,8 +46,8 @@ describe('UserProfilesService', () => {
                 {
                     provide: AchievementsService,
                     useValue: {
-                        findUserAchievements: jest.fn(),
-                        getXpAndLevel: jest.fn(),
+                        findUserAchievements: jest.fn().mockResolvedValue([]),
+                        getXpAndLevel: jest.fn().mockResolvedValue({ xp: 0, level: 1 }),
                     },
                 },
             ],
@@ -79,7 +85,14 @@ describe('UserProfilesService', () => {
         it('should return a user profile', async () => {
             mockQuery.exec.mockResolvedValue(mockUserProfile);
             const result = await service.findByUser('507f1f77bcf86cd799439011');
-            expect(result).toEqual(mockUserProfile);
+            expect(result).toEqual({
+                userId: 'userId',
+                age: 25,
+                height: 180,
+                weight: 75,
+                achievements: [],
+                xpStats: { xp: 0, level: 1 },
+            });
         });
 
         it('should throw NotFoundException if not found', async () => {

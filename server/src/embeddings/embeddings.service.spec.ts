@@ -82,5 +82,49 @@ describe('EmbeddingsService', () => {
             const result = await service.findSimilar([1, 0, 0], '507f1f77bcf86cd799439011');
             expect(result[0]).toEqual(embeddings[0]);
         });
+
+        it('should apply limit', async () => {
+            const embeddings = [
+                { vector: [1, 0], id: 1 },
+                { vector: [0.9, 0], id: 2 },
+                { vector: [0.8, 0], id: 3 },
+            ];
+            mockQuery.exec.mockResolvedValue(embeddings);
+
+            const result = await service.findSimilar([1, 0], '507f1f77bcf86cd799439011', 2);
+            expect(result).toHaveLength(2);
+        });
+    });
+
+    describe('update', () => {
+        it('should update and return embedding', async () => {
+            const updated = { id: 'updated' };
+            mockQuery.exec.mockResolvedValue(updated);
+            await expect(
+                service.update('workout', '507f1f77bcf86cd799439011', [1, 2], 'text'),
+            ).resolves.toEqual(updated);
+        });
+    });
+
+    describe('findByUser', () => {
+        it('should return embeddings by user', async () => {
+            mockQuery.exec.mockResolvedValue([{ id: 1 }]);
+            await expect(service.findByUser('507f1f77bcf86cd799439011')).resolves.toEqual([{ id: 1 }]);
+        });
+    });
+
+    describe('findByReference', () => {
+        it('should return embeddings by reference', async () => {
+            mockQuery.exec.mockResolvedValue([{ id: 1 }]);
+            await expect(service.findByReference('workout', '507f1f77bcf86cd799439011')).resolves.toEqual([{ id: 1 }]);
+        });
+    });
+
+    describe('deleteByReference', () => {
+        it('should delete embeddings by reference', async () => {
+            const deleted = { acknowledged: true, deletedCount: 1 };
+            mockQuery.exec.mockResolvedValue(deleted);
+            await expect(service.deleteByReference('workout', '507f1f77bcf86cd799439011')).resolves.toEqual(deleted);
+        });
     });
 });

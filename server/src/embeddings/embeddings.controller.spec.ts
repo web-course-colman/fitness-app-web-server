@@ -46,5 +46,25 @@ describe('EmbeddingsController', () => {
             expect(await controller.findByReference('workout', 'rid')).toEqual([]);
             expect(service.findByReference).toHaveBeenCalledWith('workout', 'rid');
         });
+
+        it('should throw for invalid refType', () => {
+            expect(() => controller.findByReference('invalid', 'rid')).toThrow();
+        });
+
+        it('should throw for invalid refId', () => {
+            expect(() => controller.findByReference('workout', '')).toThrow();
+        });
+    });
+
+    describe('findByUser', () => {
+        it('should call service.findByUser', async () => {
+            mockService.findByUser.mockResolvedValue([{ id: 1 }]);
+            await expect(controller.findByUser('uid')).resolves.toEqual([{ id: 1 }]);
+            expect(service.findByUser).toHaveBeenCalledWith('uid');
+        });
+
+        it('should throw for invalid userId', () => {
+            expect(() => controller.findByUser('')).toThrow();
+        });
     });
 });

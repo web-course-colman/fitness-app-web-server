@@ -47,5 +47,29 @@ describe('WorkoutSummariesController', () => {
             expect(await controller.findByWorkout('wid')).toBe('summary');
             expect(service.findByWorkout).toHaveBeenCalledWith('wid');
         });
+
+        it('should throw for invalid workoutId', async () => {
+            expect(() => controller.findByWorkout('')).toThrow();
+        });
+    });
+
+    describe('findAll', () => {
+        it('should call service.findAll', async () => {
+            mockService.findAll.mockResolvedValue(['a']);
+            await expect(controller.findAll()).resolves.toEqual(['a']);
+            expect(service.findAll).toHaveBeenCalled();
+        });
+    });
+
+    describe('findByUser', () => {
+        it('should call service.findByUser', async () => {
+            mockService.findByUser.mockResolvedValue(['u']);
+            await expect(controller.findByUser('uid')).resolves.toEqual(['u']);
+            expect(service.findByUser).toHaveBeenCalledWith('uid');
+        });
+
+        it('should throw for invalid userId', async () => {
+            expect(() => controller.findByUser('')).toThrow();
+        });
     });
 });

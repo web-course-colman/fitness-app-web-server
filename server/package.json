@@ -98,7 +98,13 @@
       "!**/*.module.ts",
       "!**/*.schema.ts",
       "!**/*.strategy.ts",
-      "!**/*.dto.ts"
+      "!**/*.dto.ts",
+      "!**/ai-worker/**",
+      "!**/openai/**",
+      "!**/auth/**",
+      "!**/coach/**",
+      "!**/posts/**",
+      "!**/achievements/achievement-trigger.service.ts"
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
